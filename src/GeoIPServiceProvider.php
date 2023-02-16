@@ -9,12 +9,8 @@ use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 class GeoIPServiceProvider extends ServiceProvider
 {
-    /**
-     * Register the service provider.
-     *
-     * @return void
-     */
-    public function register()
+    /** Register the service provider. */
+    public function register(): void
     {
         $this->registerGeoIpService();
 
@@ -23,19 +19,13 @@ class GeoIPServiceProvider extends ServiceProvider
             $this->registerGeoIpCommands();
         }
 
-        if ($this->isLumen() === false) {
-            $this->mergeConfigFrom(__DIR__ . '/../config/geoip.php', 'geoip');
-        }
+        $this->mergeConfigFrom(__DIR__ . '/../config/geoip.php', 'geoip');
 
         $this->app->bind(Client::class, fn () => new HttpClient());
     }
 
-    /**
-     * Register currency provider.
-     *
-     * @return void
-     */
-    public function registerGeoIpService()
+    /** Register currency provider. */
+    public function registerGeoIpService(): void
     {
         $this->app->singleton('geoip', function ($app) {
             return new GeoIP(
@@ -45,40 +35,20 @@ class GeoIPServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Register resources.
-     *
-     * @return void
-     */
-    public function registerResources()
+    /** Register resources. */
+    public function registerResources(): void
     {
-        if ($this->isLumen() === false) {
-            $this->publishes([
-                __DIR__ . '/../config/geoip.php' => config_path('geoip.php'),
-            ], 'config');
-        }
+        $this->publishes([
+            __DIR__ . '/../config/geoip.php' => config_path('geoip.php'),
+        ], 'config');
     }
 
-    /**
-     * Register commands.
-     *
-     * @return void
-     */
-    public function registerGeoIpCommands()
+    /** Register commands.  */
+    public function registerGeoIpCommands(): void
     {
         $this->commands([
             Console\Update::class,
             Console\Clear::class,
         ]);
-    }
-
-    /**
-     * Check if package is running under Lumen app
-     *
-     * @return bool
-     */
-    protected function isLumen()
-    {
-        return Str::contains($this->app->version(), 'Lumen') === true;
     }
 }
