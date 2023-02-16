@@ -4,6 +4,8 @@ namespace InteractionDesignFoundation\GeoIP;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\ServiceProvider;
+use InteractionDesignFoundation\GeoIP\Contracts\Client;
+use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 class GeoIPServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,8 @@ class GeoIPServiceProvider extends ServiceProvider
         if ($this->isLumen() === false) {
             $this->mergeConfigFrom(__DIR__ . '/../config/geoip.php', 'geoip');
         }
+
+        $this->app->bind(Client::class, fn () => new HttpClient());
     }
 
     /**
