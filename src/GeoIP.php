@@ -41,7 +41,7 @@ class GeoIP
     /**
      * GeoIP service instance.
      *
-     * @var Contracts\ServiceInterface
+     * @var Contracts\IpLocationProvider
      */
     protected $service;
 
@@ -188,8 +188,8 @@ class GeoIP
     /**
      * Get service instance.
      *
-     * @return \InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface
      * @throws Exception
+     *@return \InteractionDesignFoundation\GeoIP\Contracts\IpLocationProvider
      */
     public function getService()
     {
