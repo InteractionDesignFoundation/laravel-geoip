@@ -6,41 +6,21 @@ use Illuminate\Cache\CacheManager;
 
 class Cache
 {
-    /**
-     * Instance of cache manager.
-     *
-     * @var \Illuminate\Cache\CacheManager
-     */
-    protected $cache;
+    /** Instance of cache manager. */
+    protected CacheManager|\Illuminate\Cache\TaggedCache $cache;
 
-    /**
-     * Lifetime of the cache.
-     *
-     * @var int
-     */
-    protected $expires;
+    /** Lifetime of the cache. */
+    protected int $expires;
 
-    /**
-     * Create a new cache instance.
-     *
-     * @param CacheManager $cache
-     * @param array        $tags
-     * @param int          $expires
-     */
-    public function __construct(CacheManager $cache, $tags, $expires = 30)
+    /** Create a new cache instance. */
+    public function __construct(CacheManager $cache, array $tags, int $expires = 30)
     {
         $this->cache = $tags ? $cache->tags($tags) : $cache;
         $this->expires = $expires;
     }
 
-    /**
-     * Get an item from the cache.
-     *
-     * @param string $name
-     *
-     * @return Location|null
-     */
-    public function get($name)
+    /** Get an item from the cache. */
+    public function get(string $name): ?Location
     {
         $value = $this->cache->get($name);
 
@@ -49,25 +29,14 @@ class Cache
             : null;
     }
 
-    /**
-     * Store an item in cache.
-     *
-     * @param string   $name
-     * @param Location $location
-     *
-     * @return bool
-     */
-    public function set($name, Location $location)
+    /** Store an item in cache. */
+    public function set(string $name, Location $location): bool
     {
         return $this->cache->put($name, $location->toArray(), $this->expires);
     }
 
-    /**
-     * Flush cache for tags.
-     *
-     * @return bool
-     */
-    public function flush()
+    /** Flush cache for tags. */
+    public function flush(): bool
     {
         return $this->cache->flush();
     }

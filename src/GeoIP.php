@@ -2,7 +2,7 @@
 
 namespace InteractionDesignFoundation\GeoIP;
 
-use Exception;
+use InteractionDesignFoundation\GeoIP\Contracts\IpLocationProvider;
 use Monolog\Logger;
 use Illuminate\Support\Arr;
 use Illuminate\Cache\CacheManager;
@@ -10,12 +10,8 @@ use Monolog\Handler\StreamHandler;
 
 class GeoIP
 {
-    /**
-     * Illuminate config repository instance.
-     *
-     * @var array
-     */
-    protected $config;
+    /** Illuminate config repository instance. */
+    protected array $config = [];
 
     /**
      * Remote Machine IP address.
@@ -24,40 +20,24 @@ class GeoIP
      */
     protected $remote_ip = null;
 
-    /**
-     * Current location instance.
-     *
-     * @var Location
-     */
-    protected $location = null;
+    /** Current location instance. */
+    protected ?Location $location = null;
 
-    /**
-     * Currency data.
-     *
-     * @var array
-     */
-    protected $currencies = null;
+    /** Currency data. */
+    protected ?array $currencies = null;
 
-    /**
-     * GeoIP service instance.
-     *
-     * @var Contracts\IpLocationProvider
-     */
-    protected $service;
+    /** GeoIP service instance. */
+    protected IpLocationProvider $service;
 
-    /**
-     * Cache manager instance.
-     *
-     * @var \Illuminate\Cache\CacheManager
-     */
-    protected $cache;
+    /** Cache manager instance. */
+    protected Cache $cache;
 
     /**
      * Default Location data.
      *
      * @var array
      */
-    protected $default_location = [
+    protected array $default_location = [
         'ip' => '127.0.0.0',
         'iso_code' => 'US',
         'country' => 'United States',
@@ -104,12 +84,9 @@ class GeoIP
     /**
      * Get the location from the provided IP.
      *
-     * @param string $ip
-     *
-     * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
-    public function getLocation($ip = null)
+    public function getLocation(string $ip = null): Location
     {
         // Get location data
         $this->location = $this->find($ip);
@@ -125,12 +102,9 @@ class GeoIP
     /**
      * Find location from IP.
      *
-     * @param string $ip
-     *
-     * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
-    private function find($ip = null)
+    private function find(string $ip = null): Location
     {
         // If IP not set, user remote IP
         $ip = $ip ?: $this->remote_ip;
@@ -169,14 +143,8 @@ class GeoIP
         return $this->getService()->hydrate($this->default_location);
     }
 
-    /**
-     * Get the currency code from ISO.
-     *
-     * @param string $iso
-     *
-     * @return string
-     */
-    public function getCurrency($iso)
+    /** Get the currency code from ISO.  */
+    public function getCurrency(string $iso): string
     {
         if ($this->currencies === null && $this->config('include_currency', false)) {
             $this->currencies = include(__DIR__ . '/Support/Currencies.php');
@@ -185,13 +153,11 @@ class GeoIP
         return Arr::get($this->currencies, $iso);
     }
 
-    /**
-     * Get service instance.
+    /** Get service instance.
      *
-     * @throws Exception
-     *@return \InteractionDesignFoundation\GeoIP\Contracts\IpLocationProvider
+     * @throws \Exception
      */
-    public function getService()
+    public function getService(): IpLocationProvider
     {
         if ($this->service === null) {
             // Get service configuration
@@ -202,7 +168,7 @@ class GeoIP
 
             // Sanity check
             if ($class === null) {
-                throw new Exception('The GeoIP service is not valid.');
+                throw new \RuntimeException('The GeoIP service is not valid.');
             }
 
             // Create service instance
@@ -217,17 +183,13 @@ class GeoIP
      *
      * @return \InteractionDesignFoundation\GeoIP\Cache
      */
-    public function getCache()
+    public function getCache(): Cache
     {
         return $this->cache;
     }
 
-    /**
-     * Get the client IP address.
-     *
-     * @return string
-     */
-    public function getClientIP()
+    /** Get the client IP address. */
+    public function getClientIP(): string
     {
         $remotes_keys = [
             'HTTP_X_FORWARDED_FOR',
@@ -253,56 +215,28 @@ class GeoIP
         return '127.0.0.0';
     }
 
-    /**
-     * Checks if the ip is valid.
-     *
-     * @param string $ip
-     *
-     * @return bool
-     */
-    private function isValid($ip)
+    /** Checks if the ip is valid.  */
+    private function isValid(string $ip): bool
     {
-        if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
-            && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE)
-        ) {
-            return false;
-        }
-
-        return true;
+        return ! (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+            && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE));
     }
 
-    /**
-     * Determine if the location should be cached.
-     *
-     * @param Location    $location
-     * @param string|null $ip
-     *
-     * @return bool
-     */
-    private function shouldCache(Location $location, $ip = null)
+    /** Determine if the location should be cached.  */
+    private function shouldCache(Location $location, string $ip = null): bool
     {
         if ($location->default === true || $location->cached === true) {
             return false;
         }
 
-        switch ($this->config('cache', 'none')) {
-            case 'all':
-            case 'some' && $ip === null:
-                return true;
-        }
-
-        return false;
+        return match($this->config('cache', 'none')) {
+            'all', 'some' => true,
+            default => false
+        };
     }
 
-    /**
-     * Get configuration value.
-     *
-     * @param string $key
-     * @param mixed  $default
-     *
-     * @return mixed
-     */
-    public function config($key, $default = null)
+    /** Get configuration value. */
+    public function config(string $key, mixed $default = null): mixed
     {
         return Arr::get($this->config, $key, $default);
     }
