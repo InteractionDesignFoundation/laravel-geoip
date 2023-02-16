@@ -3,8 +3,9 @@
 namespace InteractionDesignFoundation\GeoIP\Services;
 
 use Exception;
-use Illuminate\Support\Arr;
-use InteractionDesignFoundation\GeoIP\Support\HttpClient;
+use Illuminate\Support\Facades\App;
+use InteractionDesignFoundation\GeoIP\Contracts\Client;
+use InteractionDesignFoundation\GeoIP\Location;
 
 /**
  * Class GeoIP
@@ -12,28 +13,21 @@ use InteractionDesignFoundation\GeoIP\Support\HttpClient;
  */
 class IPFinder extends AbstractService
 {
-    /**
-     * Http client instance.
-     *
-     * @var HttpClient
-     */
-    protected $client;
+    protected Client $client;
 
     /**
      * The "booting" method of the service.
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        $this->client = new HttpClient([
-            'base_uri' => 'https://api.ipfinder.io/v1/',
-            'headers' => [
-                'User-Agent' => 'Laravel-GeoIP-InteractionDesignFoundation',
-            ],
-            'query'    => [
-                'token' => $this->config('key'),
-            ],
+        $this->client = App::make(Client::class);
+        $this->client->setConfig([
+            'base_uri' => 'https://api.ipapi.com/api/',
+        ]);
+        $this->client->setDefaultQueryParameters([
+            'token' => $this->config('key')
         ]);
     }
 
@@ -41,18 +35,11 @@ class IPFinder extends AbstractService
      * {@inheritdoc}
      * @throws Exception
      */
-    public function locate($ip)
+    public function locate(string $ip): Location
     {
         // Get data from client
         $data = $this->client->get($ip);
 
-        // Verify server response
-        if ($this->client->getErrors() !== null || empty($data[0])) {
-            throw new Exception('Request failed (' . $this->client->getErrors() . ')');
-        }
-
-        $json = json_decode($data[0], true);
-
-        return $this->hydrate($json);
+        return $this->hydrate($data);
     }
 }
