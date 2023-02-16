@@ -30,9 +30,9 @@ class Cache
     }
 
     /** Store an item in cache. */
-    public function set(string $name, Location $location): bool
+    public function set(string $name, Location $location): void
     {
-        return $this->cache->put($name, $location->toArray(), $this->expires);
+        $this->cache->put($name, $location->toArray(), $this->expires);
     }
 
     /** Flush cache for tags. */

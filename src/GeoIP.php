@@ -27,7 +27,7 @@ class GeoIP
     protected ?array $currencies = null;
 
     /** GeoIP service instance. */
-    protected IpLocationProvider $service;
+    protected ?IpLocationProvider $service = null;
 
     /** Cache manager instance. */
     protected Cache $cache;
