@@ -2,111 +2,77 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Exception;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
+use InteractionDesignFoundation\GeoIP\Contracts\Client;
+use InteractionDesignFoundation\GeoIP\Location;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 class IPApi extends AbstractService
 {
     /**
-     * Http client instance.
-     *
-     * @var HttpClient
-     */
-    protected $client;
+     * Http client instance. */
+    protected HttpClient $client;
 
-    /**
-     * An array of continents.
-     *
-     * @var array
-     */
-    protected $continents;
+    /** An array of continents. */
+    protected array $continents;
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
-    public function boot()
+    /** The "booting" method of the service. */
+    public function boot(): void
     {
-        $base = [
-            'base_uri' => 'http://ip-api.com/',
-            'headers' => [
-                'User-Agent' => 'Laravel-GeoIP',
-            ],
-            'query' => [
-                'fields' => 49663,
-                'lang' => $this->config('lang', ['en']),
-            ],
-        ];
+        $this->client = App::make(Client::class);
+        $this->client->setConfig([
+            'base_uri' => 'http://ip-api.com/'
+        ]);
+        $this->client->setDefaultQueryParameters($this->getDefaultQueryParameters());
 
         // Using the Pro service
         if ($this->config('key')) {
-            $base['base_uri'] = ($this->config('secure') ? 'https' : 'http') . '://pro.ip-api.com/';
-            $base['query']['key'] = $this->config('key');
+            $this->client->setConfig([
+                'base_uri' => $this->config('secure') ? 'https' : 'http' . '://pro.ip-api.com/'
+            ]);
+            $this->client->setDefaultQueryParameters(array_merge(
+                $this->getDefaultQueryParameters(),
+                ['key' => $this->config('key')]
+            ));
         }
-
-        $this->client = new HttpClient($base);
 
         // Set continents
         if (file_exists($this->config('continent_path'))) {
-            $this->continents = json_decode(file_get_contents($this->config('continent_path')), true);
+            $this->continents = json_decode(file_get_contents($this->config('continent_path')), true, 512, JSON_THROW_ON_ERROR);
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function locate($ip)
+    /** @inheritDoc */
+    public function locate($ip): Location
     {
         // Get data from client
         $data = $this->client->get('json/' . $ip);
 
-        // Verify server response
-        if ($this->client->getErrors() !== null) {
-            throw new Exception('Request failed (' . $this->client->getErrors() . ')');
-        }
-
-        // Parse body content
-        $json = json_decode($data[0]);
-
-        // Verify response status
-        if ($json->status !== 'success') {
-            throw new Exception('Request failed (' . $json->message . ')');
-        }
-
         return $this->hydrate([
             'ip' => $ip,
-            'iso_code' => $json->countryCode,
-            'country' => $json->country,
-            'city' => $json->city,
-            'state' => $json->region,
-            'state_name' => $json->regionName,
-            'postal_code' => $json->zip,
-            'lat' => $json->lat,
-            'lon' => $json->lon,
-            'timezone' => $json->timezone,
-            'continent' => $this->getContinent($json->countryCode),
+            'iso_code' => $data['countryCode'],
+            'country' => $data['country'],
+            'city' => $data['city'],
+            'state' => $data['region'],
+            'state_name' => $data['regionName'],
+            'postal_code' => $data['zip'],
+            'lat' => $data['lat'],
+            'lon' => $data['lon'],
+            'timezone' => $data['timezone'],
+            'continent' => $this->getContinent($data['countryCode']),
         ]);
     }
 
     /**
      * Update function for service.
      *
-     * @return string
-     * @throws Exception
+     * @throws \Exception
      */
-    public function update()
+    public function update(): string
     {
-        $data = $this->client->get('https://dev.maxmind.com/static/csv/codes/country_continent.csv');
-
-        // Verify server response
-        if ($this->client->getErrors() !== null) {
-            throw new Exception($this->client->getErrors());
-        }
-
-        $lines = explode("\n", $data[0]);
-
+        $data = file_get_contents('https://dev.maxmind.com/static/csv/codes/country_continent.csv');
+        $lines = explode("\n", $data);
         array_shift($lines);
 
         $output = [];
@@ -124,20 +90,22 @@ class IPApi extends AbstractService
         // Get path
         $path = $this->config('continent_path');
 
-        file_put_contents($path, json_encode($output));
+        file_put_contents($path, json_encode($output, JSON_THROW_ON_ERROR));
 
         return "Continent file ({$path}) updated.";
     }
 
-    /**
-     * Get continent based on country code.
-     *
-     * @param string $code
-     *
-     * @return string
-     */
-    private function getContinent($code)
+    /** Get continent based on country code. */
+    private function getContinent(string $code): string
     {
         return Arr::get($this->continents, $code, 'Unknown');
+    }
+
+    private function getDefaultQueryParameters(): array
+    {
+        return [
+            'fields' => 49663,
+            'lang' => $this->config('lang', ['en']),
+        ];
     }
 }
