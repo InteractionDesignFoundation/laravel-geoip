@@ -13,6 +13,9 @@ class HttpClient implements Client
     /** Request configurations. */
     private array $config;
 
+    /** Parameters that should be sent in the query string. */
+    private array $query = [];
+
     /** HttpClient constructor */
     public function __construct(array $config = [])
     {
@@ -22,6 +25,13 @@ class HttpClient implements Client
     public function setConfig(array $config): self
     {
         $this->config = $config;
+
+        return $this;
+    }
+
+    public function setDefaultQueryParameters(array $query): Client
+    {
+        $this->query = $query;
 
         return $this;
     }
@@ -47,5 +57,10 @@ class HttpClient implements Client
         }
 
         return $url;
+    }
+
+    private function buildQuery(array $parameters = []): array
+    {
+        return array_merge($this->query, $parameters);
     }
 }
