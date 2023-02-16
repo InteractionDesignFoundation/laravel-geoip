@@ -6,47 +6,41 @@ use InteractionDesignFoundation\GeoIP\Tests\TestCase;
 
 class MaxMindDatabaseTest extends TestCase
 {
-    /**
-     * @test
-     */
-    public function shouldReturnConfigValue()
+    /** @test */
+    public function shouldReturnConfigValue(): void
     {
-        list($service, $config) = $this->getService();
+        [$service, $config] = $this->getService();
 
-        $this->assertEquals($service->config('database_path'), $config['database_path']);
+        $this->assertSame($config['database_path'], $service->config('database_path'));
     }
 
-    /**
-     * @test
-     */
-    public function shouldReturnValidLocation()
+    /** @test */
+    public function shouldReturnValidLocation(): void
     {
-        list($service, $config) = $this->getService();
+        [$service, $config] = $this->getService();
 
         $location = $service->locate('81.2.69.142');
 
         $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $location);
-        $this->assertEquals($location->ip, '81.2.69.142');
-        $this->assertEquals($location->default, false);
+        $this->assertSame('81.2.69.142', $location->ip);
+        $this->assertFalse($location->default);
     }
 
-    /**
-     * @test
-     */
-    public function shouldReturnInvalidLocation()
+    /** @test */
+    public function shouldReturnInvalidLocation(): void
     {
-        list($service, $config) = $this->getService();
+        [$service, $config] = $this->getService();
 
         try {
             $location = $service->locate('1.1.1.1');
-            $this->assertEquals($location->default, false);
+            $this->assertFalse($location->default);
         }
         catch (\GeoIp2\Exception\AddressNotFoundException $e) {
-            $this->assertEquals($e->getMessage(), 'The address 1.1.1.1 is not in the database.');
+            $this->assertSame('The address 1.1.1.1 is not in the database.', $e->getMessage());
         }
     }
 
-    protected function getService()
+    protected function getService(): array
     {
         $config = $this->getConfig()['services']['maxmind_database'];
 
