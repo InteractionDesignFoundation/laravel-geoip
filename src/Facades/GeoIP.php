@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP\Facades;
+namespace InteractionDesignFoundation\GeoIP\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

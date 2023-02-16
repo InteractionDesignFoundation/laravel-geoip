@@ -1,10 +1,10 @@
 <?php
 
-namespace Torann\GeoIP\Services;
+namespace InteractionDesignFoundation\GeoIP\Services;
 
 use Exception;
 use Illuminate\Support\Arr;
-use Torann\GeoIP\Support\HttpClient;
+use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 class IPGeoLocation extends AbstractService
 {

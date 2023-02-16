@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP\Tests;
+namespace InteractionDesignFoundation\GeoIP\Tests;
 
 use Mockery;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
@@ -25,9 +25,9 @@ class TestCase extends PHPUnitTestCase
 
         $config = array_merge($this->getConfig(), $config);
 
-        $cacheMock->shouldReceive('tags')->with(['torann-geoip-location'])->andReturnSelf();
+        $cacheMock->shouldReceive('tags')->with(['laravel-geoip-location'])->andReturnSelf();
 
-        return new \Torann\GeoIP\GeoIP($config, $cacheMock);
+        return new \InteractionDesignFoundation\GeoIP\GeoIP($config, $cacheMock);
     }
 
     protected function getConfig()

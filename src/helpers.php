@@ -6,7 +6,7 @@ if (!function_exists('geoip')) {
      *
      * @param string $ip
      *
-     * @return \Torann\GeoIP\GeoIP|\Torann\GeoIP\Location
+     * @return \InteractionDesignFoundation\GeoIP\GeoIP|\InteractionDesignFoundation\GeoIP\Location
      */
     function geoip($ip = null)
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP;
+namespace InteractionDesignFoundation\GeoIP;
 
 use Exception;
 use Monolog\Logger;
@@ -106,7 +106,7 @@ class GeoIP
      *
      * @param string $ip
      *
-     * @return \Torann\GeoIP\Location
+     * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
     public function getLocation($ip = null)
@@ -127,7 +127,7 @@ class GeoIP
      *
      * @param string $ip
      *
-     * @return \Torann\GeoIP\Location
+     * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
     private function find($ip = null)
@@ -188,7 +188,7 @@ class GeoIP
     /**
      * Get service instance.
      *
-     * @return \Torann\GeoIP\Contracts\ServiceInterface
+     * @return \InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface
      * @throws Exception
      */
     public function getService()
@@ -215,7 +215,7 @@ class GeoIP
     /**
      * Get cache instance.
      *
-     * @return \Torann\GeoIP\Cache
+     * @return \InteractionDesignFoundation\GeoIP\Cache
      */
     public function getCache()
     {

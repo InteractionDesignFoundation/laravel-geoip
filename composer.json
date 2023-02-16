@@ -1,5 +1,5 @@
 {
-  "name": "torann/geoip",
+  "name": "interaction-design-foundation/laravel-geoip",
   "description": "Support for multiple GeoIP services.",
   "keywords": [
     "laravel",
@@ -11,12 +11,6 @@
     "infoDB"
   ],
   "license": "BSD-2-Clause",
-  "authors": [
-    {
-      "name": "Daniel Stainback",
-      "email": "torann@gmail.com"
-    }
-  ],
   "require": {
     "php": "^8.0",
     "illuminate/cache": "^8.0|^9.0|^10.0",
@@ -40,7 +34,7 @@
       "src/helpers.php"
     ],
     "psr-4": {
-      "Torann\\GeoIP\\": "src/"
+      "InteractionDesignFoundation\\GeoIP\\": "src/"
     }
   },
   "autoload-dev": {
@@ -48,7 +42,7 @@
       "tests/TestFunctions.php"
     ],
     "psr-4": {
-      "Torann\\GeoIP\\Tests\\": "tests/"
+      "InteractionDesignFoundation\\GeoIP\\Tests\\": "tests/"
     }
   },
   "scripts": {
@@ -57,15 +51,12 @@
     "phpstan": "vendor/bin/phpstan --level=0 --no-progress analyse --configuration phpstan.neon --memory-limit 2G"
   },
   "extra": {
-    "branch-alias": {
-      "dev-master": "1.0-dev"
-    },
     "laravel": {
       "providers": [
-        "Torann\\GeoIP\\GeoIPServiceProvider"
+        "InteractionDesignFoundation\\GeoIP\\GeoIPServiceProvider"
       ],
       "aliases": {
-        "GeoIP": "Torann\\GeoIP\\Facades\\GeoIP"
+        "GeoIP": "InteractionDesignFoundation\\GeoIP\\Facades\\GeoIP"
       }
     }
   }

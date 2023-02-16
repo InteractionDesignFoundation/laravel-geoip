@@ -1,10 +1,10 @@
 <?php
 
-namespace Torann\GeoIP\Services;
+namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Torann\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\Location;
 use Illuminate\Support\Arr;
-use Torann\GeoIP\Contracts\ServiceInterface;
+use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 
 abstract class AbstractService implements ServiceInterface
 {

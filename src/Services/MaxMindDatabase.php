@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP\Services;
+namespace InteractionDesignFoundation\GeoIP\Services;
 
 use PharData;
 use Exception;

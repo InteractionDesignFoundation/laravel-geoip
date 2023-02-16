@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP\Contracts;
+namespace InteractionDesignFoundation\GeoIP\Contracts;
 
 interface ServiceInterface
 {
@@ -17,7 +17,7 @@ interface ServiceInterface
      *
      * @param string $ip
      *
-     * @return \Torann\GeoIP\Location
+     * @return \InteractionDesignFoundation\GeoIP\Location
      */
     public function locate($ip);
 
@@ -26,7 +26,7 @@ interface ServiceInterface
      *
      * @param array $attributes
      *
-     * @return \Torann\GeoIP\Location
+     * @return \InteractionDesignFoundation\GeoIP\Location
      */
     public function hydrate(array $attributes = []);
 

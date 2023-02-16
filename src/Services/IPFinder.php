@@ -1,14 +1,14 @@
 <?php
 
-namespace Torann\GeoIP\Services;
+namespace InteractionDesignFoundation\GeoIP\Services;
 
 use Exception;
 use Illuminate\Support\Arr;
-use Torann\GeoIP\Support\HttpClient;
+use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 /**
  * Class GeoIP
- * @package Torann\GeoIP\Services
+ * @package InteractionDesignFoundation\GeoIP\Services
  */
 class IPFinder extends AbstractService
 {
@@ -29,7 +29,7 @@ class IPFinder extends AbstractService
         $this->client = new HttpClient([
             'base_uri' => 'https://api.ipfinder.io/v1/',
             'headers' => [
-                'User-Agent' => 'Laravel-GeoIP-Torann',
+                'User-Agent' => 'Laravel-GeoIP-InteractionDesignFoundation',
             ],
             'query'    => [
                 'token' => $this->config('key'),

@@ -35,9 +35,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer install --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress --no-scripts
-        env:
-          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
 
       - name: Execute tests
         run: composer test

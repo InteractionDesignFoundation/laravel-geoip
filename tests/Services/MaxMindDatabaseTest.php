@@ -1,8 +1,8 @@
 <?php
 
-namespace Torann\GeoIP\Tests\Services;
+namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
-use Torann\GeoIP\Tests\TestCase;
+use InteractionDesignFoundation\GeoIP\Tests\TestCase;
 
 class MaxMindDatabaseTest extends TestCase
 {
@@ -25,7 +25,7 @@ class MaxMindDatabaseTest extends TestCase
 
         $location = $service->locate('81.2.69.142');
 
-        $this->assertInstanceOf(\Torann\GeoIP\Location::class, $location);
+        $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $location);
         $this->assertEquals($location->ip, '81.2.69.142');
         $this->assertEquals($location->default, false);
     }

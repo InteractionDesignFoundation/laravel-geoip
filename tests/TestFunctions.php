@@ -17,6 +17,6 @@ if (!function_exists('env')) {
 if (!function_exists('app')) {
     function app($key = null, $default = null)
     {
-        return \Torann\GeoIP\Tests\TestCase::$functions->app($key, $default);
+        return \InteractionDesignFoundation\GeoIP\Tests\TestCase::$functions->app($key, $default);
     }
 }

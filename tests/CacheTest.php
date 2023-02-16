@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP\Tests;
+namespace InteractionDesignFoundation\GeoIP\Tests;
 
 use Mockery;
 
@@ -29,7 +29,7 @@ class CacheTest extends TestCase
 
         $location = $geo_ip->getCache()->get($data['ip']);
 
-        $this->assertInstanceOf(\Torann\GeoIP\Location::class, $location);
+        $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $location);
         $this->assertEquals($location->ip, $data['ip']);
         $this->assertEquals($location->default, false);
     }
@@ -60,7 +60,7 @@ class CacheTest extends TestCase
      */
     public function shouldSetLocation()
     {
-        $location = new \Torann\GeoIP\Location([
+        $location = new \InteractionDesignFoundation\GeoIP\Location([
             'ip' => '81.2.69.142',
             'iso_code' => 'US',
             'lat' => 41.31,

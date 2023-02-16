@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP\Support;
+namespace InteractionDesignFoundation\GeoIP\Support;
 
 use Illuminate\Support\Arr;
 

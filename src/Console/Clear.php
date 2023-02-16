@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP\Console;
+namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
 

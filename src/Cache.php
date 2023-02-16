@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP;
+namespace InteractionDesignFoundation\GeoIP;
 
 use Illuminate\Cache\CacheManager;
 

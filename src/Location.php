@@ -1,6 +1,6 @@
 <?php
 
-namespace Torann\GeoIP;
+namespace InteractionDesignFoundation\GeoIP;
 
 use ArrayAccess;
 use Illuminate\Support\Str;
@@ -24,7 +24,7 @@ use Illuminate\Support\Arr;
  * @property bool $default
  * @property bool $cached
  *
- * @package Torann\GeoIP
+ * @package InteractionDesignFoundation\GeoIP
  */
 class Location implements ArrayAccess
 {
