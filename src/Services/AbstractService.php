@@ -4,9 +4,9 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 
 use InteractionDesignFoundation\GeoIP\Location;
 use Illuminate\Support\Arr;
-use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
+use InteractionDesignFoundation\GeoIP\Contracts\IpLocationProvider;
 
-abstract class AbstractService implements ServiceInterface
+abstract class AbstractService implements IpLocationProvider
 {
     /** Driver config */
     protected array $config;
