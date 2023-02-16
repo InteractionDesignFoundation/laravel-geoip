@@ -25,7 +25,7 @@ class Update extends Command
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         $this->fire();
     }
@@ -35,7 +35,7 @@ class Update extends Command
      *
      * @return void
      */
-    public function fire()
+    public function fire(): void
     {
         // Get default service
         $service = app('geoip')->getService();
@@ -52,9 +52,9 @@ class Update extends Command
         // Perform update
         if ($result = $service->update()) {
             $this->info($result);
+            return;
         }
-        else {
-            $this->error('Update failed!');
-        }
+
+        $this->error('Update failed!');
     }
 }

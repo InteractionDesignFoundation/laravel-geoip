@@ -25,7 +25,7 @@ class Clear extends Command
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         $this->fire();
     }
@@ -35,10 +35,11 @@ class Clear extends Command
      *
      * @return void
      */
-    public function fire()
+    public function fire(): void
     {
         if ($this->isSupported() === false) {
-            return $this->output->error('Default cache system does not support tags');
+            $this->output->error('Default cache system does not support tags');
+            return;
         }
 
         $this->performFlush();
@@ -49,7 +50,7 @@ class Clear extends Command
      *
      * @return bool
      */
-    protected function isSupported()
+    protected function isSupported(): bool
     {
         return empty(app('geoip')->config('cache_tags')) === false
             && in_array(config('cache.default'), ['file', 'database']) === false;
@@ -60,7 +61,7 @@ class Clear extends Command
      *
      * @return void
      */
-    protected function performFlush()
+    protected function performFlush(): void
     {
         $this->output->write("Clearing cache...");
 
