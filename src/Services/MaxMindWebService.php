@@ -3,22 +3,18 @@
 namespace InteractionDesignFoundation\GeoIP\Services;
 
 use GeoIp2\WebService\Client;
+use InteractionDesignFoundation\GeoIP\Location;
 
 class MaxMindWebService extends AbstractService
 {
-    /**
-     * Service client instance.
-     *
-     * @var \GeoIp2\WebService\Client
-     */
-    protected $client;
+    protected Client $client;
 
     /**
      * The "booting" method of the service.
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->client = new Client(
             $this->config('user_id'),
@@ -27,10 +23,8 @@ class MaxMindWebService extends AbstractService
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function locate($ip)
+    /** @inheritdoc */
+    public function locate(string $ip): Location
     {
         $record = $this->client->city($ip);
 
