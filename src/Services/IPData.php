@@ -4,6 +4,10 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 
 use Exception;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
+use InteractionDesignFoundation\GeoIP\Contracts\Client;
+use InteractionDesignFoundation\GeoIP\Exceptions\RequestFailedException;
+use InteractionDesignFoundation\GeoIP\Location;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 /**
@@ -12,23 +16,16 @@ use InteractionDesignFoundation\GeoIP\Support\HttpClient;
  */
 class IPData extends AbstractService
 {
-    /**
-     * Http client instance.
-     *
-     * @var HttpClient
-     */
-    protected $client;
+    /** Http client instance. */
+    protected Client $client;
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
-    public function boot()
+    /** The "booting" method of the service. */
+    public function boot(): void
     {
-        $this->client = new HttpClient([
+        $this->client = App::make(Client::class);
+        $this->client->setConfig([
             'base_uri' => 'https://api.ipdata.co/',
-            'query'    => [
+            'query' => [
                 'api-key' => $this->config('key'),
             ],
         ]);
@@ -38,17 +35,10 @@ class IPData extends AbstractService
      * {@inheritdoc}
      * @throws Exception
      */
-    public function locate($ip)
+    public function locate(string $ip): Location
     {
         // Get data from client
-        $data = $this->client->get($ip);
-
-        // Verify server response
-        if ($this->client->getErrors() !== null || empty($data[0])) {
-            throw new Exception('Request failed (' . $this->client->getErrors() . ')');
-        }
-
-        $json = json_decode($data[0], true);
+        $json = $this->client->get($ip);
 
         return $this->hydrate([
             'ip' => $ip,
@@ -61,7 +51,7 @@ class IPData extends AbstractService
             'lat' => $json['latitude'],
             'lon' => $json['longitude'],
             'timezone' => Arr::get($json, 'time_zone.name'),
-            'continent' => Arr::get($json, 'continent_code'),
+            'continent' => $json['continent_code'],
             'currency' => Arr::get($json, 'currency.code'),
         ]);
     }
