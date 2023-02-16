@@ -5,7 +5,6 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 use Illuminate\Support\Facades\Storage;
 use InteractionDesignFoundation\GeoIP\Location;
 use PharData;
-use Exception;
 use GeoIp2\Database\Reader;
 
 class MaxMindDatabase extends AbstractService
@@ -55,12 +54,12 @@ class MaxMindDatabase extends AbstractService
     /**
      * Update function for service.
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function update(): string
     {
         if ($this->config('database_path', false) === false) {
-            throw new Exception('Database path not set in config file.');
+            throw new \Exception('Database path not set in config file.');
         }
 
         $this->withTemporaryDirectory(function ($directory) {
@@ -125,7 +124,7 @@ class MaxMindDatabase extends AbstractService
             }
         }
 
-        throw new Exception('Database file could not be found within archive.');
+        throw new \Exception('Database file could not be found within archive.');
     }
 
     /** Recursively delete the given directory. */
