@@ -4,7 +4,7 @@ namespace InteractionDesignFoundation\GeoIP\Contracts;
 
 use InteractionDesignFoundation\GeoIP\Location;
 
-interface ServiceInterface
+interface IpLocationProvider
 {
     /** The "booting" method of the service. */
     public function boot(): void;
