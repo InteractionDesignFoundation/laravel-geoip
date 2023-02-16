@@ -40,7 +40,7 @@ class HttpClient implements Client
     public function get(string $url, array $query = [], array $headers = []): array
     {
         try {
-            return Http::get($this->formatUrl($url), $query)->throw()->json();
+            return Http::get($this->formatUrl($url), $this->buildQuery($query))->throw()->json();
         } catch (RequestException $requestException) {
             throw RequestFailedException::requestFailed(
                 $requestException->response->json()
