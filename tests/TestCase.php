@@ -2,16 +2,26 @@
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
+use InteractionDesignFoundation\GeoIP\GeoIPServiceProvider;
 use Mockery;
-use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+use Orchestra\Testbench\TestCase as Orchestra;
+use Illuminate\Cache\CacheManager;
 
-class TestCase extends PHPUnitTestCase
+class TestCase extends Orchestra
 {
-    public static $functions;
+    public static Mockery\LegacyMockInterface|Mockery\MockInterface $functions;
 
     public function setUp(): void
     {
+        parent::setUp();
         self::$functions = Mockery::mock();
+    }
+
+    protected function getPackageProviders($app): array
+    {
+        return [
+            GeoIPServiceProvider::class
+        ];
     }
 
     public function tearDown(): void
@@ -21,7 +31,7 @@ class TestCase extends PHPUnitTestCase
 
     protected function makeGeoIP(array $config = [], $cacheMock = null)
     {
-        $cacheMock = $cacheMock ?: Mockery::mock('Illuminate\Cache\CacheManager');
+        $cacheMock = $cacheMock ?: Mockery::mock(CacheManager::class);
 
         $config = array_merge($this->getConfig(), $config);
 
@@ -45,7 +55,7 @@ class TestCase extends PHPUnitTestCase
      *
      * @param string $database
      */
-    protected function databaseCheck($database)
+    protected function databaseCheck(string $database): void
     {
         if (file_exists($database) === false) {
             @mkdir(dirname($database), 0755, true);
