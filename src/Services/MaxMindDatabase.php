@@ -2,31 +2,27 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
+use Illuminate\Support\Facades\Storage;
+use InteractionDesignFoundation\GeoIP\Location;
 use PharData;
 use Exception;
 use GeoIp2\Database\Reader;
 
 class MaxMindDatabase extends AbstractService
 {
-    /**
-     * Service reader instance.
-     *
-     * @var \GeoIp2\Database\Reader
-     */
-    protected $reader;
+    /** Service reader instance. */
+    protected Reader $reader;
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
-    public function boot()
+    /** The "booting" method of the service. */
+    public function boot(): void
     {
         $path = $this->config('database_path');
 
         // Copy test database for now
         if (is_file($path) === false) {
-            @mkdir(dirname($path));
+            if (! mkdir($concurrentDirectory = dirname($path)) && ! is_dir($concurrentDirectory)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+            }
 
             copy(__DIR__ . '/../../resources/geoip.mmdb', $path);
         }
@@ -36,10 +32,8 @@ class MaxMindDatabase extends AbstractService
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function locate($ip)
+    /** @inheritdoc */
+    public function locate($ip): Location
     {
         $record = $this->reader->city($ip);
 
@@ -61,10 +55,9 @@ class MaxMindDatabase extends AbstractService
     /**
      * Update function for service.
      *
-     * @return string
      * @throws Exception
      */
-    public function update()
+    public function update(): string
     {
         if ($this->config('database_path', false) === false) {
             throw new Exception('Database path not set in config file.');
@@ -83,21 +76,17 @@ class MaxMindDatabase extends AbstractService
 
             $archive->extractTo($directory, $relativePath);
 
-            file_put_contents($this->config('database_path'), fopen("{$directory}/{$relativePath}", 'r'));
+            Storage::put($this->config('database_path'), fopen("$directory/$relativePath", 'rb'));
         });
 
         return "Database file ({$this->config('database_path')}) updated.";
     }
 
     /**
-     * Provide a temporary directory to perform operations in and and ensure
+     * Provide a temporary directory to perform operations in and ensure
      * it is removed afterwards.
-     *
-     * @param callable $callback
-     *
-     * @return void
      */
-    protected function withTemporaryDirectory(callable $callback)
+    protected function withTemporaryDirectory(callable $callback): void
     {
         $directory = tempnam(sys_get_temp_dir(), 'maxmind');
 
@@ -105,7 +94,9 @@ class MaxMindDatabase extends AbstractService
             unlink($directory);
         }
 
-        mkdir($directory);
+        if (! mkdir($directory) && ! is_dir($directory)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $directory));
+        }
 
         try {
             $callback($directory);
@@ -137,14 +128,8 @@ class MaxMindDatabase extends AbstractService
         throw new Exception('Database file could not be found within archive.');
     }
 
-    /**
-     * Recursively delete the given directory.
-     *
-     * @param string $directory
-     *
-     * @return mixed
-     */
-    protected function deleteDirectory(string $directory)
+    /** Recursively delete the given directory. */
+    protected function deleteDirectory(string $directory): bool
     {
         if (! file_exists($directory)) {
             return true;
@@ -155,7 +140,7 @@ class MaxMindDatabase extends AbstractService
         }
 
         foreach (scandir($directory) as $item) {
-            if ($item == '.' || $item == '..') {
+            if ($item === '.' || $item === '..') {
                 continue;
             }
 
