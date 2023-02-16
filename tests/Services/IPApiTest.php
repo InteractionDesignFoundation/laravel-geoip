@@ -11,9 +11,10 @@ final class IPApiTest extends TestCase
     /** @test */
     public function it_can_locate_a_given_ip(): void
     {
-//        Http::fake([
-//            'http://ip-api.com*' => json_decode($this->validResponse(), true, 512, JSON_THROW_ON_ERROR)
-//        ]);
+        Http::fake([
+            'http://ip-api.com*' => json_decode($this->validResponse(), true, 512, JSON_THROW_ON_ERROR)
+        ]);
+
         $service = $this->getService();
 
         $response = $service->locate('187.6.154.78');
