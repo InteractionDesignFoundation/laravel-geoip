@@ -21,7 +21,7 @@ class GeoIP
     protected $remote_ip = null;
 
     /** Current location instance. */
-    protected ?Location $location = null;
+    protected Location|LocationResponse|null $location = null;
 
     /** Currency data. */
     protected ?array $currencies = null;
