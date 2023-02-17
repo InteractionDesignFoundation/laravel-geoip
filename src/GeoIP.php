@@ -13,12 +13,8 @@ class GeoIP
     /** Illuminate config repository instance. */
     protected array $config = [];
 
-    /**
-     * Remote Machine IP address.
-     *
-     * @var float
-     */
-    protected $remote_ip = null;
+    /** Remote Machine IP address. */
+    protected ?string $remote_ip = null;
 
     /** Current location instance. */
     protected Location|LocationResponse|null $location = null;
@@ -35,7 +31,7 @@ class GeoIP
     /**
      * Default Location data.
      *
-     * @var array
+     * @var array<string, string|int|bool>
      */
     protected array $default_location = [
         'ip' => '127.0.0.0',
@@ -54,12 +50,7 @@ class GeoIP
         'cached' => false,
     ];
 
-    /**
-     * Create a new GeoIP instance.
-     *
-     * @param array        $config
-     * @param CacheManager $cache
-     */
+    /** Create a new GeoIP instance. */
     public function __construct(array $config, CacheManager $cache)
     {
         $this->config = $config;
@@ -117,26 +108,28 @@ class GeoIP
         }
 
         // Check if the ip is not local or empty
-        if ($this->isValid($ip)) {
-            try {
-                // Find location
-                $location = $this->getService()->locate($ip);
+        if (! $this->isValid($ip)) {
+            return $this->getService()->hydrate($this->default_location);
+        }
 
-                // Set currency if not already set by the service
-                if (! $location->currency) {
-                    $location->currency = $this->getCurrency($location->iso_code);
-                }
+        try {
+            // Find location
+            $location = $this->getService()->locate($ip);
 
-                // Set default
-                $location->default = false;
+            // Set currency if not already set by the service
+            if (! $location->currency) {
+                $location->currency = $this->getCurrency($location->iso_code);
+            }
 
-                return $location;
-            } catch (\Exception $e) {
-                if ($this->config('log_failures', true) === true) {
-                    $log = new Logger('geoip');
-                    $log->pushHandler(new StreamHandler(storage_path('logs/geoip.log'), Logger::ERROR));
-                    $log->error($e);
-                }
+            // Set default
+            $location->default = false;
+
+            return $location;
+        } catch (\Exception $e) {
+            if ($this->config('log_failures', true) === true) {
+                $log = new Logger('geoip');
+                $log->pushHandler(new StreamHandler(storage_path('logs/geoip.log'), Logger::ERROR));
+                $log->error($e);
             }
         }
 
@@ -159,21 +152,23 @@ class GeoIP
      */
     public function getService(): IpLocationProvider
     {
-        if ($this->service === null) {
-            // Get service configuration
-            $config = $this->config('services.' . $this->config('service'), []);
-
-            // Get service class
-            $class = Arr::pull($config, 'class');
-
-            // Sanity check
-            if ($class === null) {
-                throw new \RuntimeException('The GeoIP service is not valid.');
-            }
-
-            // Create service instance
-            $this->service = new $class($config);
+        if ($this->service instanceof IpLocationProvider) {
+            return $this->service;
         }
+
+        // Get service configuration
+        $config = $this->config('services.' . $this->config('service'), []);
+
+        // Get service class
+        $class = Arr::pull($config, 'class');
+
+        // Sanity check
+        if ($class === null) {
+            throw new \RuntimeException('The GeoIP service is not valid.');
+        }
+
+        // Create service instance
+        $this->service = new $class($config);
 
         return $this->service;
     }
