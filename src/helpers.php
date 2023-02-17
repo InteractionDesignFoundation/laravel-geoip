@@ -1,14 +1,8 @@
 <?php
 
 if (!function_exists('geoip')) {
-    /**
-     * Get the location of the provided IP.
-     *
-     * @param string $ip
-     *
-     * @return \InteractionDesignFoundation\GeoIP\GeoIP|\InteractionDesignFoundation\GeoIP\Location
-     */
-    function geoip($ip = null)
+    /** Get the location of the provided IP. */
+    function geoip(string $ip = null): \InteractionDesignFoundation\GeoIP\Location|\InteractionDesignFoundation\GeoIP\LocationResponse
     {
         if (is_null($ip)) {
             return app('geoip');
