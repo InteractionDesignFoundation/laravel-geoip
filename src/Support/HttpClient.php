@@ -10,16 +10,12 @@ use InteractionDesignFoundation\GeoIP\Exceptions\RequestFailedException;
 
 class HttpClient implements Client
 {
-    /** Request configurations. */
-    private array $config;
-
     /** Parameters that should be sent in the query string. */
     private array $query = [];
 
     /** HttpClient constructor */
-    public function __construct(array $config = [])
+    public function __construct(private array $config = [])
     {
-        $this->config = $config;
     }
 
     public function setConfig(array $config): self

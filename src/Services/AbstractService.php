@@ -9,14 +9,9 @@ use InteractionDesignFoundation\GeoIP\LocationResponse;
 
 abstract class AbstractService implements IpLocationProvider
 {
-    /** Driver config */
-    protected array $config;
-
     /** Create a new service instance. */
-    public function __construct(array $config = [])
+    public function __construct(protected array $config = [])
     {
-        $this->config = $config;
-
         $this->boot();
     }
 
