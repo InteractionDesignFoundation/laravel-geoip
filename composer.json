@@ -41,9 +41,6 @@
     }
   },
   "autoload-dev": {
-    "files": [
-      "tests/TestFunctions.php"
-    ],
     "psr-4": {
       "InteractionDesignFoundation\\GeoIP\\Tests\\": "tests/"
     }
