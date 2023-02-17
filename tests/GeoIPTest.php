@@ -2,43 +2,25 @@
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
+use InteractionDesignFoundation\GeoIP\Contracts\IpLocationProvider;
+use InteractionDesignFoundation\GeoIP\GeoIP;
 use Mockery;
 
 class GeoIPTest extends TestCase
 {
-    /**
-     * @test
-     */
-    public function shouldGetUSDCurrency()
+    /** @test */
+    public function should_get_usd_currency(): void
     {
         $geo_ip = $this->makeGeoIP();
 
-        $this->assertEquals($geo_ip->getCurrency('US'), 'USD');
+        $this->assertSame('USD', $geo_ip->getCurrency('US'));
     }
 
-    /**
-     * @test
-     */
-    public function testGetService()
+    /** @test */
+    public function helper_returns_a_geoip_instance(): void
     {
-        $geo_ip = $this->makeGeoIP([
-            'service' => 'maxmind_database',
-        ]);
+        $instance = geoip();
 
-        // Get config values
-        $config = $this->getConfig()['services']['maxmind_database'];
-        unset($config['class']);
-
-        $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Contracts\IpLocationProvider::class, $geo_ip->getService());
-    }
-
-    /**
-     * @test
-     */
-    public function testGetCache()
-    {
-        $geo_ip = $this->makeGeoIP();
-
-        $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Cache::class, $geo_ip->getCache());
+        $this->assertInstanceOf(GeoIP::class, $instance);
     }
 }

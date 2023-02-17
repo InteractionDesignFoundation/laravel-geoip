@@ -8,7 +8,7 @@ use InteractionDesignFoundation\GeoIP\Tests\TestCase;
 class MaxMindDatabaseTest extends TestCase
 {
     /** @test */
-    public function shouldReturnConfigValue(): void
+    public function should_return_config_value(): void
     {
         [$service, $config] = $this->getService();
 
@@ -16,7 +16,7 @@ class MaxMindDatabaseTest extends TestCase
     }
 
     /** @test */
-    public function shouldReturnValidLocation(): void
+    public function should_return_valid_location(): void
     {
         [$service, $config] = $this->getService();
 
@@ -41,7 +41,7 @@ class MaxMindDatabaseTest extends TestCase
     }
 
     /** @test */
-    public function shouldReturnInvalidLocation(): void
+    public function should_return_invalid_location(): void
     {
         [$service, $config] = $this->getService();
 

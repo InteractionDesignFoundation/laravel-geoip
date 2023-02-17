@@ -2,6 +2,7 @@
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
+use InteractionDesignFoundation\GeoIP\GeoIP;
 use InteractionDesignFoundation\GeoIP\GeoIPServiceProvider;
 use Mockery;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -9,14 +10,6 @@ use Illuminate\Cache\CacheManager;
 
 class TestCase extends Orchestra
 {
-    public static Mockery\LegacyMockInterface|Mockery\MockInterface $functions;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-        self::$functions = Mockery::mock();
-    }
-
     protected function getPackageProviders($app): array
     {
         return [
@@ -29,7 +22,7 @@ class TestCase extends Orchestra
         Mockery::close();
     }
 
-    protected function makeGeoIP(array $config = [], $cacheMock = null)
+    protected function makeGeoIP(array $config = [], $cacheMock = null): GeoIP
     {
         $cacheMock = $cacheMock ?: Mockery::mock(CacheManager::class);
 

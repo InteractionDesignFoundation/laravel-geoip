@@ -9,7 +9,7 @@ use Illuminate\Cache\CacheManager;
 class CacheTest extends TestCase
 {
     /** @test */
-    public function shouldReturnValidLocation(): void
+    public function should_return_valid_location(): void
     {
         $data = [
             'ip' => '81.2.69.142',
@@ -36,7 +36,7 @@ class CacheTest extends TestCase
     }
 
     /** @test */
-    public function shouldReturnInvalidLocation(): void
+    public function should_return_invalid_location(): void
     {
         $cacheMock = Mockery::mock(CacheManager::class)
             ->shouldAllowMockingProtectedMethods();
@@ -81,7 +81,7 @@ class CacheTest extends TestCase
     }
 
     /** @test */
-    public function shouldFlushLocations(): void
+    public function should_flush_locations(): void
     {
         $cacheMock = Mockery::mock(CacheManager::class)
             ->shouldAllowMockingProtectedMethods();
