@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Facades\App;
 use InteractionDesignFoundation\GeoIP\Contracts\Client;
 use InteractionDesignFoundation\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 
 /**
  * Class GeoIP
@@ -35,11 +36,20 @@ class IPFinder extends AbstractService
      * {@inheritdoc}
      * @throws Exception
      */
-    public function locate(string $ip): Location
+    public function locate(string $ip): Location|LocationResponse
     {
         // Get data from client
         $data = $this->client->get($ip);
 
         return $this->hydrate($data);
+    }
+
+    public function hydrate(array $attributes = []): Location|LocationResponse
+    {
+        if (config('geoip.should_use_dto_response', false)) {
+            return LocationResponse::fromIPFinder($attributes);
+        }
+
+        return new Location($attributes);
     }
 }

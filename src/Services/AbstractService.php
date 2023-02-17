@@ -5,6 +5,7 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 use InteractionDesignFoundation\GeoIP\Location;
 use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Contracts\IpLocationProvider;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 
 abstract class AbstractService implements IpLocationProvider
 {
@@ -26,10 +27,7 @@ abstract class AbstractService implements IpLocationProvider
     }
 
     /** @inheritdoc */
-    public function hydrate(array $attributes = []): Location
-    {
-        return new Location($attributes);
-    }
+    abstract public function hydrate(array $attributes = []): Location|LocationResponse;
 
     /**
      * Get configuration value.

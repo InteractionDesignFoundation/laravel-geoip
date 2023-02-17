@@ -3,6 +3,7 @@
 namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
 use Illuminate\Support\Facades\Http;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 use InteractionDesignFoundation\GeoIP\Services\IPApi;
 use InteractionDesignFoundation\GeoIP\Tests\TestCase;
 
@@ -21,6 +22,23 @@ final class IPApiTest extends TestCase
 
         $this->assertSame('BR', $response['iso_code']);
         $this->assertSame('Brazil', $response['country']);
+    }
+
+    /** @test */
+    public function it_can_return_a_location_response_object(): void
+    {
+        config()->set('geoip.should_use_dto_response', true);
+        Http::fake([
+            'http://ip-api.com*' => json_decode($this->validResponse(), true, 512, JSON_THROW_ON_ERROR)
+        ]);
+
+        $service = $this->getService();
+
+        $response = $service->locate('187.6.154.78');
+
+        $this->assertInstanceOf(LocationResponse::class, $response);
+        $this->assertSame('BR', $response->isoCode);
+        $this->assertSame('Brazil', $response->country);
     }
 
     private function getService(): IPApi

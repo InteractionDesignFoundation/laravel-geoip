@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use InteractionDesignFoundation\GeoIP\Contracts\Client;
 use InteractionDesignFoundation\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 class IPApi extends AbstractService
@@ -44,7 +45,7 @@ class IPApi extends AbstractService
     }
 
     /** @inheritDoc */
-    public function locate($ip): Location
+    public function locate($ip): Location|LocationResponse
     {
         // Get data from client
         $data = $this->client->get('json/' . $ip);
@@ -107,5 +108,14 @@ class IPApi extends AbstractService
             'fields' => 49663,
             'lang' => $this->config('lang', ['en']),
         ];
+    }
+
+    public function hydrate(array $attributes = []): Location|LocationResponse
+    {
+        if (config('geoip.should_use_dto_response', false)) {
+            return LocationResponse::fromIPApi($attributes);
+        }
+
+        return new Location($attributes);
     }
 }

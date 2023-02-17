@@ -4,6 +4,7 @@ namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
 use Illuminate\Support\Facades\Http;
 use InteractionDesignFoundation\GeoIP\Exceptions\RequestFailedException;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 use InteractionDesignFoundation\GeoIP\Services\IPData;
 use InteractionDesignFoundation\GeoIP\Tests\TestCase;
 
@@ -13,7 +14,7 @@ final class IPDataTest extends TestCase
     public function it_can_locate_a_given_ip(): void
     {
         Http::fake([
-            'https://api.ipdata.co*' => json_decode($this->mockedApiResponse(), true, 512, JSON_THROW_ON_ERROR),
+            'https://api.ipdata.co*' => json_decode($this->validResponse(), true, 512, JSON_THROW_ON_ERROR),
         ]);
         $service = $this->getService();
 
@@ -21,6 +22,22 @@ final class IPDataTest extends TestCase
 
         $this->assertSame('BR', $response['iso_code']);
         $this->assertSame('America/Sao_Paulo', $response['timezone']);
+    }
+
+    /** @test */
+    public function it_can_return_a_location_response_object(): void
+    {
+        config()->set('geoip.should_use_dto_response', true);
+        Http::fake([
+            'https://api.ipdata.co*' => json_decode($this->validResponse(), true, 512, JSON_THROW_ON_ERROR),
+        ]);
+        $service = $this->getService();
+
+        $response = $service->locate('187.6.154.78');
+
+        $this->assertInstanceOf(LocationResponse::class, $response);
+        $this->assertSame('BR', $response->isoCode);
+        $this->assertSame('America/Sao_Paulo', $response->timezone);
     }
 
     /** @test */
@@ -63,7 +80,7 @@ final class IPDataTest extends TestCase
         return new IPData(['key' => 'service-api-key']);
     }
 
-    private function mockedApiResponse(): string
+    private function validResponse(): string
     {
         return <<<JSON
 {

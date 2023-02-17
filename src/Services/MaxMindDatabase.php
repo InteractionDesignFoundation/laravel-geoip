@@ -4,6 +4,7 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 
 use Illuminate\Support\Facades\Storage;
 use InteractionDesignFoundation\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 use PharData;
 use GeoIp2\Database\Reader;
 
@@ -32,7 +33,7 @@ class MaxMindDatabase extends AbstractService
     }
 
     /** @inheritdoc */
-    public function locate($ip): Location
+    public function locate($ip): Location|LocationResponse
     {
         $record = $this->reader->city($ip);
 
@@ -49,6 +50,15 @@ class MaxMindDatabase extends AbstractService
             'timezone' => $record->location->timeZone,
             'continent' => $record->continent->code,
         ]);
+    }
+
+    public function hydrate(array $attributes = []): Location|LocationResponse
+    {
+        if (config('geoip.should_use_dto_response', false)) {
+            return LocationResponse::fromMaxMindDatabase($attributes);
+        }
+
+        return new Location($attributes);
     }
 
     /**

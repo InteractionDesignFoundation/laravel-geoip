@@ -4,6 +4,7 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 
 use GeoIp2\WebService\Client;
 use InteractionDesignFoundation\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 
 class MaxMindWebService extends AbstractService
 {
@@ -24,7 +25,7 @@ class MaxMindWebService extends AbstractService
     }
 
     /** @inheritdoc */
-    public function locate(string $ip): Location
+    public function locate(string $ip): Location|LocationResponse
     {
         $record = $this->client->city($ip);
 
@@ -41,5 +42,14 @@ class MaxMindWebService extends AbstractService
             'timezone' => $record->location->timeZone,
             'continent' => $record->continent->code,
         ]);
+    }
+
+    public function hydrate(array $attributes = []): Location|LocationResponse
+    {
+        if (config('geoip.should_use_dto_response', false)) {
+            return LocationResponse::fromMaxMindWebservice($attributes);
+        }
+
+        return new Location($attributes);
     }
 }

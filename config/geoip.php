@@ -50,7 +50,6 @@ return [
     */
 
     'services' => [
-
         'maxmind_database' => [
             'class' => \InteractionDesignFoundation\GeoIP\Services\MaxMindDatabase::class,
             'database_path' => storage_path('app/geoip.mmdb'),
@@ -93,8 +92,9 @@ return [
             'secure' => true,
             'locales' => ['en'],
         ],
-
     ],
+
+    'should_use_dto_response' => false,
 
     /*
     |--------------------------------------------------------------------------

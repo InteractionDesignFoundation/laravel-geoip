@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use InteractionDesignFoundation\GeoIP\Contracts\Client;
 use InteractionDesignFoundation\GeoIP\Exceptions\RequestFailedException;
 use InteractionDesignFoundation\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 /**
@@ -35,7 +36,7 @@ class IPData extends AbstractService
      * {@inheritdoc}
      * @throws Exception
      */
-    public function locate(string $ip): Location
+    public function locate(string $ip): Location|LocationResponse
     {
         // Get data from client
         $json = $this->client->get($ip);
@@ -54,5 +55,14 @@ class IPData extends AbstractService
             'continent' => $json['continent_code'],
             'currency' => Arr::get($json, 'currency.code'),
         ]);
+    }
+
+    public function hydrate(array $attributes = []): Location|LocationResponse
+    {
+        if (config('geoip.should_use_dto_response', false)) {
+            return LocationResponse::fromIPData($attributes);
+        }
+
+        return new Location($attributes);
     }
 }
