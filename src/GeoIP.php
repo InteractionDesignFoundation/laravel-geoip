@@ -3,6 +3,7 @@
 namespace InteractionDesignFoundation\GeoIP;
 
 use Exception;
+use InteractionDesignFoundation\GeoIP\Contracts\LocationProvider;
 use Monolog\Logger;
 use Illuminate\Support\Arr;
 use Illuminate\Cache\CacheManager;
@@ -10,54 +11,26 @@ use Monolog\Handler\StreamHandler;
 
 class GeoIP
 {
-    /**
-     * Illuminate config repository instance.
-     *
-     * @var array
-     */
-    protected $config;
+    /** Illuminate config repository instance. */
+    protected array $config = [];
 
-    /**
-     * Remote Machine IP address.
-     *
-     * @var float
-     */
-    protected $remote_ip = null;
+    /** Remote Machine IP address. */
+    protected string $remote_ip;
 
-    /**
-     * Current location instance.
-     *
-     * @var Location
-     */
-    protected $location = null;
+    /** Current location instance. */
+    protected Location $location;
 
-    /**
-     * Currency data.
-     *
-     * @var array
-     */
-    protected $currencies = null;
+    /** Currency data. */
+    protected array $currencies = [];
 
-    /**
-     * GeoIP service instance.
-     *
-     * @var Contracts\LocationProvider
-     */
-    protected $service;
+    /** GeoIP service instance. */
+    protected ?LocationProvider $service = null;
 
-    /**
-     * Cache manager instance.
-     *
-     * @var \Illuminate\Cache\CacheManager
-     */
-    protected $cache;
+    /** Cache manager instance. */
+    protected CacheManager | Cache $cache;
 
-    /**
-     * Default Location data.
-     *
-     * @var array
-     */
-    protected $default_location = [
+    /** Default Location data. */
+    protected array $default_location = [
         'ip' => '127.0.0.0',
         'iso_code' => 'US',
         'country' => 'United States',
@@ -91,10 +64,13 @@ class GeoIP
             $this->config('cache_expires', 30)
         );
 
+        $defaultLocation = $this->config('default_location', []);
+        assert(is_array($defaultLocation));
+
         // Set custom default location
         $this->default_location = array_merge(
             $this->default_location,
-            $this->config('default_location', [])
+            $defaultLocation
         );
 
         // Set IP
@@ -104,12 +80,9 @@ class GeoIP
     /**
      * Get the location from the provided IP.
      *
-     * @param string $ip
-     *
-     * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
-    public function getLocation($ip = null)
+    public function getLocation(string $ip = null): Location
     {
         // Get location data
         $this->location = $this->find($ip);
@@ -125,12 +98,9 @@ class GeoIP
     /**
      * Find location from IP.
      *
-     * @param string $ip
-     *
-     * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
-    private function find($ip = null)
+    private function find(string $ip = null): Location
     {
         // If IP not set, user remote IP
         $ip = $ip ?: $this->remote_ip;
@@ -143,26 +113,28 @@ class GeoIP
         }
 
         // Check if the ip is not local or empty
-        if ($this->isValid($ip)) {
-            try {
-                // Find location
-                $location = $this->getService()->locate($ip);
+        if (! $this->isValid($ip)) {
+            return $this->getService()->hydrate($this->default_location);
+        }
 
-                // Set currency if not already set by the service
-                if (! $location->currency) {
-                    $location->currency = $this->getCurrency($location->iso_code);
-                }
+        try {
+            // Find location
+            $location = $this->getService()->locate($ip);
 
-                // Set default
-                $location->default = false;
+            // Set currency if not already set by the service
+            if (! $location->currency) {
+                $location->currency = $this->getCurrency($location->iso_code);
+            }
 
-                return $location;
-            } catch (\Exception $e) {
-                if ($this->config('log_failures', true) === true) {
-                    $log = new Logger('geoip');
-                    $log->pushHandler(new StreamHandler(storage_path('logs/geoip.log'), Logger::ERROR));
-                    $log->error($e);
-                }
+            // Set default
+            $location->default = false;
+
+            return $location;
+        } catch (\Exception $e) {
+            if ($this->config('log_failures', true) === true) {
+                $log = new Logger('geoip');
+                $log->pushHandler(new StreamHandler(storage_path('logs/geoip.log'), Logger::ERROR));
+                $log->error($e);
             }
         }
 
@@ -176,13 +148,16 @@ class GeoIP
      *
      * @return string
      */
-    public function getCurrency($iso)
+    public function getCurrency(string $iso): string
     {
-        if ($this->currencies === null && $this->config('include_currency', false)) {
+        if ($this->currencies === [] && $this->config('include_currency', false)) {
             $this->currencies = include(__DIR__ . '/Support/Currencies.php');
         }
 
-        return Arr::get($this->currencies, $iso);
+        $currency = Arr::get($this->currencies, $iso);
+        assert(is_string($currency));
+
+        return $currency;
     }
 
     /**
@@ -191,23 +166,25 @@ class GeoIP
      * @throws Exception
      *@return \InteractionDesignFoundation\GeoIP\Contracts\LocationProvider
      */
-    public function getService()
+    public function getService(): LocationProvider
     {
-        if ($this->service === null) {
-            // Get service configuration
-            $config = $this->config('services.' . $this->config('service'), []);
-
-            // Get service class
-            $class = Arr::pull($config, 'class');
-
-            // Sanity check
-            if ($class === null) {
-                throw new Exception('The GeoIP service is not valid.');
-            }
-
-            // Create service instance
-            $this->service = new $class($config);
+        if ($this->service instanceof LocationProvider) {
+            return $this->service;
         }
+
+        // Get service configuration
+        $config = $this->config('services.' . $this->config('service'), []);
+
+        // Get service class
+        $class = Arr::pull($config, 'class');
+
+        // Sanity check
+        if ($class === null) {
+            throw new \Exception('The GeoIP service is not valid.');
+        }
+
+        // Create service instance
+        $this->service = new $class($config);
 
         return $this->service;
     }
@@ -217,7 +194,7 @@ class GeoIP
      *
      * @return \InteractionDesignFoundation\GeoIP\Cache
      */
-    public function getCache()
+    public function getCache(): CacheManager | Cache
     {
         return $this->cache;
     }
@@ -227,7 +204,7 @@ class GeoIP
      *
      * @return string
      */
-    public function getClientIP()
+    public function getClientIP(): string
     {
         $remotes_keys = [
             'HTTP_X_FORWARDED_FOR',
@@ -253,22 +230,11 @@ class GeoIP
         return '127.0.0.0';
     }
 
-    /**
-     * Checks if the ip is valid.
-     *
-     * @param string $ip
-     *
-     * @return bool
-     */
-    private function isValid($ip)
+    /** Checks if the ip is valid. */
+    private function isValid(string $ip): bool
     {
-        if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
-            && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE)
-        ) {
-            return false;
-        }
-
-        return true;
+        return ! (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+            && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE));
     }
 
     /**
@@ -279,19 +245,16 @@ class GeoIP
      *
      * @return bool
      */
-    private function shouldCache(Location $location, $ip = null)
+    private function shouldCache(Location $location, string $ip = null): bool
     {
-        if ($location->default === true || $location->cached === true) {
+        if ($location->default || $location->cached) {
             return false;
         }
 
-        switch ($this->config('cache', 'none')) {
-            case 'all':
-            case 'some' && $ip === null:
-                return true;
-        }
-
-        return false;
+        return match ($this->config('cache', 'none')) {
+            'all', 'some' => true,
+            default => false,
+        };
     }
 
     /**
@@ -302,7 +265,7 @@ class GeoIP
      *
      * @return mixed
      */
-    public function config($key, $default = null)
+    public function config(string $key, $default = null)
     {
         return Arr::get($this->config, $key, $default);
     }
