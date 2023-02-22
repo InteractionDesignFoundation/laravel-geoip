@@ -3,13 +3,14 @@
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
 use Mockery;
+use Illuminate\Cache\CacheManager;
 
 class CacheTest extends TestCase
 {
     /**
      * @test
      */
-    public function shouldReturnValidLocation()
+    public function shouldReturnValidLocation(): void
     {
         $data = [
             'ip' => '81.2.69.142',
@@ -18,7 +19,7 @@ class CacheTest extends TestCase
             'lon' => -72.92,
         ];
 
-        $cacheMock = Mockery::mock('Illuminate\Cache\CacheManager')
+        $cacheMock = Mockery::mock(CacheManager::class)
             ->shouldAllowMockingProtectedMethods();
 
         $cacheMock->shouldReceive('get')
@@ -37,9 +38,9 @@ class CacheTest extends TestCase
     /**
      * @test
      */
-    public function shouldReturnInvalidLocation()
+    public function shouldReturnInvalidLocation(): void
     {
-        $cacheMock = Mockery::mock('Illuminate\Cache\CacheManager')
+        $cacheMock = Mockery::mock(CacheManager::class)
             ->shouldAllowMockingProtectedMethods();
 
         $geo_ip = $this->makeGeoIP([], $cacheMock);
@@ -58,7 +59,7 @@ class CacheTest extends TestCase
     /**
      * @test
      */
-    public function shouldSetLocation()
+    public function shouldSetLocation(): void
     {
         $location = new \InteractionDesignFoundation\GeoIP\Location([
             'ip' => '81.2.69.142',
@@ -67,7 +68,7 @@ class CacheTest extends TestCase
             'lon' => -72.92,
         ]);
 
-        $cacheMock = Mockery::mock('Illuminate\Cache\CacheManager')
+        $cacheMock = Mockery::mock(CacheManager::class)
             ->shouldAllowMockingProtectedMethods();
 
         $geo_ip = $this->makeGeoIP([], $cacheMock);
@@ -86,9 +87,9 @@ class CacheTest extends TestCase
     /**
      * @test
      */
-    public function shouldFlushLocations()
+    public function shouldFlushLocations(): void
     {
-        $cacheMock = Mockery::mock('Illuminate\Cache\CacheManager')
+        $cacheMock = Mockery::mock(CacheManager::class)
             ->shouldAllowMockingProtectedMethods();
 
         $geo_ip = $this->makeGeoIP([], $cacheMock);

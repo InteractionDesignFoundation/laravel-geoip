@@ -4,7 +4,6 @@ namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
 use InteractionDesignFoundation\GeoIP\Contracts\LocationProvider;
 use InteractionDesignFoundation\GeoIP\Tests\TestCase;
-use phpDocumentor\Reflection\Location;
 
 class MaxMindDatabaseTest extends TestCase
 {
@@ -50,6 +49,8 @@ class MaxMindDatabaseTest extends TestCase
     protected function getService(): LocationProvider
     {
         $classString = config('geoip.services.maxmind_database.class');
+        assert(is_string($classString));
+
         $service = new $classString(
             config('geoip.services.maxmind_database')
         );

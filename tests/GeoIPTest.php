@@ -2,8 +2,6 @@
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
-use Mockery;
-
 class GeoIPTest extends TestCase
 {
     /** @test */
@@ -11,7 +9,7 @@ class GeoIPTest extends TestCase
     {
         $geo_ip = $this->makeGeoIP();
 
-        $this->assertEquals($geo_ip->getCurrency('US'), 'USD');
+        $this->assertEquals('USD', $geo_ip->getCurrency('US'));
     }
 
     /**
