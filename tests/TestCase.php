@@ -6,10 +6,10 @@ use InteractionDesignFoundation\GeoIP\GeoIP;
 use InteractionDesignFoundation\GeoIP\GeoIPServiceProvider;
 use Mockery;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Illuminate\Cache\CacheManager;
 
 class TestCase extends Orchestra
 {
-
     protected function getPackageProviders($app): array
     {
         return [
@@ -24,7 +24,7 @@ class TestCase extends Orchestra
 
     protected function makeGeoIP(array $config = [], $cacheMock = null): GeoIP
     {
-        $cacheMock = $cacheMock ?: Mockery::mock('Illuminate\Cache\CacheManager');
+        $cacheMock = $cacheMock ?: Mockery::mock(CacheManager::class);
 
         $config = array_merge($this->getConfig(), $config);
 
@@ -33,13 +33,15 @@ class TestCase extends Orchestra
         return new GeoIP($config, $cacheMock);
     }
 
-    protected function getConfig()
+    protected function getConfig(): array
     {
-        $config = include(__DIR__ . '/../config/geoip.php');
+        $databasePath = config('geoip.services.maxmind_database.database_path');
 
-        $this->databaseCheck($config['services']['maxmind_database']['database_path']);
+        assert(is_string($databasePath));
 
-        return $config;
+        $this->databaseCheck($databasePath);
+
+        return config('geoip');
     }
 
     /**

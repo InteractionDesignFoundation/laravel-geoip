@@ -6,10 +6,8 @@ use Mockery;
 
 class GeoIPTest extends TestCase
 {
-    /**
-     * @test
-     */
-    public function shouldGetUSDCurrency()
+    /** @test */
+    public function shouldGetUSDCurrency(): void
     {
         $geo_ip = $this->makeGeoIP();
 
@@ -19,15 +17,11 @@ class GeoIPTest extends TestCase
     /**
      * @test
      */
-    public function testGetService()
+    public function testGetService(): void
     {
         $geo_ip = $this->makeGeoIP([
             'service' => 'maxmind_database',
         ]);
-
-        // Get config values
-        $config = $this->getConfig()['services']['maxmind_database'];
-        unset($config['class']);
 
         $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Contracts\LocationProvider::class, $geo_ip->getService());
     }
@@ -35,7 +29,7 @@ class GeoIPTest extends TestCase
     /**
      * @test
      */
-    public function testGetCache()
+    public function testGetCache(): void
     {
         $geo_ip = $this->makeGeoIP();
 

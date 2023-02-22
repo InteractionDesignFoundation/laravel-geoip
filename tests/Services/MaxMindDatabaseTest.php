@@ -2,56 +2,60 @@
 
 namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
+use InteractionDesignFoundation\GeoIP\Contracts\LocationProvider;
 use InteractionDesignFoundation\GeoIP\Tests\TestCase;
+use phpDocumentor\Reflection\Location;
 
 class MaxMindDatabaseTest extends TestCase
 {
     /**
      * @test
      */
-    public function shouldReturnConfigValue()
+    public function shouldReturnConfigValue(): void
     {
-        list($service, $config) = $this->getService();
+        $service = $this->getService();
 
-        $this->assertEquals($service->config('database_path'), $config['database_path']);
+        $this->assertEquals($service->config('database_path'), config('geoip.services.maxmind_database.database_path'));
     }
 
     /**
      * @test
      */
-    public function shouldReturnValidLocation()
+    public function shouldReturnValidLocation(): void
     {
-        list($service, $config) = $this->getService();
+        $service = $this->getService();
 
         $location = $service->locate('81.2.69.142');
 
-        $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $location);
-        $this->assertEquals($location->ip, '81.2.69.142');
-        $this->assertEquals($location->default, false);
+        $this->assertEquals('81.2.69.142', $location->ip);
+        $this->assertFalse($location->default);
     }
 
     /**
      * @test
      */
-    public function shouldReturnInvalidLocation()
+    public function shouldReturnInvalidLocation(): void
     {
-        list($service, $config) = $this->getService();
+        $service = $this->getService();
 
         try {
             $location = $service->locate('1.1.1.1');
-            $this->assertEquals($location->default, false);
+            $this->assertFalse($location->default);
         }
         catch (\GeoIp2\Exception\AddressNotFoundException $e) {
-            $this->assertEquals($e->getMessage(), 'The address 1.1.1.1 is not in the database.');
+            $this->assertEquals('The address 1.1.1.1 is not in the database.', $e->getMessage());
         }
     }
 
-    protected function getService()
+    protected function getService(): LocationProvider
     {
-        $config = $this->getConfig()['services']['maxmind_database'];
+        $classString = config('geoip.services.maxmind_database.class');
+        $service = new $classString(
+            config('geoip.services.maxmind_database')
+        );
 
-        $service = new $config['class']($config);
+        assert($service instanceof LocationProvider);
 
-        return [$service, $config];
+        return $service;
     }
 }
