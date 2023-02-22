@@ -2,44 +2,43 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
+use Illuminate\Support\Facades\Storage;
+use InteractionDesignFoundation\GeoIP\Location;
 use PharData;
 use Exception;
 use GeoIp2\Database\Reader;
 
 class MaxMindDatabase extends AbstractService
 {
-    /**
-     * Service reader instance.
-     *
-     * @var \GeoIp2\Database\Reader
-     */
-    protected $reader;
+    /** Service reader instance. */
+    protected Reader $reader;
 
-    /**
-     * The "booting" method of the service.
+    /** The "booting" method of the service.
      *
-     * @return void
+     * @throws \MaxMind\Db\Reader\InvalidDatabaseException
      */
-    public function boot()
+    public function boot(): void
     {
         $path = $this->config('database_path');
+        assert(is_string($path));
 
         // Copy test database for now
-        if (is_file($path) === false) {
-            @mkdir(dirname($path));
+        if (! is_file($path)) {
+            $concurrentDirectory = dirname($path);
+            if (! mkdir($concurrentDirectory) && ! is_dir($concurrentDirectory)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+            }
 
             copy(__DIR__ . '/../../resources/geoip.mmdb', $path);
         }
 
-        $this->reader = new Reader(
-            $path, $this->config('locales', ['en'])
-        );
+        $locales = $this->config('locales', ['en']);
+        assert(is_array($locales));
+
+        $this->reader = new Reader($path, $locales);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function locate($ip)
+    public function locate(string $ip): Location
     {
         $record = $this->reader->city($ip);
 
@@ -64,7 +63,7 @@ class MaxMindDatabase extends AbstractService
      * @return string
      * @throws Exception
      */
-    public function update()
+    public function update(): string
     {
         if ($this->config('database_path', false) === false) {
             throw new Exception('Database path not set in config file.');
@@ -73,7 +72,10 @@ class MaxMindDatabase extends AbstractService
         $this->withTemporaryDirectory(function ($directory) {
             $tarFile = sprintf('%s/maxmind.tar.gz', $directory);
 
-            file_put_contents($tarFile, fopen($this->config('update_url'), 'r'));
+            $path = $this->config('update_url');
+            assert(is_string($path));
+
+            file_put_contents($tarFile, fopen($path, 'rb'));
 
             $archive = new PharData($tarFile);
 
@@ -83,29 +85,31 @@ class MaxMindDatabase extends AbstractService
 
             $archive->extractTo($directory, $relativePath);
 
-            file_put_contents($this->config('database_path'), fopen("{$directory}/{$relativePath}", 'r'));
+            $databasePath = $this->config('database_path');
+            assert(is_string($databasePath));
+
+            Storage::put($databasePath, fopen("$directory/$relativePath", 'rb'));
         });
 
-        return "Database file ({$this->config('database_path')}) updated.";
+        $databasePath = $this->config('database_path');
+        assert(is_string($databasePath));
+
+        return "Database file ($databasePath) updated.";
     }
 
-    /**
-     * Provide a temporary directory to perform operations in and and ensure
-     * it is removed afterwards.
-     *
-     * @param callable $callback
-     *
-     * @return void
-     */
-    protected function withTemporaryDirectory(callable $callback)
+    /** Provide a temporary directory to perform operations in and ensure it is removed afterwards. */
+    protected function withTemporaryDirectory(callable $callback): void
     {
         $directory = tempnam(sys_get_temp_dir(), 'maxmind');
+        assert(is_string($directory));
 
         if (file_exists($directory)) {
             unlink($directory);
         }
 
-        mkdir($directory);
+        if (! mkdir($directory) && ! is_dir($directory)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $directory));
+        }
 
         try {
             $callback($directory);
@@ -154,8 +158,11 @@ class MaxMindDatabase extends AbstractService
             return unlink($directory);
         }
 
-        foreach (scandir($directory) as $item) {
-            if ($item == '.' || $item == '..') {
+        $items = scandir($directory);
+        assert(is_array($items));
+
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
                 continue;
             }
 

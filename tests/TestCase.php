@@ -2,16 +2,19 @@
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
+use InteractionDesignFoundation\GeoIP\GeoIP;
+use InteractionDesignFoundation\GeoIP\GeoIPServiceProvider;
 use Mockery;
-use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+use Orchestra\Testbench\TestCase as Orchestra;
 
-class TestCase extends PHPUnitTestCase
+class TestCase extends Orchestra
 {
-    public static $functions;
 
-    public function setUp(): void
+    protected function getPackageProviders($app): array
     {
-        self::$functions = Mockery::mock();
+        return [
+            GeoIPServiceProvider::class
+        ];
     }
 
     public function tearDown(): void
@@ -19,7 +22,7 @@ class TestCase extends PHPUnitTestCase
         Mockery::close();
     }
 
-    protected function makeGeoIP(array $config = [], $cacheMock = null)
+    protected function makeGeoIP(array $config = [], $cacheMock = null): GeoIP
     {
         $cacheMock = $cacheMock ?: Mockery::mock('Illuminate\Cache\CacheManager');
 
@@ -27,7 +30,7 @@ class TestCase extends PHPUnitTestCase
 
         $cacheMock->shouldReceive('tags')->with(['laravel-geoip-location'])->andReturnSelf();
 
-        return new \InteractionDesignFoundation\GeoIP\GeoIP($config, $cacheMock);
+        return new GeoIP($config, $cacheMock);
     }
 
     protected function getConfig()

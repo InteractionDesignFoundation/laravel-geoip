@@ -2,32 +2,20 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Exception;
 use Illuminate\Support\Arr;
+use InteractionDesignFoundation\GeoIP\Location;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 class IPApi extends AbstractService
 {
-    /**
-     * Http client instance.
-     *
-     * @var HttpClient
-     */
-    protected $client;
+    /** Http client instance. */
+    protected HttpClient $client;
 
-    /**
-     * An array of continents.
-     *
-     * @var array
-     */
-    protected $continents;
+    /** An array of continents. */
+    protected array $continents = [];
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
-    public function boot()
+    /** The "booting" method of the service. */
+    public function boot(): void
     {
         $base = [
             'base_uri' => 'http://ip-api.com/',
@@ -54,10 +42,10 @@ class IPApi extends AbstractService
         }
     }
 
-    /**
-     * {@inheritdoc}
+    /** {@inheritdoc}
+     * @throws \Exception
      */
-    public function locate($ip)
+    public function locate(string $ip): Location
     {
         // Get data from client
         $data = $this->client->get('json/' . $ip);
@@ -68,7 +56,7 @@ class IPApi extends AbstractService
         }
 
         // Parse body content
-        $json = json_decode($data[0]);
+        $json = json_decode($data[0], false, 512, JSON_THROW_ON_ERROR);
 
         // Verify response status
         if ($json->status !== 'success') {
@@ -94,15 +82,15 @@ class IPApi extends AbstractService
      * Update function for service.
      *
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
-    public function update()
+    public function update(): string
     {
         $data = $this->client->get('https://dev.maxmind.com/static/csv/codes/country_continent.csv');
 
         // Verify server response
         if ($this->client->getErrors() !== null) {
-            throw new Exception($this->client->getErrors());
+            throw new \Exception($this->client->getErrors());
         }
 
         $lines = explode("\n", $data[0]);
@@ -129,14 +117,8 @@ class IPApi extends AbstractService
         return "Continent file ({$path}) updated.";
     }
 
-    /**
-     * Get continent based on country code.
-     *
-     * @param string $code
-     *
-     * @return string
-     */
-    private function getContinent($code)
+    /** Get continent based on country code. */
+    private function getContinent(string $code): string
     {
         return Arr::get($this->continents, $code, 'Unknown');
     }

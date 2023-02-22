@@ -29,7 +29,7 @@ class GeoIPTest extends TestCase
         $config = $this->getConfig()['services']['maxmind_database'];
         unset($config['class']);
 
-        $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface::class, $geo_ip->getService());
+        $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Contracts\LocationProvider::class, $geo_ip->getService());
     }
 
     /**

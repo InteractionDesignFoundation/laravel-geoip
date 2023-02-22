@@ -4,22 +4,14 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 
 use InteractionDesignFoundation\GeoIP\Location;
 use Illuminate\Support\Arr;
-use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
+use InteractionDesignFoundation\GeoIP\Contracts\LocationProvider;
 
-abstract class AbstractService implements ServiceInterface
+abstract class AbstractService implements LocationProvider
 {
-    /**
-     * Driver config
-     *
-     * @var array
-     */
-    protected $config;
+    /** Driver config */
+    protected array $config = [];
 
-    /**
-     * Create a new service instance.
-     *
-     * @param array $config
-     */
+    /** Create a new service instance. */
     public function __construct(array $config = [])
     {
         $this->config = $config;
@@ -27,20 +19,13 @@ abstract class AbstractService implements ServiceInterface
         $this->boot();
     }
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
-    public function boot()
+    /** The "booting" method of the service. */
+    public function boot(): void
     {
         //
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hydrate(array $attributes = [])
+    public function hydrate(array $attributes = []): Location
     {
         return new Location($attributes);
     }
@@ -53,7 +38,7 @@ abstract class AbstractService implements ServiceInterface
      *
      * @return mixed
      */
-    public function config($key, $default = null)
+    public function config(string $key, $default = null)
     {
         return Arr::get($this->config, $key, $default);
     }

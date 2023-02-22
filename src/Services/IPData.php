@@ -5,6 +5,7 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 use Exception;
 use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
+use InteractionDesignFoundation\GeoIP\Location;
 
 /**
  * Class GeoIP
@@ -12,19 +13,15 @@ use InteractionDesignFoundation\GeoIP\Support\HttpClient;
  */
 class IPData extends AbstractService
 {
-    /**
-     * Http client instance.
-     *
-     * @var HttpClient
-     */
-    protected $client;
+    /** Http client instance. */
+    protected HttpClient $client;
 
     /**
      * The "booting" method of the service.
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->client = new HttpClient([
             'base_uri' => 'https://api.ipdata.co/',
@@ -38,7 +35,7 @@ class IPData extends AbstractService
      * {@inheritdoc}
      * @throws Exception
      */
-    public function locate($ip)
+    public function locate(string $ip): Location
     {
         // Get data from client
         $data = $this->client->get($ip);

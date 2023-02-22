@@ -24,7 +24,8 @@
     "phpunit/phpunit": "^9.6 || ^10.0",
     "squizlabs/php_codesniffer": "^3.6",
     "vimeo/psalm": "^5.7",
-    "vlucas/phpdotenv": "^5.4"
+    "vlucas/phpdotenv": "^5.4",
+    "orchestra/testbench": "^8.0"
   },
   "suggest": {
     "geoip2/geoip2": "Required to use the MaxMind database or web service with GeoIP (~2.1).",

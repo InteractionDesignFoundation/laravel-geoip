@@ -2,8 +2,7 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Exception;
-use Illuminate\Support\Arr;
+use InteractionDesignFoundation\GeoIP\Location;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 class IPGeoLocation extends AbstractService
@@ -20,7 +19,7 @@ class IPGeoLocation extends AbstractService
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $base = [
             'base_uri' => 'https://api.ipgeolocation.io/',
@@ -33,18 +32,15 @@ class IPGeoLocation extends AbstractService
         $this->client = new HttpClient($base);
     }
 
-    /**
-     * {@inheritdoc}
-     */
 
-    public function locate($ip)
+    public function locate(string $ip): Location
     {
         // Get data from client
         $data = $this->client->get('&ip=' . $ip);
 
         // Verify server response
         if ($this->client->getErrors() !== null) {
-            throw new Exception('Request failed (' . $this->client->getErrors() . ')');
+            throw new \Exception('Request failed (' . $this->client->getErrors() . ')');
         }
 
         // Parse body content

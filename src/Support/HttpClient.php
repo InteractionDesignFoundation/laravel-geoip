@@ -6,37 +6,14 @@ use Illuminate\Support\Arr;
 
 class HttpClient
 {
-    /**
-     * Request configurations.
-     *
-     * @var array
-     **/
-    private $config = [
-        'base_uri' => '',
-        'headers' => [],
-        'query' => [],
-    ];
+    /** Request configurations. */
+    private array $config = [];
 
-    /**
-     * Last request http status.
-     *
-     * @var int
-     **/
-    protected $http_code = 200;
+    /** Last request http status. */
+    protected int $http_code = 200;
 
-    /**
-     * Last request error string.
-     *
-     * @var string
-     **/
-    protected $errors = null;
-
-    /**
-     * Array containing headers from last performed request.
-     *
-     * @var array
-     */
-    private $headers = [];
+    /** Last request error string. */
+    protected ?string $errors = null;
 
     /**
      * HttpClient constructor.
@@ -48,31 +25,14 @@ class HttpClient
         $this->config = $config;
     }
 
-    /**
-     * Perform a get request.
-     *
-     * @param  string $url
-     * @param  array  $query
-     * @param  array  $headers
-     *
-     * @return array
-     */
-    public function get($url, array $query = [], array $headers = [])
+    /** Perform a get request. */
+    public function get(string $url, array $query = [], array $headers = []): array
     {
         return $this->execute('GET', $this->buildGetUrl($url, $query), [], $headers);
     }
 
-    /**
-     * Execute the curl request
-     *
-     * @param  string $method
-     * @param  string $url
-     * @param  array  $query
-     * @param  array  $headers
-     *
-     * @return array
-     */
-    public function execute($method, $url, array $query = [], array $headers = [])
+    /** Execute the curl request */
+    public function execute(string $method, string $url, array $query = [], array $headers = []): array
     {
         // Merge global and request headers
         $headers = array_merge(
@@ -147,51 +107,29 @@ class HttpClient
         return [$body, $this->parseHeaders($header)];
     }
 
-    /**
-     * Check if the curl request ended up with errors
-     *
-     * @return bool
-     */
-    public function hasErrors()
+    /** Check if the curl request ended up with errors */
+    public function hasErrors(): bool
     {
         return is_null($this->errors) === false;
     }
 
-    /**
-     * Get curl errors
-     *
-     * @return string
-     */
-    public function getErrors()
+    /** Get curl errors */
+    public function getErrors(): ?string
     {
         return $this->errors;
     }
 
-    /**
-     * Get last curl HTTP code.
-     *
-     * @return int
-     */
-    public function getHttpCode()
-    {
-        return $this->http_code;
-    }
-
-    /**
-     * Parse string headers into array
-     *
-     * @param string $headers
-     *
-     * @return array
-     */
-    private function parseHeaders($headers)
+    /** Parse string headers into array */
+    private function parseHeaders(string $headers): array
     {
         $result = [];
+        $headersArray = preg_split("/\\r\\n|\\r|\\n/", $headers);
+        assert(is_array($headersArray));
 
-        foreach (preg_split("/\\r\\n|\\r|\\n/", $headers) as $row) {
+        foreach ($headersArray as $row) {
             $header = explode(':', $row, 2);
 
-            if (count($header) == 2) {
+            if (count($header) === 2) {
                 $result[$header[0]] = trim($header[1]);
             }
             else {
@@ -202,14 +140,8 @@ class HttpClient
         return $result;
     }
 
-    /**
-     * Get request URL.
-     *
-     * @param  string $url
-     *
-     * @return string
-     */
-    private function getUrl($url)
+    /** Get request URL. */
+    private function getUrl(string $url): string
     {
         // Check for URL scheme
         if (parse_url($url, PHP_URL_SCHEME) === null) {
@@ -219,25 +151,20 @@ class HttpClient
         return $url;
     }
 
-    /**
-     * Build a GET request string.
-     *
-     * @param  string $url
-     * @param  array  $query
-     *
-     * @return string
-     */
-    private function buildGetUrl($url, array $query = [])
+    /** Build a GET request string. */
+    private function buildGetUrl(string $url, array $query = []): string
     {
+        $queryConfig = Arr::get($this->config, 'query', []);
+        assert(is_array($queryConfig));
         // Merge global and request queries
         $query = array_merge(
-            Arr::get($this->config, 'query', []),
+            $queryConfig,
             $query
         );
 
         // Append query
-        if ($query = http_build_query($query)) {
-            $url .= strpos($url, '?') ? $query : "?{$query}";
+        if ($queryString = http_build_query($query)) {
+            $url .= strpos($url, '?') ? $queryString : "?$queryString";
         }
 
         return $url;
