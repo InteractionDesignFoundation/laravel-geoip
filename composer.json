@@ -42,10 +42,7 @@
   "autoload-dev": {
     "psr-4": {
       "InteractionDesignFoundation\\GeoIP\\Tests\\": "tests/"
-    },
-    "files": [
-      "tests/TestFunctions.php"
-    ]
+    }
   },
   "extra": {
     "laravel": {
