@@ -4,6 +4,7 @@ namespace InteractionDesignFoundation\GeoIP;
 
 use Exception;
 use InteractionDesignFoundation\GeoIP\Contracts\LocationProvider;
+use Monolog\Level;
 use Monolog\Logger;
 use Illuminate\Support\Arr;
 use Illuminate\Cache\CacheManager;
@@ -134,7 +135,7 @@ class GeoIP
         } catch (\Exception $e) {
             if ($this->config('log_failures', true) === true) {
                 $log = new Logger('geoip');
-                $log->pushHandler(new StreamHandler(storage_path('logs/geoip.log'), Logger::ERROR));
+                $log->pushHandler(new StreamHandler(storage_path('logs/geoip.log'), Level::Error));
                 $log->error($e);
             }
         }
@@ -248,7 +249,7 @@ class GeoIP
      *
      * @return bool
      */
-    private function shouldCache(Location $location, string $ip = null): bool
+    private function shouldCache(Location $location): bool
     {
         if ($location->default || $location->cached) {
             return false;

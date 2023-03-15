@@ -52,7 +52,7 @@ class IPApi extends AbstractService
 
         // Verify server response
         if ($this->client->getErrors() !== null) {
-            throw new Exception('Request failed (' . $this->client->getErrors() . ')');
+            throw new \Exception('Request failed (' . $this->client->getErrors() . ')');
         }
 
         // Parse body content
@@ -60,7 +60,7 @@ class IPApi extends AbstractService
 
         // Verify response status
         if ($json->status !== 'success') {
-            throw new Exception('Request failed (' . $json->message . ')');
+            throw new \Exception('Request failed (' . $json->message . ')');
         }
 
         return $this->hydrate([
@@ -90,7 +90,9 @@ class IPApi extends AbstractService
 
         // Verify server response
         if ($this->client->getErrors() !== null) {
-            throw new \Exception($this->client->getErrors());
+            $message = $this->client->getErrors();
+            assert(is_string($message));
+            throw new \Exception($message);
         }
 
         $lines = explode("\n", $data[0]);
