@@ -81,6 +81,7 @@ class GeoIP
      * Get the location from the provided IP.
      *
      * @throws \Exception
+     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function getLocation(string $ip = null): Location
     {
@@ -164,7 +165,7 @@ class GeoIP
      * Get service instance.
      *
      * @throws Exception
-     *@return \InteractionDesignFoundation\GeoIP\Contracts\LocationProvider
+     * @return \InteractionDesignFoundation\GeoIP\Contracts\LocationProvider
      */
     public function getService(): LocationProvider
     {
@@ -184,7 +185,9 @@ class GeoIP
         }
 
         // Create service instance
-        $this->service = new $class($config);
+        $service = new $class($config);
+        assert($service instanceof LocationProvider);
+        $this->service = $service;
 
         return $this->service;
     }

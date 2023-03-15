@@ -36,8 +36,11 @@ class Update extends Command
     public function fire(): void
     {
         // Get default service
+        /** @var \InteractionDesignFoundation\GeoIP\GeoIP $geoip */
+        $geoip = app('geoip');
+
         /** @var \InteractionDesignFoundation\GeoIP\GeoIP $service */
-        $service = app('geoip')->getService();
+        $service = $geoip->getService();
 
         // Ensure the selected service supports updating
         if (! method_exists($service, 'update')) {
