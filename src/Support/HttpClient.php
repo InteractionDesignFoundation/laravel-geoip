@@ -13,7 +13,7 @@ class HttpClient
     protected int $http_code = 200;
 
     /** Last request error string. */
-    protected ?string $errors = null;
+    protected string $errors = "";
 
     /**
      * HttpClient constructor.
@@ -114,7 +114,7 @@ class HttpClient
     }
 
     /** Get curl errors */
-    public function getErrors(): ?string
+    public function getErrors(): string
     {
         return $this->errors;
     }

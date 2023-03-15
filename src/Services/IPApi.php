@@ -51,7 +51,7 @@ class IPApi extends AbstractService
         $data = $this->client->get('json/' . $ip);
 
         // Verify server response
-        if ($this->client->getErrors() !== null) {
+        if ($this->client->getErrors() !== "") {
             throw new \Exception('Request failed (' . $this->client->getErrors() . ')');
         }
 

@@ -41,7 +41,7 @@ class IPData extends AbstractService
         $data = $this->client->get($ip);
 
         // Verify server response
-        if ($this->client->getErrors() !== null || empty($data[0])) {
+        if ($this->client->getErrors() !== "" || empty($data[0])) {
             throw new Exception('Request failed (' . $this->client->getErrors() . ')');
         }
 
