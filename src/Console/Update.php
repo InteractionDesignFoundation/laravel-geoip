@@ -4,7 +4,7 @@ namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
 
-class Update extends Command
+final class Update extends Command
 {
     /**
      * The console command name.

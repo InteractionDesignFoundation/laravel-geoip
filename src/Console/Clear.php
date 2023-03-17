@@ -4,7 +4,7 @@ namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
 
-class Clear extends Command
+final class Clear extends Command
 {
     /**
      * The console command name.
