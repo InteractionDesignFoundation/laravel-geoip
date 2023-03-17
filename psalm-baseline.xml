@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <files psalm-version="5.8.0@9cf4f60a333f779ad3bc704a555920e81d4fdcda">
   <file src="src/Cache.php">
+    <MixedArgumentTypeCoercion>
+      <code>$value</code>
+    </MixedArgumentTypeCoercion>
     <MixedAssignment>
       <code>$value</code>
     </MixedAssignment>
@@ -8,7 +11,6 @@
       <code>bool</code>
     </MixedInferredReturnType>
     <MixedReturnStatement>
-      <code><![CDATA[$this->cache->flush()]]></code>
       <code><![CDATA[$this->cache->flush()]]></code>
     </MixedReturnStatement>
   </file>
@@ -50,18 +52,34 @@
     </PropertyNotSetInConstructor>
   </file>
   <file src="src/GeoIP.php">
+    <InaccessibleProperty>
+      <code><![CDATA[$location->cached]]></code>
+      <code><![CDATA[$location->currency]]></code>
+      <code><![CDATA[$location->default]]></code>
+    </InaccessibleProperty>
+    <InvalidArgument>
+      <code><![CDATA[$this->location]]></code>
+    </InvalidArgument>
     <InvalidReturnStatement>
+      <code>$location</code>
+      <code>$location</code>
       <code><![CDATA[$this->cache]]></code>
+      <code><![CDATA[$this->getService()->hydrate($this->default_location)]]></code>
+      <code><![CDATA[$this->getService()->hydrate($this->default_location)]]></code>
     </InvalidReturnStatement>
     <InvalidReturnType>
+      <code>Location</code>
       <code>\InteractionDesignFoundation\GeoIP\Cache</code>
     </InvalidReturnType>
     <MixedArgument>
       <code>$config</code>
+      <code><![CDATA[$location->iso_code]]></code>
       <code><![CDATA[$this->config('cache_expires', 30)]]></code>
-      <code><![CDATA[$this->config('cache_tags')]]></code>
-      <code>Level::Error</code>
     </MixedArgument>
+    <MixedArgumentTypeCoercion>
+      <code><![CDATA[$this->default_location]]></code>
+      <code><![CDATA[$this->default_location]]></code>
+    </MixedArgumentTypeCoercion>
     <MixedAssignment>
       <code>$class</code>
       <code>$config</code>
@@ -74,7 +92,6 @@
     </MixedOperand>
     <PossiblyNullArgument>
       <code>$ip</code>
-      <code><![CDATA[$location->iso_code]]></code>
     </PossiblyNullArgument>
     <PropertyNotSetInConstructor>
       <code>$location</code>
@@ -82,9 +99,9 @@
     <TooManyArguments>
       <code>shouldCache</code>
     </TooManyArguments>
-    <UndefinedClass>
-      <code>Level</code>
-    </UndefinedClass>
+    <UndefinedPropertyFetch>
+      <code><![CDATA[$location->iso_code]]></code>
+    </UndefinedPropertyFetch>
   </file>
   <file src="src/GeoIPServiceProvider.php">
     <MissingClosureParamType>
@@ -126,7 +143,44 @@
       <code>is_null($value) ? false : $value</code>
     </MixedReturnStatement>
   </file>
+  <file src="src/LocationResponse.php">
+    <RedundantCastGivenDocblockType>
+      <code><![CDATA[(bool) $attributes['cached']]]></code>
+      <code><![CDATA[(bool) $attributes['default']]]></code>
+      <code><![CDATA[(float) $attributes['lat']]]></code>
+      <code><![CDATA[(float) $attributes['lon']]]></code>
+      <code><![CDATA[(string) $attributes['city']]]></code>
+      <code><![CDATA[(string) $attributes['continent']]]></code>
+      <code><![CDATA[(string) $attributes['country']]]></code>
+      <code><![CDATA[(string) $attributes['currency']]]></code>
+      <code><![CDATA[(string) $attributes['ip']]]></code>
+      <code><![CDATA[(string) $attributes['iso_code']]]></code>
+      <code><![CDATA[(string) $attributes['postal_code']]]></code>
+      <code><![CDATA[(string) $attributes['state']]]></code>
+      <code><![CDATA[(string) $attributes['state_name']]]></code>
+      <code><![CDATA[(string) $attributes['timezone']]]></code>
+    </RedundantCastGivenDocblockType>
+  </file>
   <file src="src/Services/IPApi.php">
+    <ArgumentTypeCoercion>
+      <code><![CDATA[[
+            'ip' => $ip,
+            'iso_code' => $json->countryCode,
+            'country' => $json->country,
+            'city' => $json->city,
+            'state' => $json->region,
+            'state_name' => $json->regionName,
+            'postal_code' => $json->zip,
+            'lat' => $json->lat,
+            'lon' => $json->lon,
+            'timezone' => $json->timezone,
+            'continent' => $this->getContinent($json->countryCode),
+        ]]]></code>
+    </ArgumentTypeCoercion>
+    <InvalidArrayOffset>
+      <code>$data[0]</code>
+      <code>$data[0]</code>
+    </InvalidArrayOffset>
     <MixedArgument>
       <code>$data[0]</code>
       <code>$data[0]</code>
@@ -136,7 +190,6 @@
       <code><![CDATA[$this->config('continent_path')]]></code>
     </MixedArgument>
     <MixedAssignment>
-      <code><![CDATA[$base['query']['key']]]></code>
       <code>$json</code>
       <code>$path</code>
       <code><![CDATA[$this->continents]]></code>
@@ -166,13 +219,33 @@
     <PossiblyNullArrayOffset>
       <code>$output</code>
     </PossiblyNullArrayOffset>
-    <RedundantCondition>
-      <code><![CDATA[$this->client->getErrors() !== null]]></code>
-      <code>assert(is_string($message))</code>
-      <code>is_string($message)</code>
-    </RedundantCondition>
+    <PropertyNotSetInConstructor>
+      <code>$continents</code>
+    </PropertyNotSetInConstructor>
+    <UndefinedInterfaceMethod>
+      <code>getErrors</code>
+      <code>getErrors</code>
+      <code>getErrors</code>
+      <code>getErrors</code>
+    </UndefinedInterfaceMethod>
   </file>
   <file src="src/Services/IPData.php">
+    <ArgumentTypeCoercion>
+      <code><![CDATA[[
+            'ip' => $ip,
+            'iso_code' => $json['country_code'],
+            'country' => $json['country_name'],
+            'city' => $json['city'],
+            'state' => $json['region_code'],
+            'state_name' => $json['region'],
+            'postal_code' => $json['postal'],
+            'lat' => $json['latitude'],
+            'lon' => $json['longitude'],
+            'timezone' => Arr::get($json, 'time_zone.name'),
+            'continent' => Arr::get($json, 'continent_code'),
+            'currency' => Arr::get($json, 'currency.code'),
+        ]]]></code>
+    </ArgumentTypeCoercion>
     <MixedArgument>
       <code>$data[0]</code>
       <code>$json</code>
@@ -194,6 +267,15 @@
     </MixedAssignment>
   </file>
   <file src="src/Services/IPFinder.php">
+    <InvalidReturnStatement>
+      <code><![CDATA[$this->hydrate($json)]]></code>
+    </InvalidReturnStatement>
+    <InvalidReturnType>
+      <code>LocationResponse</code>
+    </InvalidReturnType>
+    <MethodSignatureMismatch>
+      <code>IPFinder</code>
+    </MethodSignatureMismatch>
     <MixedArgument>
       <code>$data[0]</code>
       <code>$json</code>
@@ -204,6 +286,9 @@
     <RedundantCondition>
       <code><![CDATA[$this->client->getErrors() !== null]]></code>
     </RedundantCondition>
+    <UndefinedClass>
+      <code>LocationResponse</code>
+    </UndefinedClass>
   </file>
   <file src="src/Services/IPGeoLocation.php">
     <MixedArgument>
@@ -221,6 +306,21 @@
     </RedundantCondition>
   </file>
   <file src="src/Services/MaxMindDatabase.php">
+    <ArgumentTypeCoercion>
+      <code><![CDATA[[
+            'ip' => $ip,
+            'iso_code' => $record->country->isoCode,
+            'country' => $record->country->name,
+            'city' => $record->city->name,
+            'state' => $record->mostSpecificSubdivision->isoCode,
+            'state_name' => $record->mostSpecificSubdivision->name,
+            'postal_code' => $record->postal->code,
+            'lat' => $record->location->latitude,
+            'lon' => $record->location->longitude,
+            'timezone' => $record->location->timeZone,
+            'continent' => $record->continent->code,
+        ]]]></code>
+    </ArgumentTypeCoercion>
     <ImplicitToStringCast>
       <code>$file</code>
     </ImplicitToStringCast>
@@ -243,6 +343,21 @@
     </PossiblyInvalidMethodCall>
   </file>
   <file src="src/Services/MaxMindWebService.php">
+    <ArgumentTypeCoercion>
+      <code><![CDATA[[
+            'ip' => $ip,
+            'iso_code' => $record->country->isoCode,
+            'country' => $record->country->name,
+            'city' => $record->city->name,
+            'state' => $record->mostSpecificSubdivision->isoCode,
+            'state_name' => $record->mostSpecificSubdivision->name,
+            'postal_code' => $record->postal->code,
+            'lat' => $record->location->latitude,
+            'lon' => $record->location->longitude,
+            'timezone' => $record->location->timeZone,
+            'continent' => $record->continent->code,
+        ]]]></code>
+    </ArgumentTypeCoercion>
     <MixedArgument>
       <code><![CDATA[$this->config('license_key')]]></code>
       <code><![CDATA[$this->config('locales', ['en'])]]></code>
