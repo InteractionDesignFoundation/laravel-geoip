@@ -2,48 +2,52 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use InteractionDesignFoundation\GeoIP\Location;
-use InteractionDesignFoundation\GeoIP\Support\HttpClient;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Http;
+use InteractionDesignFoundation\GeoIP\Exceptions\RequestFailedException;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 
-/**
- * Class GeoIP
- * @package InteractionDesignFoundation\GeoIP\Services
- */
 class IPFinder extends AbstractService
 {
-    /** Http client instance. */
-    protected HttpClient $client;
+    protected string $baseUrl = 'http://api.ipapi.com/api/';
 
     /** The "booting" method of the service. */
     public function boot(): void
     {
-        $this->client = new HttpClient([
-            'base_uri' => 'https://api.ipfinder.io/v1/',
-            'headers' => [
-                'User-Agent' => 'Laravel-GeoIP-InteractionDesignFoundation',
-            ],
-            'query'    => [
-                'token' => $this->config('key'),
-            ],
-        ]);
+        $apiKey = config('geoip.services.ipfinder.key');
+        assert(is_string($apiKey));
+
+        $this->query = [
+            'token' => $apiKey,
+        ];
     }
 
-    /**
-     * {@inheritdoc}
-     * @throws \Exception
-     */
-    public function locate(string $ip): Location
+    public function locate(string $ip): LocationResponse
     {
-        // Get data from client
-        $data = $this->client->get($ip);
-
-        // Verify server response
-        if ($this->client->getErrors() !== null || empty($data[0])) {
-            throw new \Exception('Request failed (' . $this->client->getErrors() . ')');
+        try {
+            /** @var array<string, string> $json */
+            $json = Http::get($this->formatUrl($ip), $this->query)->throw()->json();
+        } catch (RequestException $requestException) {
+            /** @var array<string, mixed> $errors */
+            $errors = $requestException->response->json();
+            throw RequestFailedException::requestFailed($errors);
         }
 
-        $json = json_decode($data[0], true);
-
-        return $this->hydrate($json);
+        return new LocationResponse(
+            $json['ip'],
+            $json['country_code'],
+            $json['country_name'],
+            $json['city'],
+            $json['region_code'],
+            $json['region_name'],
+            $json['zip'],
+            (float) $json['latitude'],
+            (float) $json['longitude'],
+            'Unknown',
+            $json['continent_code'],
+            'Unknown',
+            false,
+            false,
+        );
     }
 }
