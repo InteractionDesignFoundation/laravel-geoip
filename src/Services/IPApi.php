@@ -2,80 +2,82 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Arr;
-use InteractionDesignFoundation\GeoIP\Location;
-use InteractionDesignFoundation\GeoIP\Support\HttpClient;
+use Illuminate\Support\Facades\Http;
+use InteractionDesignFoundation\GeoIP\Exceptions\RequestFailedException;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 
 class IPApi extends AbstractService
 {
-    /** Http client instance. */
-    protected HttpClient $client;
+    protected string $baseUrl = 'http://ip-api.com/';
+   /**
+     * An array of continents.
+     *
+     * @var array<string, string> $continents
+     */
+    protected array $continents;
 
-    /** An array of continents. */
-    protected array $continents = [];
-
-    /** The "booting" method of the service. */
+    /** The "booting" method of the service.
+     *
+     * @throws \JsonException
+     */
     public function boot(): void
     {
-        $base = [
-            'base_uri' => 'http://ip-api.com/',
-            'headers' => [
-                'User-Agent' => 'Laravel-GeoIP',
-            ],
-            'query' => [
-                'fields' => 49663,
-                'lang' => $this->config('lang', ['en']),
-            ],
+        $apiKey = config('geoip.services.ipapi.key');
+        $lang = config('geoip.services.ipapi.lang');
+        assert(is_string($apiKey) && is_string($lang));
+
+        $this->query = [
+            'fields' => '49663',
+            'lang' => $lang,
+            'key' => $apiKey
         ];
 
-        // Using the Pro service
-        if ($this->config('key')) {
-            $base['base_uri'] = ($this->config('secure') ? 'https' : 'http') . '://pro.ip-api.com/';
-            $base['query']['key'] = $this->config('key');
-        }
+        $path = config('geoip.services.ipapi.continent_path');
+        assert(is_string($path));
 
-        $this->client = new HttpClient($base);
-
-        // Set continents
-        if (file_exists($this->config('continent_path'))) {
-            $this->continents = json_decode(file_get_contents($this->config('continent_path')), true);
+        if (file_exists($path)) {
+            $content = file_get_contents($path);
+            assert(is_string($content));
+            /** @var array<string, string> $continents */
+            $continents = json_decode(
+                $content, true, 512, JSON_THROW_ON_ERROR
+            );
+            $this->continents = $continents;
         }
     }
 
-    /** {@inheritdoc}
-     * @throws \Exception
-     */
-    public function locate(string $ip): Location
+    /** @see https://ip-api.com/docs/api:json The api documentation */
+    public function locate(string $ip): LocationResponse
     {
-        // Get data from client
-        $data = $this->client->get('json/' . $ip);
-
-        // Verify server response
-        if ($this->client->getErrors() !== "") {
-            throw new \Exception('Request failed (' . $this->client->getErrors() . ')');
+        try {
+            /** @var array<string, string> $json */
+            $json = Http::get($this->formatUrl("json/$ip"))->throw()->json();
+        } catch (RequestException $requestException) {
+            /** @var array<string, mixed> $errors */
+            $errors = $requestException->response->json();
+            throw RequestFailedException::requestFailed($errors);
         }
 
-        // Parse body content
-        $json = json_decode($data[0], false, 512, JSON_THROW_ON_ERROR);
+        $countryCode = $json['countryCode'];
 
-        // Verify response status
-        if ($json->status !== 'success') {
-            throw new \Exception('Request failed (' . $json->message . ')');
-        }
-
-        return $this->hydrate([
-            'ip' => $ip,
-            'iso_code' => $json->countryCode,
-            'country' => $json->country,
-            'city' => $json->city,
-            'state' => $json->region,
-            'state_name' => $json->regionName,
-            'postal_code' => $json->zip,
-            'lat' => $json->lat,
-            'lon' => $json->lon,
-            'timezone' => $json->timezone,
-            'continent' => $this->getContinent($json->countryCode),
-        ]);
+        return new LocationResponse(
+            $json['query'],
+            $countryCode,
+            $json['country'],
+            $json['city'],
+            $json['region'],
+            $json['regionName'],
+            $json['zip'],
+            (float) $json['lat'],
+            (float) $json['lon'],
+            $json['timezone'],
+            $this->getContinent($countryCode),
+            $json['currency'] ?? 'Unknown',
+            false,
+            false
+        );
     }
 
     /**
@@ -86,17 +88,13 @@ class IPApi extends AbstractService
      */
     public function update(): string
     {
-        $data = $this->client->get('https://dev.maxmind.com/static/csv/codes/country_continent.csv');
+        $data = file_get_contents('https://dev.maxmind.com/static/csv/codes/country_continent.csv');
 
-        // Verify server response
-        if ($this->client->getErrors() !== null) {
-            $message = $this->client->getErrors();
-            assert(is_string($message));
-            throw new \Exception($message);
+        if ($data === false) {
+            throw new \RuntimeException('Unable to get continent data.');
         }
 
-        $lines = explode("\n", $data[0]);
-
+        $lines = explode(PHP_EOL, $data);
         array_shift($lines);
 
         $output = [];
@@ -108,20 +106,24 @@ class IPApi extends AbstractService
                 continue;
             }
 
-            $output[$arr[0]] = $arr[1];
+            [$key, $value] = $arr;
+            assert($key !== null);
+            $output[$key] = $value;
         }
 
-        // Get path
-        $path = $this->config('continent_path');
+        $path = config('geoip.services.ipapi.continent_path');
+        assert(is_string($path));
 
-        file_put_contents($path, json_encode($output));
+        file_put_contents($path, json_encode($output, JSON_THROW_ON_ERROR));
 
-        return "Continent file ({$path}) updated.";
+        return "Continent file [$path] updated.";
     }
 
     /** Get continent based on country code. */
     private function getContinent(string $code): string
     {
-        return Arr::get($this->continents, $code, 'Unknown');
+        $continent = Arr::get($this->continents, $code, 'Unknown');
+        assert(is_string($continent));
+        return $continent;
     }
 }
