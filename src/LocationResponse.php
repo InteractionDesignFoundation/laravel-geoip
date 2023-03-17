@@ -16,10 +16,28 @@ final class LocationResponse
         public readonly float $lon,
         public readonly string $timezone,
         public readonly string $continent,
-        public readonly string $currency,
-        public readonly bool $default,
-        public readonly bool $cached,
+        public string $currency,
+        public bool $default,
+        public bool $cached,
     ) {
+    }
+
+    public function setCached(bool $cached): self
+    {
+        $this->cached = $cached;
+        return $this;
+    }
+
+    public function setDefault(bool $default): self
+    {
+        $this->default = $default;
+        return $this;
+    }
+
+    public function setCurrency(string $currency): self
+    {
+        $this->currency = $currency;
+        return $this;
     }
 
     /**
@@ -29,7 +47,6 @@ final class LocationResponse
      *     country: string,
      *     city: string,
      *     state: string,
-     *     city: string,
      *     state_name: string,
      *     postal_code: string,
      *     lat: float,
@@ -40,7 +57,6 @@ final class LocationResponse
      *     default: bool,
      *     cached: bool,
      * }  $attributes
-     * @return static
      */
     public static function fromArray(array $attributes): self
     {
