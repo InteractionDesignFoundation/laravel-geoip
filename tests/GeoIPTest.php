@@ -17,9 +17,7 @@ class GeoIPTest extends TestCase
      */
     public function testGetService(): void
     {
-        $geo_ip = $this->makeGeoIP([
-            'service' => 'maxmind_database',
-        ]);
+        $geo_ip = $this->makeGeoIP();
 
         $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Contracts\LocationProvider::class, $geo_ip->getService());
     }
