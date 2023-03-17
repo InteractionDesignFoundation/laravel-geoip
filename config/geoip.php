@@ -1,5 +1,7 @@
 <?php
 
+use InteractionDesignFoundation\GeoIP\LocationResponse;
+
 return [
 
     /*
@@ -68,7 +70,7 @@ return [
         'ipapi' => [
             'class' => \InteractionDesignFoundation\GeoIP\Services\IPApi::class,
             'secure' => true,
-            'key' => env('IPAPI_KEY'),
+            'key' => env('IPAPI_KEY', 'unknown'),
             'continent_path' => storage_path('app/continents.json'),
             'lang' => 'en',
         ],
@@ -146,20 +148,20 @@ return [
     |
     */
 
-    'default_location' => [
-        'ip' => '127.0.0.0',
-        'iso_code' => 'US',
-        'country' => 'United States',
-        'city' => 'New Haven',
-        'state' => 'CT',
-        'state_name' => 'Connecticut',
-        'postal_code' => '06510',
-        'lat' => 41.31,
-        'lon' => -72.92,
-        'timezone' => 'America/New_York',
-        'continent' => 'NA',
-        'default' => true,
-        'currency' => 'USD',
-    ],
-
+    'default_location' =>  new LocationResponse(
+        '127.0.0.0',
+        'US',
+        'United States',
+        'New Haven',
+        'CT',
+        'Connecticut',
+        '06510',
+        41.31,
+        -72.92,
+        'America/New_York',
+        'NA',
+        'USD',
+        true,
+        false
+    )
 ];
