@@ -30,7 +30,7 @@ class IPGeoLocation extends AbstractService
         $this->query['ip'] = $ip;
 
         try {
-            /** @var array<string, string> $json */
+            /** @var array<string, string|float|array<string, string>> $json */
             $json = Http::get($this->baseUrl, $this->query)->throw()->json();
         } catch (RequestException $requestException) {
             /** @var array<string, mixed> $errors */
@@ -38,18 +38,21 @@ class IPGeoLocation extends AbstractService
             throw RequestFailedException::requestFailed($errors);
         }
 
+        $latitude = is_string($json['latitude']) || is_float($json['latitude']) ? (float) $json['latitude'] : 0.0;
+        $longitude = is_string($json['longitude']) || is_float($json['longitude']) ? (float) $json['longitude'] : 0.0;
+
         return new LocationResponse(
-            $json['ip'],
-            $json['country_code2'],
-            $json['country_name'],
-            $json['city'],
+            is_string($json['ip']) ? $json['ip'] : 'Unknown',
+            is_string($json['country_code2']) ? $json['country_code2'] : 'Unknown',
+            is_string($json['country_name']) ? $json['country_name'] : 'Unknown',
+            is_string($json['city']) ? $json['city'] : 'Unknown',
             'Unknown',
-            $json['state_prov'],
-            $json['zipcode'],
-            (float) $json['latitude'],
-            (float) $json['longitude'],
+            is_string($json['state_prov']) ? $json['state_prov'] : 'Unknown',
+            is_string($json['zipcode']) ? $json['zipcode'] : 'Unknown',
+            $latitude,
+            $longitude,
             $json['time_zone']['name'] ?? 'Unknown',
-            $json['continent_code'],
+            is_string($json['continent_code']) ? $json['continent_code'] : 'Unknown',
             $json['currency']['code'] ?? 'Unknown',
             false,
             false,

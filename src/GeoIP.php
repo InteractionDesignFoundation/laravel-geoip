@@ -41,7 +41,7 @@ final class GeoIP
         $cacheExpires = config('geoip.cache_expires', 30);
         /** @var list<string> $cacheTags */
         $cacheTags = config('geoip.cache_tags');
-        assert(is_array($cacheTags) && is_int($cacheExpires));
+        assert(is_int($cacheExpires));
 
         $this->cache = new Cache($cache, $cacheTags, $cacheExpires);
 

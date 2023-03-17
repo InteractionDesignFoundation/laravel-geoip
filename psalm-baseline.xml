@@ -43,16 +43,9 @@
     </PropertyNotSetInConstructor>
   </file>
   <file src="src/GeoIP.php">
-    <MixedArgument/>
-    <MixedAssignment/>
     <PropertyNotSetInConstructor>
       <code>$location</code>
     </PropertyNotSetInConstructor>
-  </file>
-  <file src="src/GeoIPServiceProvider.php">
-    <MixedArgument>
-      <code><![CDATA[$app['cache']]]></code>
-    </MixedArgument>
   </file>
   <file src="src/LocationResponse.php">
     <RedundantCastGivenDocblockType>
@@ -76,12 +69,6 @@
     <PropertyNotSetInConstructor>
       <code>$continents</code>
     </PropertyNotSetInConstructor>
-  </file>
-  <file src="src/Services/IPData.php">
-    <MixedArgument/>
-  </file>
-  <file src="src/Services/IPGeoLocation.php">
-    <MixedArgument/>
   </file>
   <file src="src/Services/MaxMindDatabase.php">
     <ImplicitToStringCast>

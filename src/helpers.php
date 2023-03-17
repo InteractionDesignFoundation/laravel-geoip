@@ -6,7 +6,7 @@ if (!function_exists('geoip')) {
      *
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
-    function geoip(string $ip = null): \InteractionDesignFoundation\GeoIP\GeoIP|\InteractionDesignFoundation\GeoIP\Location
+    function geoip(string $ip = null): \InteractionDesignFoundation\GeoIP\GeoIP|\InteractionDesignFoundation\GeoIP\LocationResponse
     {
         /** @var \InteractionDesignFoundation\GeoIP\GeoIP $geoip */
         $geoip = app('geoip');

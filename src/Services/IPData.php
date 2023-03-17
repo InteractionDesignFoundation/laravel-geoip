@@ -31,7 +31,7 @@ final class IPData extends AbstractService
     {
         // Get data from client
         try {
-            /** @var array<string, string> $json */
+            /** @var array<string, string|float|array<string, string>> $json */
             $json = Http::get($this->formatUrl($ip), $this->query)->throw()->json();
         } catch (RequestException $requestException) {
             /** @var array<string, mixed> $errors */
@@ -39,19 +39,33 @@ final class IPData extends AbstractService
             throw RequestFailedException::requestFailed($errors);
         }
 
+        $countryCode = $json['country_code'];
+        $countryName = $json['country_name'];
+        $city = $json['city'];
+        $regionCode = $json['region_code'];
+        $region = $json['region'];
+        $postal = $json['postal'];
+        $continentCode = $json['continent_code'];
+        $latitude = is_string($json['latitude']) || is_float($json['latitude']) ? (float) $json['latitude'] : 0.0;
+        $longitude = is_string($json['longitude']) || is_float($json['longitude']) ? (float) $json['longitude'] : 0.0;
+        $timezone = is_array($json['time_zone']) ? $json['time_zone']['name'] : 'Unknown';
+        $currency = is_array($json['currency']) ? $json['currency']['code'] : 'Unknown';
+
+        assert(is_string($countryCode) && is_string($countryName) && is_string($city) && is_string($regionCode) && is_string($region) && is_string($postal) && is_string($continentCode));
+
         return new LocationResponse(
             $ip,
-            $json['country_code'],
-            $json['country_name'],
-            $json['city'],
-            $json['region_code'],
-            $json['region'],
-            $json['postal'],
-            (float) $json['latitude'],
-            (float) $json['longitude'],
-            Arr::get($json, 'time_zone.name', 'Unknown'),
-            Arr::get($json, 'continent_code', 'Unknown'),
-            Arr::get($json, 'currency.code', 'Unknown'),
+            $countryCode,
+            $countryName,
+            $city,
+            $regionCode,
+            $region,
+            $postal,
+            $latitude,
+            $longitude,
+            $timezone,
+            $continentCode,
+            $currency,
             false,
             false
         );
