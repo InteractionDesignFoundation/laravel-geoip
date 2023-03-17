@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 use InteractionDesignFoundation\GeoIP\Exceptions\RequestFailedException;
 use InteractionDesignFoundation\GeoIP\LocationResponse;
 
-class IPApi extends AbstractService
+final class IPApi extends AbstractService
 {
     protected string $baseUrl = 'http://ip-api.com/';
    /**
@@ -53,7 +53,7 @@ class IPApi extends AbstractService
     {
         try {
             /** @var array<string, string> $json */
-            $json = Http::get($this->formatUrl("json/$ip"))->throw()->json();
+            $json = Http::get($this->formatUrl("json/$ip"), $this->query)->throw()->json();
         } catch (RequestException $requestException) {
             /** @var array<string, mixed> $errors */
             $errors = $requestException->response->json();
