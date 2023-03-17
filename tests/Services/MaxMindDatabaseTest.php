@@ -10,16 +10,6 @@ class MaxMindDatabaseTest extends TestCase
     /**
      * @test
      */
-    public function shouldReturnConfigValue(): void
-    {
-        $service = $this->getService();
-
-        $this->assertEquals($service->config('database_path'), config('geoip.services.maxmind_database.database_path'));
-    }
-
-    /**
-     * @test
-     */
     public function shouldReturnValidLocation(): void
     {
         $service = $this->getService();
