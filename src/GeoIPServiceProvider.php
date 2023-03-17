@@ -2,7 +2,6 @@
 
 namespace InteractionDesignFoundation\GeoIP;
 
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;
 use Illuminate\Support\ServiceProvider;
 
@@ -34,7 +33,7 @@ class GeoIPServiceProvider extends ServiceProvider
      */
     public function registerGeoIpService(): void
     {
-        $this->app->singleton('geoip', function (Application $app) {
+        $this->app->singleton('geoip', function ($app) {
             return new GeoIP($app['cache']);
         });
     }

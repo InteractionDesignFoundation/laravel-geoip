@@ -39,6 +39,7 @@ final class GeoIP
         $this->setDefaultLocation();
 
         $cacheExpires = config('geoip.cache_expires', 30);
+        /** @var list<string> $cacheTags */
         $cacheTags = config('geoip.cache_tags');
         assert(is_array($cacheTags) && is_int($cacheExpires));
 
@@ -103,7 +104,7 @@ final class GeoIP
 
             return $location;
         } catch (\Exception $e) {
-            $shouldLogFailures = config('geoip.log_failures', true);
+            $shouldLogFailures = (bool) config('geoip.log_failures', true);
             if ($shouldLogFailures === true) {
                 $log = new Logger('geoip');
                 $log->pushHandler(new StreamHandler(storage_path('logs/geoip.log'), Level::Error));
@@ -123,7 +124,7 @@ final class GeoIP
      */
     public function getCurrency(string $iso): string
     {
-        $shouldIncludeCurrency = config('geoip.include_currency', false);
+        $shouldIncludeCurrency = (bool) config('geoip.include_currency', false);
         if ($this->currencies === [] && $shouldIncludeCurrency) {
             $this->currencies = include(__DIR__ . '/Support/Currencies.php');
         }
@@ -160,6 +161,7 @@ final class GeoIP
         $currentServiceConfig = config("geoip.services.$currentService");
         assert(is_array($currentServiceConfig));
         $class = $currentServiceConfig['class'];
+        assert(is_string($class));
 
         // Sanity check
         if (! is_subclass_of($class, LocationProvider::class)) {
@@ -230,6 +232,7 @@ final class GeoIP
 
     private function shouldCache(): bool
     {
+        /** @var string $cacheConfig */
         $cacheConfig = config('geoip.cache', 'none');
 
         return match ($cacheConfig) {
@@ -241,6 +244,7 @@ final class GeoIP
 
     private function setDefaultLocation(): void
     {
+        /** @var ?\InteractionDesignFoundation\GeoIP\LocationResponse $defaultLocation */
         $defaultLocation = config('geoip.default_location');
         if ($defaultLocation instanceof LocationResponse) {
             $this->defaultLocation = $defaultLocation;
