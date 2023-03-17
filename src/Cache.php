@@ -4,41 +4,47 @@ namespace InteractionDesignFoundation\GeoIP;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Cache\TaggedCache;
+use Illuminate\Contracts\Cache\Repository;
 
-class Cache
+final class Cache
 {
-    /** Instance of cache manager. */
     protected CacheManager | TaggedCache $cache;
 
-    /** Lifetime of the cache. */
-    protected int $expires;
-
-    /** Create a new cache instance.  */
-    public function __construct(CacheManager $cache, array $tags, int $expires = 30)
-    {
-        $this->cache = $tags ? $cache->tags($tags) : $cache;
-        $this->expires = $expires;
+    /**
+     * Create a new cache instance.
+     * @param list<string> $tags
+     */
+    public function __construct(
+        CacheManager | TaggedCache $cache,
+        array $tags = [],
+        private readonly int $expires = 30
+    ) {
+        $this->cache = $cache;
+        if ($this->cache instanceof TaggedCache) {
+            $this->cache->tags($tags);
+        }
     }
 
     /** Get an item from the cache. */
-    public function get(string $name): ?Location
+    public function get(string $name): ?LocationResponse
     {
         $value = $this->cache->get($name);
 
-        return is_array($value)
-            ? new Location($value)
-            : null;
+        return $value instanceof LocationResponse ? $value : null;
     }
 
     /** Store an item in cache. */
-    public function set(string $name, Location $location): void
+    public function set(string $name, LocationResponse $location): void
     {
         $this->cache->put($name, $location->toArray(), $this->expires);
     }
 
-    /** Flush cache for tags. */
     public function flush(): bool
     {
-        return $this->cache->flush();
+        if (method_exists($this->cache, 'flush')) {
+            $this->cache->flush();
+        }
+
+        return true;
     }
 }
