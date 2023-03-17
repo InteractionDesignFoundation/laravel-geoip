@@ -2,44 +2,33 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use InteractionDesignFoundation\GeoIP\Location;
-use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Contracts\LocationProvider;
 
 abstract class AbstractService implements LocationProvider
 {
-    /** Driver config */
-    protected array $config = [];
+    protected string $baseUrl = "PLEASE_SET_THE_CORRECT_BASE_URL";
+
+    /** @var array<string, string> $query */
+    protected array $query = [];
+
+    /** @var array<string, string> $headers */
+    protected array $headers = [];
 
     /** Create a new service instance. */
-    public function __construct(array $config = [])
+    public function __construct()
     {
-        $this->config = $config;
-
         $this->boot();
     }
 
     /** The "booting" method of the service. */
-    public function boot(): void
-    {
-        //
-    }
+    abstract public function boot(): void;
 
-    public function hydrate(array $attributes = []): Location
+    protected function formatUrl(string $url): string
     {
-        return new Location($attributes);
-    }
-
-    /**
-     * Get configuration value.
-     *
-     * @param string $key
-     * @param mixed  $default
-     *
-     * @return mixed
-     */
-    public function config(string $key, $default = null)
-    {
-        return Arr::get($this->config, $key, $default);
+        // Check for URL scheme
+        if (parse_url($url, PHP_URL_SCHEME) === null) {
+            $url = $this->baseUrl.$url;
+        }
+        return $url;
     }
 }
