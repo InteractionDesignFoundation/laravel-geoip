@@ -2,18 +2,15 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use InteractionDesignFoundation\GeoIP\Location;
-use InteractionDesignFoundation\GeoIP\Support\HttpClient;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Http;
+use InteractionDesignFoundation\GeoIP\Exceptions\RequestFailedException;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 
+/** @see https://ipgeolocation.io/documentation/ip-geolocation-api.html */
 class IPGeoLocation extends AbstractService
 {
-    /**
-     * Http client instance.
-     *
-     * @var HttpClient
-     */
-    protected $client;
-
+    protected string $baseUrl = 'https://api.ipgeolocation.io/ipgeo/';
     /**
      * The "booting" method of the service.
      *
@@ -21,31 +18,41 @@ class IPGeoLocation extends AbstractService
      */
     public function boot(): void
     {
-        $base = [
-            'base_uri' => 'https://api.ipgeolocation.io/',
-        ];
+        $apiKey = config('geoip.services.ipgeolocation.key');
+        assert(is_string($apiKey));
 
-        if ($this->config('key')) {
-            $base['base_uri'] = "{$base['base_uri']}ipgeo?apiKey=" . $this->config('key');
-        }
-
-        $this->client = new HttpClient($base);
+        $this->query = ['apiKey' => $apiKey];
     }
 
 
-    public function locate(string $ip): Location
+    public function locate(string $ip): LocationResponse
     {
-        // Get data from client
-        $data = $this->client->get('&ip=' . $ip);
+        $this->query['ip'] = $ip;
 
-        // Verify server response
-        if ($this->client->getErrors() !== null) {
-            throw new \Exception('Request failed (' . $this->client->getErrors() . ')');
+        try {
+            /** @var array<string, string> $json */
+            $json = Http::get($this->baseUrl, $this->query)->throw()->json();
+        } catch (RequestException $requestException) {
+            /** @var array<string, mixed> $errors */
+            $errors = $requestException->response->json();
+            throw RequestFailedException::requestFailed($errors);
         }
 
-        // Parse body content
-        $json = json_decode($data[0], true);
-
-        return $this->hydrate($json);
+        return new LocationResponse(
+            $json['ip'],
+            $json['country_code2'],
+            $json['country_name'],
+            $json['city'],
+            'Unknown',
+            $json['state_prov'],
+            $json['zipcode'],
+            (float) $json['latitude'],
+            (float) $json['longitude'],
+            $json['time_zone']['name'] ?? 'Unknown',
+            $json['continent_code'],
+            $json['currency']['code'] ?? 'Unknown',
+            false,
+            false,
+        );
     }
 }
