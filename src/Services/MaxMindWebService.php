@@ -3,7 +3,7 @@
 namespace InteractionDesignFoundation\GeoIP\Services;
 
 use GeoIp2\WebService\Client;
-use InteractionDesignFoundation\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 
 class MaxMindWebService extends AbstractService
 {
@@ -13,32 +13,38 @@ class MaxMindWebService extends AbstractService
     /** The "booting" method of the service.  */
     public function boot(): void
     {
+        $userId = config('geoip.services.maxmind_api.user_id');
+        $licenseKey = config('geoip.services.maxmind_api.license_key');
+        $locales = config('geoip.services.maxmind_api.locales', ['en']);
+        assert(is_int($userId) && is_string($licenseKey) && is_array($locales));
+
         $this->client = new Client(
-            $this->config('user_id'),
-            $this->config('license_key'),
-            $this->config('locales', ['en'])
+            $userId, $licenseKey, $locales
         );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function locate(string $ip): Location
+    public function locate(string $ip): LocationResponse
     {
         $record = $this->client->city($ip);
 
-        return $this->hydrate([
-            'ip' => $ip,
-            'iso_code' => $record->country->isoCode,
-            'country' => $record->country->name,
-            'city' => $record->city->name,
-            'state' => $record->mostSpecificSubdivision->isoCode,
-            'state_name' => $record->mostSpecificSubdivision->name,
-            'postal_code' => $record->postal->code,
-            'lat' => $record->location->latitude,
-            'lon' => $record->location->longitude,
-            'timezone' => $record->location->timeZone,
-            'continent' => $record->continent->code,
-        ]);
+        return new LocationResponse(
+            $ip,
+            (string) $record->country->isoCode,
+            (string) $record->country->name,
+            (string) $record->city->name,
+            (string) $record->mostSpecificSubdivision->isoCode,
+            (string) $record->mostSpecificSubdivision->name,
+            (string) $record->postal->code,
+            (float) $record->location->latitude,
+            (float) $record->location->longitude,
+            (string) $record->location->timeZone,
+            (string) $record->continent->code,
+            'Unknown',
+            false,
+            false,
+        );
     }
 }
