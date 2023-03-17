@@ -3,7 +3,7 @@
 namespace InteractionDesignFoundation\GeoIP\Services;
 
 use Illuminate\Support\Facades\Storage;
-use InteractionDesignFoundation\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 use PharData;
 use Exception;
 use GeoIp2\Database\Reader;
@@ -19,7 +19,7 @@ class MaxMindDatabase extends AbstractService
      */
     public function boot(): void
     {
-        $path = $this->config('database_path');
+        $path = config('geoip.services.maxmind_database.database_path');
         assert(is_string($path));
 
         // Copy test database for now
@@ -32,29 +32,32 @@ class MaxMindDatabase extends AbstractService
             copy(__DIR__ . '/../../resources/geoip.mmdb', $path);
         }
 
-        $locales = $this->config('locales', ['en']);
+        $locales = config('geoip.services.maxmind_database.locales', ['en']);
         assert(is_array($locales));
 
         $this->reader = new Reader($path, $locales);
     }
 
-    public function locate(string $ip): Location
+    public function locate(string $ip): LocationResponse
     {
         $record = $this->reader->city($ip);
 
-        return $this->hydrate([
-            'ip' => $ip,
-            'iso_code' => $record->country->isoCode,
-            'country' => $record->country->name,
-            'city' => $record->city->name,
-            'state' => $record->mostSpecificSubdivision->isoCode,
-            'state_name' => $record->mostSpecificSubdivision->name,
-            'postal_code' => $record->postal->code,
-            'lat' => $record->location->latitude,
-            'lon' => $record->location->longitude,
-            'timezone' => $record->location->timeZone,
-            'continent' => $record->continent->code,
-        ]);
+        return new LocationResponse(
+            $ip,
+            (string) $record->country->isoCode,
+            (string) $record->country->name,
+            (string) $record->city->name,
+            (string) $record->mostSpecificSubdivision->isoCode,
+            (string) $record->mostSpecificSubdivision->name,
+            (string) $record->postal->code,
+            (float) $record->location->latitude,
+            (float) $record->location->longitude,
+            (string) $record->location->timeZone,
+            (string) $record->continent->code,
+            'Unknown',
+            false,
+            false
+        );
     }
 
     /**
@@ -65,14 +68,15 @@ class MaxMindDatabase extends AbstractService
      */
     public function update(): string
     {
-        if ($this->config('database_path', false) === false) {
+        $databasePath = config('geoip.services.maxmind_database.database_path');
+        if ($databasePath === false) {
             throw new Exception('Database path not set in config file.');
         }
 
-        $this->withTemporaryDirectory(function ($directory) {
+        $this->withTemporaryDirectory(function (string $directory) {
             $tarFile = sprintf('%s/maxmind.tar.gz', $directory);
 
-            $path = $this->config('update_url');
+            $path = config('geoip.services.maxmind_database.update_url');
             assert(is_string($path));
 
             file_put_contents($tarFile, fopen($path, 'rb'));
@@ -85,13 +89,11 @@ class MaxMindDatabase extends AbstractService
 
             $archive->extractTo($directory, $relativePath);
 
-            $databasePath = $this->config('database_path');
+            $databasePath = config('geoip.services.maxmind_database.database_path');
             assert(is_string($databasePath));
 
             Storage::put($databasePath, fopen("$directory/$relativePath", 'rb'));
         });
-
-        $databasePath = $this->config('database_path');
         assert(is_string($databasePath));
 
         return "Database file ($databasePath) updated.";
