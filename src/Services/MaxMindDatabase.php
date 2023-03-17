@@ -25,7 +25,7 @@ class MaxMindDatabase extends AbstractService
         // Copy test database for now
         if (! is_file($path)) {
             $concurrentDirectory = dirname($path);
-            if (! mkdir($concurrentDirectory) && ! is_dir($concurrentDirectory)) {
+            if (! @mkdir($concurrentDirectory) && ! is_dir($concurrentDirectory)) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
             }
 

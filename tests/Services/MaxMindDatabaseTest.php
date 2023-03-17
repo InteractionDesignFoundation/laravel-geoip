@@ -7,9 +7,7 @@ use InteractionDesignFoundation\GeoIP\Tests\TestCase;
 
 class MaxMindDatabaseTest extends TestCase
 {
-    /**
-     * @test
-     */
+    /** @test */
     public function shouldReturnValidLocation(): void
     {
         $service = $this->getService();
@@ -20,9 +18,7 @@ class MaxMindDatabaseTest extends TestCase
         $this->assertFalse($location->default);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function shouldReturnInvalidLocation(): void
     {
         $service = $this->getService();
