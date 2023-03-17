@@ -2,19 +2,15 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Exception;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Arr;
-use InteractionDesignFoundation\GeoIP\Support\HttpClient;
-use InteractionDesignFoundation\GeoIP\Location;
+use Illuminate\Support\Facades\Http;
+use InteractionDesignFoundation\GeoIP\Exceptions\RequestFailedException;
+use InteractionDesignFoundation\GeoIP\LocationResponse;
 
-/**
- * Class GeoIP
- * @package InteractionDesignFoundation\GeoIP\Services
- */
-class IPData extends AbstractService
+final class IPData extends AbstractService
 {
-    /** Http client instance. */
-    protected HttpClient $client;
+    protected string $baseUrl = 'https://api.ipdata.co/';
 
     /**
      * The "booting" method of the service.
@@ -23,43 +19,41 @@ class IPData extends AbstractService
      */
     public function boot(): void
     {
-        $this->client = new HttpClient([
-            'base_uri' => 'https://api.ipdata.co/',
-            'query'    => [
-                'api-key' => $this->config('key'),
-            ],
-        ]);
+        $apiKey = config('geoip.services.ipdata.key');
+        assert(is_string($apiKey));
+
+        $this->query = [
+            'api-key' => $apiKey
+        ];
     }
 
-    /**
-     * {@inheritdoc}
-     * @throws Exception
-     */
-    public function locate(string $ip): Location
+    public function locate(string $ip): LocationResponse
     {
         // Get data from client
-        $data = $this->client->get($ip);
-
-        // Verify server response
-        if ($this->client->getErrors() !== "" || empty($data[0])) {
-            throw new Exception('Request failed (' . $this->client->getErrors() . ')');
+        try {
+            /** @var array<string, string> $json */
+            $json = Http::get($this->formatUrl($ip), $this->query)->throw()->json();
+        } catch (RequestException $requestException) {
+            /** @var array<string, mixed> $errors */
+            $errors = $requestException->response->json();
+            throw RequestFailedException::requestFailed($errors);
         }
 
-        $json = json_decode($data[0], true);
-
-        return $this->hydrate([
-            'ip' => $ip,
-            'iso_code' => $json['country_code'],
-            'country' => $json['country_name'],
-            'city' => $json['city'],
-            'state' => $json['region_code'],
-            'state_name' => $json['region'],
-            'postal_code' => $json['postal'],
-            'lat' => $json['latitude'],
-            'lon' => $json['longitude'],
-            'timezone' => Arr::get($json, 'time_zone.name'),
-            'continent' => Arr::get($json, 'continent_code'),
-            'currency' => Arr::get($json, 'currency.code'),
-        ]);
+        return new LocationResponse(
+            $ip,
+            $json['country_code'],
+            $json['country_name'],
+            $json['city'],
+            $json['region_code'],
+            $json['region'],
+            $json['postal'],
+            (float) $json['latitude'],
+            (float) $json['longitude'],
+            Arr::get($json, 'time_zone.name', 'Unknown'),
+            Arr::get($json, 'continent_code', 'Unknown'),
+            Arr::get($json, 'currency.code', 'Unknown'),
+            false,
+            false
+        );
     }
 }
