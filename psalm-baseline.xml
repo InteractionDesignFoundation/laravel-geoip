@@ -81,6 +81,7 @@
     <DeprecatedProperty>
       <code><![CDATA[$this->remote_ip]]></code>
       <code><![CDATA[$this->remote_ip]]></code>
+      <code><![CDATA[$this->remote_ip]]></code>
     </DeprecatedProperty>
     <DocblockTypeContradiction>
       <code><![CDATA[$this->currencies === null]]></code>
@@ -146,6 +147,7 @@
     </PropertyTypeCoercion>
     <RiskyTruthyFalsyComparison>
       <code><![CDATA[! $location->currency]]></code>
+      <code><![CDATA[! ($this->default_location['ip'] ?? false)]]></code>
       <code><![CDATA[$address = getenv($key)]]></code>
       <code><![CDATA[$ip]]></code>
     </RiskyTruthyFalsyComparison>
