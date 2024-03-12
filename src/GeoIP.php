@@ -114,9 +114,7 @@ class GeoIP
         }
     }
 
-    /**
-     * @param (\Closure():\InteractionDesignFoundation\GeoIP\Location)|null $defaultLocationResolver
-     */
+    /** @param (\Closure():\InteractionDesignFoundation\GeoIP\Location)|null $defaultLocationResolver */
     public static function resolveDefaultLocationUsing(?\Closure $defaultLocationResolver): void
     {
         self::$defaultLocationResolver = $defaultLocationResolver;
