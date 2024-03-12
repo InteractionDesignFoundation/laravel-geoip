@@ -80,6 +80,12 @@ class GeoIP
     ];
 
     /**
+     * Resolver for the default Location.
+     * @var (\Closure():\InteractionDesignFoundation\GeoIP\Location)|null
+     */
+    public static ?\Closure $defaultLocationResolver = null;
+
+    /**
      * Create a new GeoIP instance.
      *
      * @param array $config
@@ -98,13 +104,22 @@ class GeoIP
         $this->cache->setPrefix((string) $this->config('cache_prefix'));
 
         // Set custom default location
-        $this->default_location = array_merge(
-            $this->default_location,
-            $this->config('default_location', [])
-        );
+        $this->default_location = is_callable(self::$defaultLocationResolver)
+            ? call_user_func(self::$defaultLocationResolver)->toArray()
+            : array_merge($this->default_location, $this->config('default_location', []));
 
-        // Set IP
-        $this->remote_ip = $this->default_location['ip'] = $this->getClientIP();
+        $this->remote_ip = $this->getClientIP();
+        if (! ($this->default_location['ip'] ?? false)) { // backward compatibility hack
+            $this->default_location['ip'] = $this->remote_ip;
+        }
+    }
+
+    /**
+     * @param (\Closure():\InteractionDesignFoundation\GeoIP\Location)|null $defaultLocationResolver
+     */
+    public static function resolveDefaultLocationUsing(?\Closure $defaultLocationResolver): void
+    {
+        self::$defaultLocationResolver = $defaultLocationResolver;
     }
 
     /**

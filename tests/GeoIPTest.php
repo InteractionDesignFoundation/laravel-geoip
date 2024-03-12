@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
+use InteractionDesignFoundation\GeoIP\GeoIP;
+use InteractionDesignFoundation\GeoIP\Location;
+
 /**
  * @covers \InteractionDesignFoundation\GeoIP\GeoIP
  */
@@ -37,5 +40,22 @@ class GeoIPTest extends TestCase
         $geoIp = $this->makeGeoIP();
 
         $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Cache::class, $geoIp->getCache());
+    }
+
+    /** @test */
+    public function it_gets_default_location_using_resolver_if_it_is_specified(): void
+    {
+        GeoIP::resolveDefaultLocationUsing(static function (): Location {
+            return new Location([
+                'ip' => '192.168.0.42',
+                'iso_code' => 'CA',
+            ]);
+        });
+        $geoIp = $this->makeGeoIP();
+
+        $defaultLocation = $geoIp->getLocation();
+
+        $this->assertSame($defaultLocation['ip'], '192.168.0.42');
+        $this->assertSame($defaultLocation['iso_code'], 'CA');
     }
 }
