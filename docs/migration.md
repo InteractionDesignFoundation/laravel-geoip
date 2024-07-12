@@ -9,8 +9,8 @@ To migrate from `torann/geoip` you simply need to :
 
 2. update namespaces in your application:
 ```diff
--use Torann\GeoIP;
-+use InteractionDesignFoundation\GeoIP;
--use Torann\Location;
-+use InteractionDesignFoundation\Location;
+-use Torann\GeoIP\GeoIP;
+-use Torann\GeoIP\Location;
++use InteractionDesignFoundation\GeoIP\GeoIP;
++use InteractionDesignFoundation\GeoIP\Location;
 ```
