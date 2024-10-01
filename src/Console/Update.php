@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
+use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
 
 class Update extends Command
 {
@@ -41,7 +42,13 @@ class Update extends Command
     public function fire()
     {
         // Get default service
-        $service = app('geoip')->getService();
+        try {
+            $service = app('geoip')->getService();
+        } catch(MissingConfigurationException $e) {
+            $this->components->error($e->getMessage()) ;
+            
+            return static::FAILURE ;
+        }
 
         // Ensure the selected service supports updating
         if (method_exists($service, 'update') === false) {

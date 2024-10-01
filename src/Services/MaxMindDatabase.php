@@ -24,6 +24,8 @@ class MaxMindDatabase extends AbstractService
      */
     public function boot()
     {
+        $this->ensureConfigurationParameterDefined('database_path') ;
+
         $path = $this->config('database_path');
         assert(is_string($path), 'Invalid "database_path" config value');
 
