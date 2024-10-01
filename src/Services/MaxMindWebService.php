@@ -25,7 +25,7 @@ class MaxMindWebService extends AbstractService
     public function boot()
     {
         $this->client = new Client(
-            $this->config('user_id'),
+            (int) $this->config('user_id'),
             $this->config('license_key'),
             $this->config('locales', ['en'])
         );
