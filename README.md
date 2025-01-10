@@ -1,8 +1,6 @@
 # GeoIP for Laravel
 
 [![run-tests](https://github.com/InteractionDesignFoundation/laravel-geoip/actions/workflows/run-tests.yml/badge.svg)](https://github.com/InteractionDesignFoundation/laravel-geoip/actions/workflows/run-tests.yml)
-[![Latest Stable Version](https://poser.pugx.org/interaction-design-foundation/laravel-geoip/v/stable.png)](https://packagist.org/packages/interaction-design-foundation/laravel-geoip)
-[![Total Downloads](https://poser.pugx.org/interaction-design-foundation/laravel-geoip/downloads.png)](https://packagist.org/packages/interaction-design-foundation/laravel-geoip)
 [![Type coverage](https://shepherd.dev/github/InteractionDesignFoundation/laravel-geoip/coverage.svg)](https://shepherd.dev/github/InteractionDesignFoundation/laravel-geoip)
 [![Psalm error level](https://shepherd.dev/github/InteractionDesignFoundation/laravel-geoip/level.svg)](https://shepherd.dev/github/InteractionDesignFoundation/laravel-geoip)
 
