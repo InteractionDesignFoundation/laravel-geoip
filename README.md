@@ -131,10 +131,5 @@ Many people have contributed to the project since its inception.
 
 Thanks to:
 
-- [Daniel Stainback](https://github.com/Torann) (creator of the original package)
-- [Dwight Watson](https://github.com/dwightwatson)
-- [nikkiii](https://github.com/nikkiii)
-- [jeffhennis](https://github.com/jeffhennis)
-- [max-kovpak](https://github.com/max-kovpak)
-- [dotpack](https://github.com/dotpack)
-- [Jess Archer](https://github.com/jessarcher)
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
