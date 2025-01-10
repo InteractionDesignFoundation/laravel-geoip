@@ -43,10 +43,8 @@ class GeoIP
 
     /**
      * Cache manager instance.
-     *
-     * @var \InteractionDesignFoundation\GeoIP\Cache
      */
-    protected $cache;
+    protected \InteractionDesignFoundation\GeoIP\Cache $cache;
 
     /** Default Location data. */
     protected array $default_location = [
