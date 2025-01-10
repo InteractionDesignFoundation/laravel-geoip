@@ -15,19 +15,10 @@ use Monolog\Handler\StreamHandler;
 class GeoIP
 {
     /**
-     * Illuminate config repository instance.
-     *
-     * @var array
-     */
-    protected $config;
-
-    /**
      * Remote Machine IP address.
      * @deprecated Use {@see self::getClientIP()} instead.
-     *
-     * @var string
      */
-    protected $remote_ip = null;
+    protected string $remote_ip;
 
     /**
      * Current location instance.
@@ -39,7 +30,7 @@ class GeoIP
     /**
      * Currency data.
      *
-     * @var array
+     * @var array<string, string>|null
      */
     protected $currencies = null;
 
@@ -53,16 +44,12 @@ class GeoIP
     /**
      * Cache manager instance.
      *
-     * @var \Illuminate\Cache\CacheManager
+     * @var \InteractionDesignFoundation\GeoIP\Cache
      */
     protected $cache;
 
-    /**
-     * Default Location data.
-     *
-     * @var array
-     */
-    protected $default_location = [
+    /** Default Location data. */
+    protected array $default_location = [
         'ip' => '127.0.0.0',
         'iso_code' => 'US',
         'country' => 'United States',
@@ -85,10 +72,8 @@ class GeoIP
      * @param array $config
      * @param CacheManager $cache
      */
-    public function __construct(array $config, CacheManager $cache)
+    public function __construct(protected array $config, CacheManager $cache)
     {
-        $this->config = $config;
-
         // Create caching instance
         $this->cache = new Cache(
             $cache,
@@ -180,7 +165,7 @@ class GeoIP
      *
      * @param string $iso
      *
-     * @return string
+     * @return string|null
      */
     public function getCurrency($iso)
     {
@@ -223,7 +208,7 @@ class GeoIP
      *
      * @return \InteractionDesignFoundation\GeoIP\Cache
      */
-    public function getCache()
+    public function getCache(): \InteractionDesignFoundation\GeoIP\Cache
     {
         return $this->cache;
     }
@@ -233,7 +218,7 @@ class GeoIP
      *
      * @return string
      */
-    public function getClientIP()
+    public function getClientIP(): string
     {
         $remotes_keys = [
             'HTTP_X_FORWARDED_IP',
@@ -269,13 +254,8 @@ class GeoIP
      */
     private function isValid($ip): bool
     {
-        if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
-            && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE)
-        ) {
-            return false;
-        }
-
-        return true;
+        return !(! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+            && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE));
     }
 
     /**
@@ -302,11 +282,10 @@ class GeoIP
      * Get configuration value.
      *
      * @param string $key
-     * @param mixed $default
      *
      * @return mixed
      */
-    public function config($key, $default = null)
+    public function config($key, mixed $default = null)
     {
         return Arr::get($this->config, $key, $default);
     }

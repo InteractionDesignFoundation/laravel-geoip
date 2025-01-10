@@ -22,7 +22,7 @@ class MaxMindWebService extends AbstractService
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->ensureConfigurationParameterDefined(['user_id', 'license_key']);
 

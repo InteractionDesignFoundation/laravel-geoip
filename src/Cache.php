@@ -14,16 +14,9 @@ class Cache
     /**
      * Instance of cache manager.
      *
-     * @var \Illuminate\Cache\CacheManager
+     * @var \Illuminate\Cache\CacheManager|\Illuminate\Cache\TaggedCache
      */
     protected $cache;
-
-    /**
-     * Lifetime of the cache.
-     *
-     * @var int
-     */
-    protected $expires;
 
     /** Cache prefix */
     protected string $prefix = '';
@@ -35,10 +28,9 @@ class Cache
      * @param array $tags
      * @param int $expires
      */
-    public function __construct(CacheManager $cache, $tags, $expires = 30)
+    public function __construct(CacheManager $cache, $tags, protected int $expires = 30)
     {
         $this->cache = ($tags === [] || !$cache->supportsTags()) ? $cache : $cache->tags($tags);
-        $this->expires = $expires;
     }
 
     /**
@@ -57,7 +49,7 @@ class Cache
      *
      * @return Location|null
      */
-    public function get($name)
+    public function get(string $name): ?\InteractionDesignFoundation\GeoIP\Location
     {
         /** @psalm-var LocationArray|null $value */
         $value = $this->cache->get($this->prefix . $name);
@@ -75,7 +67,7 @@ class Cache
      *
      * @return bool
      */
-    public function set($name, Location $location)
+    public function set(string $name, Location $location)
     {
         return $this->cache->put($this->prefix . $name, $location->toArray(), $this->expires);
     }
@@ -85,7 +77,7 @@ class Cache
      *
      * @return bool
      */
-    public function flush()
+    public function flush(): bool
     {
         return $this->cache->flush();
     }

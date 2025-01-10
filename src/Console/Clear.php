@@ -39,10 +39,10 @@ class Clear extends Command
      *
      * @return bool
      */
-    protected function isSupported()
+    protected function isSupported(): bool
     {
-        return empty(app('geoip')->config('cache_tags')) === false
-            && in_array(config('cache.default'), ['file', 'database'], true) === false;
+        return (empty(app('geoip')->config('cache_tags')) === false)
+            && (in_array(config('cache.default'), ['file', 'database'], true) === false);
     }
 
     /**

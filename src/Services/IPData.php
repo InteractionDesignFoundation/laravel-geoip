@@ -22,7 +22,7 @@ class IPData extends AbstractService
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->ensureConfigurationParameterDefined('key');
 
@@ -48,7 +48,7 @@ class IPData extends AbstractService
             throw new Exception('Request failed (' . $this->client->getErrors() . ')');
         }
 
-        $json = json_decode($data[0], true);
+        $json = json_decode((string) $data[0], true);
 
         return $this->hydrate([
             'ip' => $ip,

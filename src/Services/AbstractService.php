@@ -12,21 +12,12 @@ use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
 abstract class AbstractService implements ServiceInterface
 {
     /**
-     * Driver config
-     *
-     * @var array
-     */
-    protected $config;
-
-    /**
      * Create a new service instance.
      *
      * @param array $config
      */
-    public function __construct(array $config = [])
+    public function __construct(protected array $config = [])
     {
-        $this->config = $config;
-
         $this->boot();
     }
 
@@ -63,22 +54,22 @@ abstract class AbstractService implements ServiceInterface
      * by the user, so that the service can be called without
      * errors raised linked to missing configuration.
      *
-     * @param string|string[] $key
+     * @param string|list<string> $keys
      * @return void
      */
-    public function ensureConfigurationParameterDefined($keys)
+    public function ensureConfigurationParameterDefined(string | array $keys): void
     {
         // Be able to accept a string and an array of strings.
         $keys = is_string($keys) ? [$keys] : $keys;
 
         foreach ($keys as $key) {
-            $config = $this->config($key);
+            $configValue = $this->config($key);
 
             // If the config is not defined / is empty.
-            if (empty($config)) {
+            if (empty($configValue)) {
                 $service = (new \ReflectionClass($this))->getShortName();
 
-                throw new MissingConfigurationException("Missing '{$key}' parameter (service: {$service})");
+                throw new MissingConfigurationException(sprintf("Missing '%s' parameter (service: %s)", $key, $service));
             }
         }
     }

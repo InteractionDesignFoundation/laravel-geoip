@@ -29,7 +29,7 @@ class IPApi extends AbstractService
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $base = [
             'base_uri' => 'http://ip-api.com/',
@@ -67,18 +67,18 @@ class IPApi extends AbstractService
 
         // Verify server response
         if ($this->client->getErrors() !== null) {
-            throw new \RuntimeException("Unexpected ip-api.com response: {$this->client->getErrors()}");
+            throw new \RuntimeException('Unexpected ip-api.com response: ' . $this->client->getErrors());
         }
 
         // Parse body content
-        $json = json_decode($data[0]);
+        $json = json_decode((string) $data[0]);
         if (! is_object($json) || ! property_exists($json, 'status')) {
-            throw new \RuntimeException("Unexpected ip-api.com response: {$json->message}");
+            throw new \RuntimeException('Unexpected ip-api.com response: ' . $json->message);
         }
 
         // Verify response status
         if ($json->status !== 'success') {
-            throw new \RuntimeException("Failed ip-api.com response: {$json->message}");
+            throw new \RuntimeException('Failed ip-api.com response: ' . $json->message);
         }
 
         return $this->hydrate([
@@ -102,7 +102,7 @@ class IPApi extends AbstractService
      * @return string
      * @throws Exception
      */
-    public function update()
+    public function update(): string
     {
         $data = $this->client->get('https://dev.maxmind.com/static/csv/codes/country_continent.csv');
 
@@ -111,14 +111,14 @@ class IPApi extends AbstractService
             throw new Exception($this->client->getErrors());
         }
 
-        $lines = explode("\n", $data[0]);
+        $lines = explode("\n", (string) $data[0]);
 
         array_shift($lines);
 
         $output = [];
 
         foreach ($lines as $line) {
-            $arr = str_getcsv($line);
+            $arr = str_getcsv((string) $line);
 
             if (count($arr) < 2) {
                 continue;
@@ -132,7 +132,7 @@ class IPApi extends AbstractService
 
         file_put_contents($path, json_encode($output));
 
-        return "Continent file ({$path}) updated.";
+        return sprintf('Continent file (%s) updated.', $path);
     }
 
     /**

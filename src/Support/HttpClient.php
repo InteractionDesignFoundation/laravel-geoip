@@ -9,17 +9,6 @@ use Illuminate\Support\Arr;
 class HttpClient
 {
     /**
-     * Request configurations.
-     *
-     * @var array
-     **/
-    private $config = [
-        'base_uri' => '',
-        'headers' => [],
-        'query' => [],
-    ];
-
-    /**
      * Last request http status.
      *
      * @var int
@@ -33,21 +22,20 @@ class HttpClient
      **/
     protected $errors = null;
 
-    /**
-     * Array containing headers from last performed request.
-     *
-     * @var array
-     */
-    private $headers = [];
+    /** Array containing headers from last performed request. */
+    private array $headers = [];
 
     /**
      * HttpClient constructor.
      *
      * @param array $config
      */
-    public function __construct(array $config = [])
-    {
-        $this->config = $config;
+    public function __construct(
+        /**
+         * Request configurations.
+         **/
+        private readonly array $config = []
+    ) {
     }
 
     /**
@@ -59,7 +47,7 @@ class HttpClient
      *
      * @return array
      */
-    public function get($url, array $query = [], array $headers = [])
+    public function get(string $url, array $query = [], array $headers = []): array
     {
         return $this->execute('GET', $this->buildGetUrl($url, $query), [], $headers);
     }
@@ -76,7 +64,7 @@ class HttpClient
      *
      * @throws \RuntimeException
      */
-    public function execute($method, $url, array $query = [], array $headers = [])
+    public function execute($method, string $url, array $query = [], array $headers = []): array
     {
         // Merge global and request headers
         $headers = array_merge(
@@ -123,14 +111,14 @@ class HttpClient
         $response = curl_exec($curl);
         if (! is_string($response)) {
             $curlError = curl_error($curl);
-            throw new \RuntimeException("Failed to make {$method} HTTP request: {$curlError}");
+            throw new \RuntimeException(sprintf('Failed to make %s HTTP request: %s', $method, $curlError));
         }
 
         // Set HTTP response code
         $this->http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
         // Set errors if there are any
-        if (curl_errno($curl)) {
+        if (curl_errno($curl) !== 0) {
             $this->errors = curl_error($curl);
         }
 
@@ -149,7 +137,7 @@ class HttpClient
      *
      * @return bool
      */
-    public function hasErrors()
+    public function hasErrors(): bool
     {
         return is_null($this->errors) === false;
     }
@@ -224,10 +212,12 @@ class HttpClient
             Arr::get($this->config, 'query', []),
             $query
         );
+        // Append query
+        $query = http_build_query($query);
 
         // Append query
-        if ($query = http_build_query($query)) {
-            $url .= strpos($url, '?') ? $query : "?{$query}";
+        if ($query !== '' && $query !== '0') {
+            $url .= strpos($url, '?') ? $query : '?' . $query;
         }
 
         return $url;

@@ -20,7 +20,7 @@ class IPFinder extends AbstractService
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->ensureConfigurationParameterDefined('key');
 
@@ -49,7 +49,7 @@ class IPFinder extends AbstractService
             throw new \Exception('Request failed (' . $this->client->getErrors() . ')');
         }
 
-        $json = json_decode($data[0], true);
+        $json = json_decode((string) $data[0], true);
 
         return $this->hydrate($json);
     }

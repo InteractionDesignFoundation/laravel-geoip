@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
+use InteractionDesignFoundation\GeoIP\Services\MaxMindDatabase;
 use InteractionDesignFoundation\GeoIP\Tests\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 
-/**
- * @covers \InteractionDesignFoundation\GeoIP\Services\MaxMindDatabase
- */
+#[CoversClass(MaxMindDatabase::class)]
 class MaxMindDatabaseTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function should_return_config_value(): void
     {
-        list($service, $config) = $this->getService();
+        [$service, $config] = $this->getService();
 
         $this->assertSame($service->config('database_path'), $config['database_path']);
     }
 
-    /** @test */
+    #[Test]
     public function should_return_valid_location(): void
     {
         [$service] = $this->getService();
@@ -27,11 +28,11 @@ class MaxMindDatabaseTest extends TestCase
         $location = $service->locate('81.2.69.142');
 
         $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $location);
-        $this->assertSame($location->ip, '81.2.69.142');
+        $this->assertSame('81.2.69.142', $location->ip);
         $this->assertSame($location->default, false);
     }
 
-    /** @test */
+    #[Test]
     public function should_return_invalid_location_for_special_addresses(): void
     {
         [$service] = $this->getService();
@@ -39,8 +40,8 @@ class MaxMindDatabaseTest extends TestCase
         try {
             $location = $service->locate('1.1.1.1');
             $this->assertSame($location->default, false);
-        } catch (\GeoIp2\Exception\AddressNotFoundException $e) {
-            $this->assertSame($e->getMessage(), 'The address 1.1.1.1 is not in the database.');
+        } catch (\GeoIp2\Exception\AddressNotFoundException $addressNotFoundException) {
+            $this->assertSame('The address 1.1.1.1 is not in the database.', $addressNotFoundException->getMessage());
         }
     }
 

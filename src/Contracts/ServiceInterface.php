@@ -42,9 +42,8 @@ interface ServiceInterface
      * Get configuration value.
      *
      * @param string $key
-     * @param mixed $default
      *
      * @return mixed
      */
-    public function config($key, $default = null);
+    public function config($key, mixed $default = null);
 }

@@ -22,7 +22,7 @@ class MaxMindDatabase extends AbstractService
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->ensureConfigurationParameterDefined('database_path');
 
@@ -73,7 +73,7 @@ class MaxMindDatabase extends AbstractService
      * @return string
      * @throws \Exception
      */
-    public function update()
+    public function update(): string
     {
         if ($this->config('database_path', false) === false) {
             throw new \Exception('Database path not set in config file.');
@@ -88,14 +88,14 @@ class MaxMindDatabase extends AbstractService
 
             $file = $this->findDatabaseFile($archive);
 
-            $relativePath = "{$archive->getFilename()}/{$file->getFilename()}";
+            $relativePath = sprintf('%s/%s', $archive->getFilename(), $file->getFilename());
 
             $archive->extractTo($directory, $relativePath);
 
-            file_put_contents($this->config('database_path'), fopen("{$directory}/{$relativePath}", 'rb'));
+            file_put_contents($this->config('database_path'), fopen(sprintf('%s/%s', $directory, $relativePath), 'rb'));
         });
 
-        return "Database file ({$this->config('database_path')}) updated.";
+        return sprintf('Database file (%s) updated.', $this->config('database_path'));
     }
 
     /**
@@ -187,8 +187,9 @@ class MaxMindDatabase extends AbstractService
         } elseif (extension_loaded('curl')) {
             $fp = fopen($filename, 'wb+');
             if ($fp === false) {
-                throw new \RuntimeException("Cannot open {$filename} file for writing.");
+                throw new \RuntimeException(sprintf('Cannot open %s file for writing.', $filename));
             }
+
             $ch = curl_init();
             curl_setopt($ch, \CURLOPT_URL, $url);
             curl_setopt($ch, \CURLOPT_FILE, $fp);

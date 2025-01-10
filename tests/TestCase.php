@@ -7,9 +7,6 @@ namespace InteractionDesignFoundation\GeoIP\Tests;
 use InteractionDesignFoundation\GeoIP\GeoIP;
 use PHPUnit\Framework\Attributes\CoversNothing;
 
-/**
- * @coversNothing
- */
 #[CoversNothing]
 class TestCase extends \Orchestra\Testbench\TestCase
 {

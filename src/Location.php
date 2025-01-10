@@ -45,25 +45,19 @@ use Illuminate\Support\Arr;
  *     localizations?: array<string, string|null>,
  * }
  * How to use it: @@psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
+ *
+ * @template-implements \ArrayAccess<string, mixed>
  */
 class Location implements ArrayAccess
 {
     /**
-     * The location's attributes
-     *
-     * @var array
-     */
-    protected $attributes = [];
-
-    /**
      * Create a new location instance.
      *
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      * @psalm-param LocationArray $attributes
      */
-    public function __construct(array $attributes = [])
+    public function __construct(protected array $attributes = [])
     {
-        $this->attributes = $attributes;
     }
 
     /**
@@ -73,20 +67,19 @@ class Location implements ArrayAccess
      *
      * @return bool
      */
-    public function same($ip)
+    public function same($ip): bool
     {
-        return $this->getAttribute('ip') == $ip;
+        return $this->getAttribute('ip') === $ip;
     }
 
     /**
      * Set a given attribute on the location.
      *
      * @param string $key
-     * @param mixed $value
      *
      * @return $this
      */
-    public function setAttribute($key, $value)
+    public function setAttribute($key, mixed $value): static
     {
         $this->attributes[$key] = $value;
 
@@ -119,9 +112,9 @@ class Location implements ArrayAccess
      *
      * @return string
      */
-    public function getDisplayNameAttribute()
+    public function getDisplayNameAttribute(): ?string
     {
-        return preg_replace('/^,\s/', '', "{$this->city}, {$this->state}");
+        return preg_replace('/^,\s/', '', sprintf('%s, %s', $this->city, $this->state));
     }
 
     /**
@@ -139,7 +132,7 @@ class Location implements ArrayAccess
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->attributes;
     }
@@ -160,9 +153,8 @@ class Location implements ArrayAccess
      * Set the location's attribute
      *
      * @param string $key
-     * @param mixed $value
      */
-    public function __set($key, $value)
+    public function __set($key, mixed $value)
     {
         $this->setAttribute($key, $value);
     }
@@ -170,7 +162,6 @@ class Location implements ArrayAccess
     /**
      * Determine if the given attribute exists.
      *
-     * @param mixed $offset
      *
      * @return bool
      */
@@ -182,7 +173,6 @@ class Location implements ArrayAccess
     /**
      * Get the value for a given offset.
      *
-     * @param mixed $offset
      *
      * @return mixed
      */
@@ -194,8 +184,6 @@ class Location implements ArrayAccess
     /**
      * Set the value for a given offset.
      *
-     * @param mixed $offset
-     * @param mixed $value
      *
      * @return void
      */
@@ -207,7 +195,6 @@ class Location implements ArrayAccess
     /**
      * Unset the value for a given offset.
      *
-     * @param mixed $offset
      *
      * @return void
      */

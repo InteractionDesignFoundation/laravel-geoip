@@ -27,16 +27,17 @@ class Update extends Command
     {
         // Get default service
         try {
+            /** @var \InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface $service */
             $service = app('geoip')->getService();
-        } catch (MissingConfigurationException $e) {
-            $this->components->error($e->getMessage());
+        } catch (MissingConfigurationException $missingConfigurationException) {
+            $this->components->error($missingConfigurationException->getMessage());
 
             return static::FAILURE;
         }
 
         // Ensure the selected service supports updating
         if (method_exists($service, 'update') === false) {
-            $this->info('The current service "' . get_class($service) . '" does not support updating.');
+            $this->info('The current service "' . $service::class . '" does not support updating.');
 
             return static::SUCCESS;
         }

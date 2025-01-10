@@ -10,9 +10,6 @@ use InteractionDesignFoundation\GeoIP\Location;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 
-/**
- * @coversNothing
- */
 #[CoversClass(Cache::class)]
 class CacheTest extends TestCase
 {
