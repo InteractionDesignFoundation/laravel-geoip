@@ -62,22 +62,23 @@ abstract class AbstractService implements ServiceInterface
      * This method ensures that the given key was filled
      * by the user, so that the service can be called without
      * errors raised linked to missing configuration.
-     * 
+     *
      * @param string|string[] $key
      * @return void
      */
-    public function ensureConfigurationParameterDefined($keys) {
+    public function ensureConfigurationParameterDefined($keys)
+    {
         // Be able to accept a string and an array of strings.
-        $keys = is_string($keys) ? [$keys] : $keys ;
+        $keys = is_string($keys) ? [$keys] : $keys;
 
-        foreach($keys as $key) {
-            $config = $this->config($key) ;
+        foreach ($keys as $key) {
+            $config = $this->config($key);
 
             // If the config is not defined / is empty.
-            if(empty($config)) {
-                $service = (new \ReflectionClass($this))->getShortName() ;
-                
-                throw new MissingConfigurationException("Missing '$key' parameter (service: $service)") ;
+            if (empty($config)) {
+                $service = (new \ReflectionClass($this))->getShortName();
+
+                throw new MissingConfigurationException("Missing '{$key}' parameter (service: {$service})");
             }
         }
     }

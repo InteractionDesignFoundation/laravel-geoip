@@ -29,8 +29,8 @@ class Update extends Command
         try {
             $service = app('geoip')->getService();
         } catch (MissingConfigurationException $e) {
-            $this->components->error($e->getMessage()) ;
-            
+            $this->components->error($e->getMessage());
+
             return static::FAILURE;
         }
 
