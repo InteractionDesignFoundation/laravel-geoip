@@ -24,6 +24,8 @@ class MaxMindWebService extends AbstractService
      */
     public function boot()
     {
+        $this->ensureConfigurationParameterDefined(['user_id', 'license_key']) ;
+
         $this->client = new Client(
             (int) $this->config('user_id'),
             $this->config('license_key'),

@@ -22,6 +22,8 @@ class IPFinder extends AbstractService
      */
     public function boot()
     {
+        $this->ensureConfigurationParameterDefined('key') ;
+        
         $this->client = new HttpClient([
             'base_uri' => 'https://api.ipfinder.io/v1/',
             'headers' => [

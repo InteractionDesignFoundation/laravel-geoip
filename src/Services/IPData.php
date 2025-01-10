@@ -24,6 +24,8 @@ class IPData extends AbstractService
      */
     public function boot()
     {
+        $this->ensureConfigurationParameterDefined('key') ;
+
         $this->client = new HttpClient([
             'base_uri' => 'https://api.ipdata.co/',
             'query' => [
