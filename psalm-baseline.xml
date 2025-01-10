@@ -62,7 +62,7 @@
   </file>
   <file src="src/GeoIP.php">
     <DeprecatedConstant>
-      <code><![CDATA[Logger::ERROR]]></code>
+      <code><![CDATA[\Monolog\Logger::ERROR]]></code>
     </DeprecatedConstant>
     <DeprecatedMethod>
       <code><![CDATA[setPrefix]]></code>
