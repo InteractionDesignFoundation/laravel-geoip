@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP;
 
-use Monolog\Logger;
 use Illuminate\Support\Arr;
 use Illuminate\Cache\CacheManager;
-use Monolog\Handler\StreamHandler;
 
 /**
  * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
@@ -148,8 +146,16 @@ class GeoIP
                 return $location;
             } catch (\Exception $e) {
                 if ($this->config('log_failures', true) === true) {
-                    $log = new Logger('geoip');
-                    $log->pushHandler(new StreamHandler(storage_path('logs/geoip.log'), Logger::ERROR));
+                    if (! class_exists(\Monolog\Logger::class)) {
+                        throw new \RuntimeException(
+                            'monolog/monolog composer package is not installed, but required with the enabled geoip.log_failures config option.',
+                            0,
+                            $e
+                        );
+                    }
+
+                    $log = new \Monolog\Logger('geoip');
+                    $log->pushHandler(new \Monolog\Handler\StreamHandler(storage_path('logs/geoip.log'), \Monolog\Logger::ERROR));
                     $log->error($e);
                 }
             }

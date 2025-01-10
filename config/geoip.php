@@ -12,6 +12,8 @@ return [
     | Here you may configure the log settings for when a location is not found
     | for the IP provided.
     |
+    | Requires Monolog to be installed: `composer install monolog/monolog`
+    |
     */
 
     'log_failures' => true,
