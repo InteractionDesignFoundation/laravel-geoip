@@ -22,29 +22,16 @@ class Clear extends Command
      */
     protected $description = 'Clear GeoIP cached locations.';
 
-    /**
-     * Execute the console command for Laravel 5.5 and newer.
-     *
-     * @return void
-     */
-    public function handle()
-    {
-        $this->fire();
-    }
-
-    /**
-     * Execute the console command.
-     * @deprecated Use {@see self::handle()} instead.
-     *
-     * @return void
-     */
-    public function fire()
+    public function handle(): int
     {
         if ($this->isSupported() === false) {
-            return $this->output->error('Default cache system does not support tags');
+            $this->output->error('Default cache system does not support tags');
+            return self::FAILURE;
         }
 
         $this->performFlush();
+
+        return self::SUCCESS;
     }
 
     /**

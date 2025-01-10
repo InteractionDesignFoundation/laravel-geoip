@@ -23,38 +23,22 @@ class Update extends Command
      */
     protected $description = 'Update GeoIP database files to the latest version';
 
-    /**
-     * Execute the console command for Laravel 5.5 and newer.
-     *
-     * @return void
-     */
-    public function handle()
-    {
-        $this->fire();
-    }
-
-    /**
-     * Execute the console command.
-     * @deprecated Use {@see self::handle()} instead.
-     *
-     * @return void
-     */
-    public function fire()
+    public function handle(): int
     {
         // Get default service
         try {
             $service = app('geoip')->getService();
-        } catch(MissingConfigurationException $e) {
+        } catch (MissingConfigurationException $e) {
             $this->components->error($e->getMessage()) ;
             
-            return static::FAILURE ;
+            return static::FAILURE;
         }
 
         // Ensure the selected service supports updating
         if (method_exists($service, 'update') === false) {
             $this->info('The current service "' . get_class($service) . '" does not support updating.');
 
-            return;
+            return static::SUCCESS;
         }
 
         $this->comment('Updating...');
@@ -64,6 +48,9 @@ class Update extends Command
             $this->info($result);
         } else {
             $this->error('Update failed!');
+            return static::FAILURE;
         }
+
+        return static::SUCCESS;
     }
 }
