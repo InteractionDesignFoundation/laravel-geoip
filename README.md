@@ -132,4 +132,228 @@ Many people have contributed to the project since its inception.
 Thanks to:
 
 <!-- readme: contributors -start -->
+<table>
+	<tbody>
+		<tr>
+            <td align="center">
+                <a href="https://github.com/alies-dev">
+                    <img src="https://avatars.githubusercontent.com/u/5278175?v=4" width="100;" alt="alies-dev"/>
+                    <br />
+                    <sub><b>Alies Lapatsin</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/Torann">
+                    <img src="https://avatars.githubusercontent.com/u/1406755?v=4" width="100;" alt="Torann"/>
+                    <br />
+                    <sub><b>Daniel Stainback</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/dotpack">
+                    <img src="https://avatars.githubusercontent.com/u/1175814?v=4" width="100;" alt="dotpack"/>
+                    <br />
+                    <sub><b>Ilia Ermolin</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/lptn">
+                    <img src="https://avatars.githubusercontent.com/u/150333538?v=4" width="100;" alt="lptn"/>
+                    <br />
+                    <sub><b>alies-lptn</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/dwightwatson">
+                    <img src="https://avatars.githubusercontent.com/u/1100408?v=4" width="100;" alt="dwightwatson"/>
+                    <br />
+                    <sub><b>Dwight Watson</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/jessarcher">
+                    <img src="https://avatars.githubusercontent.com/u/4977161?v=4" width="100;" alt="jessarcher"/>
+                    <br />
+                    <sub><b>Jess Archer</b></sub>
+                </a>
+            </td>
+		</tr>
+		<tr>
+            <td align="center">
+                <a href="https://github.com/highstrike">
+                    <img src="https://avatars.githubusercontent.com/u/2379538?v=4" width="100;" alt="highstrike"/>
+                    <br />
+                    <sub><b>Flavius Cosmin</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/kyranb">
+                    <img src="https://avatars.githubusercontent.com/u/5426926?v=4" width="100;" alt="kyranb"/>
+                    <br />
+                    <sub><b>Kyran</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/osmhub">
+                    <img src="https://avatars.githubusercontent.com/u/13149318?v=4" width="100;" alt="osmhub"/>
+                    <br />
+                    <sub><b>osmhub</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/mithredate">
+                    <img src="https://avatars.githubusercontent.com/u/6016632?v=4" width="100;" alt="mithredate"/>
+                    <br />
+                    <sub><b>Mehrdad</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/Pythagus">
+                    <img src="https://avatars.githubusercontent.com/u/34168890?v=4" width="100;" alt="Pythagus"/>
+                    <br />
+                    <sub><b>Damien MOLINA</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/rjp2525">
+                    <img src="https://avatars.githubusercontent.com/u/1334865?v=4" width="100;" alt="rjp2525"/>
+                    <br />
+                    <sub><b>Reno Philibert</b></sub>
+                </a>
+            </td>
+		</tr>
+		<tr>
+            <td align="center">
+                <a href="https://github.com/mikemand">
+                    <img src="https://avatars.githubusercontent.com/u/745184?v=4" width="100;" alt="mikemand"/>
+                    <br />
+                    <sub><b>Micheal Mand</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/LukeT">
+                    <img src="https://avatars.githubusercontent.com/u/2203091?v=4" width="100;" alt="LukeT"/>
+                    <br />
+                    <sub><b>Luke Thompson</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/janicerar">
+                    <img src="https://avatars.githubusercontent.com/u/29040621?v=4" width="100;" alt="janicerar"/>
+                    <br />
+                    <sub><b>Jani Cerar</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/Butochnikov">
+                    <img src="https://avatars.githubusercontent.com/u/4212297?v=4" width="100;" alt="Butochnikov"/>
+                    <br />
+                    <sub><b>Alexey</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/ncla">
+                    <img src="https://avatars.githubusercontent.com/u/5507083?v=4" width="100;" alt="ncla"/>
+                    <br />
+                    <sub><b>ncla</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/acidjazz">
+                    <img src="https://avatars.githubusercontent.com/u/967369?v=4" width="100;" alt="acidjazz"/>
+                    <br />
+                    <sub><b>kevin olson</b></sub>
+                </a>
+            </td>
+		</tr>
+		<tr>
+            <td align="center">
+                <a href="https://github.com/jalmatari">
+                    <img src="https://avatars.githubusercontent.com/u/2941118?v=4" width="100;" alt="jalmatari"/>
+                    <br />
+                    <sub><b>Jamal Al-Matari</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/irtaza100">
+                    <img src="https://avatars.githubusercontent.com/u/34660777?v=4" width="100;" alt="irtaza100"/>
+                    <br />
+                    <sub><b>irtaza100</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/evaldas-leliuga">
+                    <img src="https://avatars.githubusercontent.com/u/1867113?v=4" width="100;" alt="evaldas-leliuga"/>
+                    <br />
+                    <sub><b>Evaldas Leliūga</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/rasoulrahimii">
+                    <img src="https://avatars.githubusercontent.com/u/24825810?v=4" width="100;" alt="rasoulrahimii"/>
+                    <br />
+                    <sub><b>Rasoul Rahimii</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/PhoenixPeca">
+                    <img src="https://avatars.githubusercontent.com/u/9730242?v=4" width="100;" alt="PhoenixPeca"/>
+                    <br />
+                    <sub><b>Phoenix Eve Aspacio</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/lloricode">
+                    <img src="https://avatars.githubusercontent.com/u/8251344?v=4" width="100;" alt="lloricode"/>
+                    <br />
+                    <sub><b>Lloric Mayuga Garcia</b></sub>
+                </a>
+            </td>
+		</tr>
+		<tr>
+            <td align="center">
+                <a href="https://github.com/sakalauskas">
+                    <img src="https://avatars.githubusercontent.com/u/1455148?v=4" width="100;" alt="sakalauskas"/>
+                    <br />
+                    <sub><b>Laurynas Sakalauskas</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/KelvynCarbone">
+                    <img src="https://avatars.githubusercontent.com/u/5288360?v=4" width="100;" alt="KelvynCarbone"/>
+                    <br />
+                    <sub><b>Kelvyn Carbone</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/hughsaffar">
+                    <img src="https://avatars.githubusercontent.com/u/10440022?v=4" width="100;" alt="hughsaffar"/>
+                    <br />
+                    <sub><b>Hugh Saffar</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/Dylan-DPC">
+                    <img src="https://avatars.githubusercontent.com/u/99973273?v=4" width="100;" alt="Dylan-DPC"/>
+                    <br />
+                    <sub><b>Dylan DPC</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/faustbrian">
+                    <img src="https://avatars.githubusercontent.com/u/22145591?v=4" width="100;" alt="faustbrian"/>
+                    <br />
+                    <sub><b>Brian Faust</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/Omranic">
+                    <img src="https://avatars.githubusercontent.com/u/406705?v=4" width="100;" alt="Omranic"/>
+                    <br />
+                    <sub><b>Abdelrahman Omran</b></sub>
+                </a>
+            </td>
+		</tr>
+	<tbody>
+</table>
 <!-- readme: contributors -end -->
