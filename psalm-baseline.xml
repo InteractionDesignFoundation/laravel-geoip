@@ -106,7 +106,6 @@
       <code><![CDATA[\InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface]]></code>
     </MoreSpecificReturnType>
     <PossiblyNullArgument>
-      <code><![CDATA[$ip]]></code>
       <code><![CDATA[$location->iso_code]]></code>
       <code><![CDATA[$this->currencies]]></code>
     </PossiblyNullArgument>

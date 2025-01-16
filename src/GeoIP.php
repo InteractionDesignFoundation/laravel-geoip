@@ -269,9 +269,14 @@ class GeoIP
      * @param string|null $ip
      *
      * @return bool
+     * @psalm-assert-if-true string $ip
      */
-    private function shouldCache(Location $location, $ip = null): bool
+    private function shouldCache(Location $location, ?string $ip = null): bool
     {
+        if ($ip === null) {
+            return false;
+        }
+
         if ($location->default === true || $location->cached === true) {
             return false;
         }
