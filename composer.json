@@ -1,71 +1,71 @@
 {
-  "name": "interaction-design-foundation/laravel-geoip",
-  "description": "Support for multiple Geographical Location services.",
-  "license": "BSD-2-Clause",
-  "keywords": [
-    "laravel",
-    "geoip",
-    "geographical",
-    "location",
-    "geolocation",
-    "IP API",
-    "infoDB"
-  ],
-  "require": {
-    "php": "^8.1",
-    "illuminate/cache": "^10.0 || ^11.0",
-    "illuminate/console": "^10.0 || ^11.0",
-    "illuminate/support": "^10.0 || ^11.0"
-  },
-  "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.50",
-    "geoip2/geoip2": "^3.0",
-    "orchestra/testbench": "^8.8 || ^9.0",
-    "phpstan/phpstan": "^2.1",
-    "phpunit/phpunit": "^10.5 || ^11.0",
-    "rector/rector": "^2.0",
-    "squizlabs/php_codesniffer": "^3.9",
-    "vimeo/psalm": "^5.25"
-  },
-  "suggest": {
-    "geoip2/geoip2": "Required to use the MaxMind database or web service with GeoIP (~2.1).",
-    "monolog/monolog": "Allows for storing location not found errors to the log"
-  },
-  "autoload": {
-    "psr-4": {
-      "InteractionDesignFoundation\\GeoIP\\": "src/"
+    "name": "interaction-design-foundation/laravel-geoip",
+    "description": "Support for multiple Geographical Location services.",
+    "license": "BSD-2-Clause",
+    "keywords": [
+        "laravel",
+        "geoip",
+        "geographical",
+        "location",
+        "geolocation",
+        "IP API",
+        "infoDB"
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/cache": "^10.0 || ^11.0 || ^12.0",
+        "illuminate/console": "^10.0 || ^11.0 || ^12.0",
+        "illuminate/support": "^10.0 || ^11.0 || ^12.0"
     },
-    "files": [
-      "src/helpers.php"
-    ]
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "InteractionDesignFoundation\\GeoIP\\Tests\\": "tests/"
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.50",
+        "geoip2/geoip2": "^3.0",
+        "orchestra/testbench": "^8.8 || ^9.0 || ^10.0",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^10.5 || ^11.0",
+        "rector/rector": "^2.0",
+        "squizlabs/php_codesniffer": "^3.9",
+        "vimeo/psalm": "^5.25 || ^6.7"
+    },
+    "suggest": {
+        "geoip2/geoip2": "Required to use the MaxMind database or web service with GeoIP (~2.1).",
+        "monolog/monolog": "Allows for storing location not found errors to the log"
+    },
+    "autoload": {
+        "psr-4": {
+            "InteractionDesignFoundation\\GeoIP\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "InteractionDesignFoundation\\GeoIP\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "aliases": {
+                "GeoIP": "InteractionDesignFoundation\\GeoIP\\Facades\\GeoIP"
+            },
+            "providers": [
+                "InteractionDesignFoundation\\GeoIP\\GeoIPServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "cs": "@php-cs-fixer",
+        "php-cs-fixer": "@php -d memory_limit=-1 vendor/bin/php-cs-fixer fix --no-interaction --ansi --verbose",
+        "phpcs": "vendor/bin/phpcs --standard=phpcs.xml src",
+        "phpstan": "vendor/bin/phpstan --level=0 --no-progress analyse --configuration phpstan.neon --memory-limit 2G",
+        "psalm": "vendor/bin/psalm",
+        "rector": "vendor/bin/rector process --config rector.php ",
+        "sa": "@psalm",
+        "sa:bl": "@psalm --set-baseline=psalm-baseline.xml",
+        "test": "vendor/bin/phpunit"
     }
-  },
-  "config": {
-    "sort-packages": true
-  },
-  "extra": {
-    "laravel": {
-      "aliases": {
-        "GeoIP": "InteractionDesignFoundation\\GeoIP\\Facades\\GeoIP"
-      },
-      "providers": [
-        "InteractionDesignFoundation\\GeoIP\\GeoIPServiceProvider"
-      ]
-    }
-  },
-  "scripts": {
-    "cs": "@php-cs-fixer",
-    "php-cs-fixer": "@php -d memory_limit=-1 vendor/bin/php-cs-fixer fix --no-interaction --ansi --verbose",
-    "phpcs": "vendor/bin/phpcs --standard=phpcs.xml src",
-    "phpstan": "vendor/bin/phpstan --level=0 --no-progress analyse --configuration phpstan.neon --memory-limit 2G",
-    "psalm": "vendor/bin/psalm",
-    "rector": "vendor/bin/rector process --config rector.php ",
-    "sa": "@psalm",
-    "sa:bl": "@psalm --set-baseline=psalm-baseline.xml",
-    "test": "vendor/bin/phpunit"
-  }
 }
