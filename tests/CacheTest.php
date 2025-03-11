@@ -29,7 +29,7 @@ class CacheTest extends TestCase
 
         $this->assertInstanceOf(Location::class, $uncachedLocation);
         $this->assertSame($uncachedLocation->ip, $originalLocation->ip);
-        $this->assertSame($uncachedLocation->default, false);
+        $this->assertFalse($uncachedLocation->default);
     }
 
     #[Test]

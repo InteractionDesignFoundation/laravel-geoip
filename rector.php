@@ -15,8 +15,9 @@ return RectorConfig::configure()
         \Rector\Set\ValueObject\SetList::CODING_STYLE,
         \Rector\Set\ValueObject\SetList::TYPE_DECLARATION,
         \Rector\Set\ValueObject\SetList::PRIVATIZATION,
+        \Rector\PHPUnit\Set\PHPUnitSetList::ANNOTATIONS_TO_ATTRIBUTES,
         \Rector\PHPUnit\Set\PHPUnitSetList::PHPUNIT_CODE_QUALITY,
-        \Rector\PHPUnit\Set\PHPUnitSetList::PHPUNIT_100,
+        \Rector\PHPUnit\Set\PHPUnitSetList::PHPUNIT_110,
     ])
     ->withRules([
         \Rector\Php55\Rector\String_\StringClassNameToClassConstantRector::class,

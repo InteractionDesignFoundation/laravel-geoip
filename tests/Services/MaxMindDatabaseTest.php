@@ -29,7 +29,7 @@ class MaxMindDatabaseTest extends TestCase
 
         $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $location);
         $this->assertSame('81.2.69.142', $location->ip);
-        $this->assertSame($location->default, false);
+        $this->assertFalse($location->default);
     }
 
     #[Test]
@@ -39,7 +39,7 @@ class MaxMindDatabaseTest extends TestCase
 
         try {
             $location = $service->locate('1.1.1.1');
-            $this->assertSame($location->default, false);
+            $this->assertFalse($location->default);
         } catch (\GeoIp2\Exception\AddressNotFoundException $addressNotFoundException) {
             $this->assertSame('The address 1.1.1.1 is not in the database.', $addressNotFoundException->getMessage());
         }
