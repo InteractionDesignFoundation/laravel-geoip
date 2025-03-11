@@ -10,7 +10,6 @@ class Clear extends Command
 {
     /**
      * The console command name.
-     *
      * @var string
      */
     protected $name = 'geoip:clear';
