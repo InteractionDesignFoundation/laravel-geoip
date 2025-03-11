@@ -38,6 +38,7 @@ Run this on the command line from the root of your project:
 php artisan vendor:publish --provider="InteractionDesignFoundation\GeoIP\GeoIPServiceProvider" --tag=config
 ```
 
+and set the `GEOIP_SERVICE` env variable.
 
 ## Configuration
 
