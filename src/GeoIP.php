@@ -224,6 +224,7 @@ class GeoIP
      */
     public function getClientIP(): string
     {
+        /** @see \Symfony\Component\HttpKernel\HttpCache\SubRequestHandler */
         $remotes_keys = [
             'HTTP_X_FORWARDED_IP',
             'HTTP_X_FORWARDED_FOR',
@@ -234,6 +235,7 @@ class GeoIP
             'HTTP_FORWARDED',
             'REMOTE_ADDR',
             'HTTP_X_CLUSTER_CLIENT_IP',
+            'HTTP_CF_CONNECTING_IP',
         ];
 
         foreach ($remotes_keys as $key) {
