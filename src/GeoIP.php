@@ -39,9 +39,7 @@ class GeoIP
      */
     protected $service;
 
-    /**
-     * Cache manager instance.
-     */
+    /** Cache manager instance. */
     protected \InteractionDesignFoundation\GeoIP\Cache $cache;
 
     /** Default Location data. */
