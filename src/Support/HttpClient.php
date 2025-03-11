@@ -15,15 +15,8 @@ class HttpClient
      **/
     protected $http_code = 200;
 
-    /**
-     * Last request error string.
-     *
-     * @var string
-     **/
-    protected $errors = null;
-
-    /** Array containing headers from last performed request. */
-    private array $headers = [];
+    /** Last request error string. */
+    protected ?string $errors = null;
 
     /**
      * HttpClient constructor.
@@ -139,15 +132,11 @@ class HttpClient
      */
     public function hasErrors(): bool
     {
-        return is_null($this->errors) === false;
+        return $this->errors !== null;
     }
 
-    /**
-     * Get curl errors
-     *
-     * @return string
-     */
-    public function getErrors()
+    /** Get curl errors */
+    public function getErrors(): ?string
     {
         return $this->errors;
     }
@@ -202,7 +191,6 @@ class HttpClient
      *
      * @param string $url
      * @param array $query
-     *
      * @return string
      */
     private function buildGetUrl(string $url, array $query = []): string
@@ -212,12 +200,12 @@ class HttpClient
             Arr::get($this->config, 'query', []),
             $query
         );
-        // Append query
-        $query = http_build_query($query);
+
+        $stringQuery = http_build_query($query);
 
         // Append query
-        if ($query !== '' && $query !== '0') {
-            $url .= strpos($url, '?') ? $query : '?' . $query;
+        if ($stringQuery !== '' && $stringQuery !== '0') {
+            $url .= strpos($url, '?') ? $stringQuery : '?' . $stringQuery;
         }
 
         return $url;

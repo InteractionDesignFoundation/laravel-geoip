@@ -21,6 +21,7 @@ class IPGeoLocation extends AbstractService
      *
      * @return void
      */
+    #[\Override]
     public function boot(): void
     {
         $base = [
@@ -35,9 +36,10 @@ class IPGeoLocation extends AbstractService
     }
 
     /** {@inheritDoc} */
-    public function locate($ip)
+    #[\Override]
+    public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
-        // Get data from client
+        // Get data from a client
         $data = $this->client->get('&ip=' . $ip);
 
         // Verify server response

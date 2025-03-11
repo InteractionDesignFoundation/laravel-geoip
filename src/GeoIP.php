@@ -13,12 +13,6 @@ use Illuminate\Cache\CacheManager;
 class GeoIP
 {
     /**
-     * Remote Machine IP address.
-     * @deprecated Use {@see self::getClientIP()} instead.
-     */
-    protected string $remote_ip;
-
-    /**
      * Current location instance.
      *
      * @var Location|null
@@ -39,9 +33,7 @@ class GeoIP
      */
     protected $service;
 
-    /**
-     * Cache manager instance.
-     */
+    /** Cache manager instance. */
     protected \InteractionDesignFoundation\GeoIP\Cache $cache;
 
     /** Default Location data. */
@@ -85,7 +77,7 @@ class GeoIP
         );
 
         // Set IP
-        $this->remote_ip = $this->default_location['ip'] = $this->getClientIP();
+        $this->default_location['ip'] = $this->getClientIP();
     }
 
     /**
@@ -111,16 +103,13 @@ class GeoIP
 
     /**
      * Find location from IP.
-     *
-     * @param string $ip
-     *
      * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
-    private function find($ip = null): Location
+    private function find(?string $ip = null): Location
     {
         // If IP not set, user remote IP
-        $ip = $ip ?: $this->remote_ip;
+        $ip = $ip ?: $this->getClientIP();
 
         // Check cache for location
         if ($this->config('cache', 'none') !== 'none' && $location = $this->getCache()->get($ip)) {
@@ -258,7 +247,7 @@ class GeoIP
      *
      * @return bool
      */
-    private function isValid($ip): bool
+    private function isValid(string $ip): bool
     {
         return !(! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
             && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE));
@@ -293,6 +282,7 @@ class GeoIP
      * Get configuration value.
      *
      * @param string $key
+     * @param array|bool|int|null|string $default
      *
      * @return mixed
      */

@@ -11,9 +11,9 @@ class GeoIPServiceProvider extends ServiceProvider
 {
     /**
      * Register the service provider.
-     *
      * @return void
      */
+    #[\Override]
     public function register(): void
     {
         $this->registerGeoIpService();

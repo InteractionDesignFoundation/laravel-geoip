@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
+/** @internal */
 class IPApi extends AbstractService
 {
     /**
@@ -15,20 +16,17 @@ class IPApi extends AbstractService
      *
      * @var HttpClient
      */
-    protected $client;
+    protected HttpClient $client;
 
     /**
      * An array of continents.
      *
      * @var array
      */
-    protected $continents;
+    protected array $continents;
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
+    /** The "booting" method of the service. */
+    #[\Override]
     public function boot(): void
     {
         $base = [
@@ -60,7 +58,8 @@ class IPApi extends AbstractService
      * {@inheritDoc}
      * @throws \RuntimeException
      */
-    public function locate($ip)
+    #[\Override]
+    public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
         // Get data from the client
         $data = $this->client->get('json/' . $ip);
@@ -98,9 +97,7 @@ class IPApi extends AbstractService
 
     /**
      * Update function for service.
-     *
-     * @return string
-     * @throws Exception
+     * @throws \Exception
      */
     public function update(): string
     {
@@ -135,13 +132,7 @@ class IPApi extends AbstractService
         return sprintf('Continent file (%s) updated.', $path);
     }
 
-    /**
-     * Get a continent based on country code.
-     *
-     * @param string $code
-     *
-     * @return string
-     */
+    /** Get a continent based on country code. */
     private function getContinent(string $code): string
     {
         return Arr::get($this->continents, $code, 'Unknown');

@@ -17,11 +17,8 @@ class IPData extends AbstractService
      */
     protected $client;
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
+    /** The "booting" method of the service. */
+    #[\Override]
     public function boot(): void
     {
         $this->ensureConfigurationParameterDefined('key');
@@ -38,9 +35,10 @@ class IPData extends AbstractService
      * {@inheritDoc}
      * @throws Exception
      */
-    public function locate($ip)
+    #[\Override]
+    public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
-        // Get data from client
+        // Get data from a client
         $data = $this->client->get($ip);
 
         // Verify server response

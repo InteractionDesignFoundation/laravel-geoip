@@ -22,6 +22,7 @@ class MaxMindDatabase extends AbstractService
      *
      * @return void
      */
+    #[\Override]
     public function boot(): void
     {
         $this->ensureConfigurationParameterDefined('database_path');
@@ -47,7 +48,8 @@ class MaxMindDatabase extends AbstractService
     }
 
     /** {@inheritDoc} */
-    public function locate($ip)
+    #[\Override]
+    public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
         $record = $this->reader->city($ip);
 

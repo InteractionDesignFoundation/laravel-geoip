@@ -67,14 +67,6 @@
       <code><![CDATA[MissingConfigurationException]]></code>
     </ClassMustBeFinal>
   </file>
-  <file src="src/Facades/GeoIP.php">
-    <ClassMustBeFinal>
-      <code><![CDATA[GeoIP]]></code>
-    </ClassMustBeFinal>
-    <MissingOverrideAttribute>
-      <code><![CDATA[protected static function getFacadeAccessor()]]></code>
-    </MissingOverrideAttribute>
-  </file>
   <file src="src/GeoIP.php">
     <ClassMustBeFinal>
       <code><![CDATA[GeoIP]]></code>
@@ -85,10 +77,6 @@
     <DeprecatedMethod>
       <code><![CDATA[setPrefix]]></code>
     </DeprecatedMethod>
-    <DeprecatedProperty>
-      <code><![CDATA[$this->remote_ip]]></code>
-      <code><![CDATA[$this->remote_ip]]></code>
-    </DeprecatedProperty>
     <DocblockTypeContradiction>
       <code><![CDATA[$this->service === null]]></code>
     </DocblockTypeContradiction>
@@ -140,9 +128,6 @@
     <ClassMustBeFinal>
       <code><![CDATA[GeoIPServiceProvider]]></code>
     </ClassMustBeFinal>
-    <MissingOverrideAttribute>
-      <code><![CDATA[public function register(): void]]></code>
-    </MissingOverrideAttribute>
     <MixedArgument>
       <code><![CDATA[$app['cache']]]></code>
       <code><![CDATA[$app['config']->get('geoip', [])]]></code>
@@ -162,12 +147,6 @@
     <InvalidParamDefault>
       <code><![CDATA[LocationArray]]></code>
     </InvalidParamDefault>
-    <MissingOverrideAttribute>
-      <code><![CDATA[public function offsetExists(mixed $offset): bool]]></code>
-      <code><![CDATA[public function offsetGet(mixed $offset): mixed]]></code>
-      <code><![CDATA[public function offsetSet(mixed $offset, mixed $value): void]]></code>
-      <code><![CDATA[public function offsetUnset(mixed $offset): void]]></code>
-    </MissingOverrideAttribute>
     <MissingParamType>
       <code><![CDATA[$key]]></code>
       <code><![CDATA[$value]]></code>
@@ -191,11 +170,6 @@
     </PropertyTypeCoercion>
   </file>
   <file src="src/Services/AbstractService.php">
-    <MissingOverrideAttribute>
-      <code><![CDATA[public function boot()]]></code>
-      <code><![CDATA[public function config($key, $default = null)]]></code>
-      <code><![CDATA[public function hydrate(array $attributes = [])]]></code>
-    </MissingOverrideAttribute>
     <MixedAssignment>
       <code><![CDATA[$configValue]]></code>
     </MixedAssignment>
@@ -204,10 +178,6 @@
     <ClassMustBeFinal>
       <code><![CDATA[IPApi]]></code>
     </ClassMustBeFinal>
-    <MissingOverrideAttribute>
-      <code><![CDATA[public function boot(): void]]></code>
-      <code><![CDATA[public function locate($ip)]]></code>
-    </MissingOverrideAttribute>
     <MixedArgument>
       <code><![CDATA[$json->countryCode]]></code>
       <code><![CDATA[$path]]></code>
@@ -249,28 +219,26 @@
       <code><![CDATA[file_get_contents($this->config('continent_path'))]]></code>
       <code><![CDATA[json_encode($output)]]></code>
     </PossiblyFalseArgument>
+    <PossiblyNullArgument>
+      <code><![CDATA[$this->client->getErrors()]]></code>
+    </PossiblyNullArgument>
     <PossiblyNullArrayOffset>
       <code><![CDATA[$output]]></code>
     </PossiblyNullArrayOffset>
+    <PossiblyNullOperand>
+      <code><![CDATA[$this->client->getErrors()]]></code>
+    </PossiblyNullOperand>
     <PropertyNotSetInConstructor>
       <code><![CDATA[$continents]]></code>
     </PropertyNotSetInConstructor>
     <RedundantCastGivenDocblockType>
       <code><![CDATA[(string) $line]]></code>
     </RedundantCastGivenDocblockType>
-    <RedundantConditionGivenDocblockType>
-      <code><![CDATA[$this->client->getErrors() !== null]]></code>
-      <code><![CDATA[$this->client->getErrors() !== null]]></code>
-    </RedundantConditionGivenDocblockType>
   </file>
   <file src="src/Services/IPData.php">
     <ClassMustBeFinal>
       <code><![CDATA[IPData]]></code>
     </ClassMustBeFinal>
-    <MissingOverrideAttribute>
-      <code><![CDATA[public function boot(): void]]></code>
-      <code><![CDATA[public function locate($ip)]]></code>
-    </MissingOverrideAttribute>
     <MixedArgument>
       <code><![CDATA[$json]]></code>
       <code><![CDATA[$json]]></code>
@@ -305,36 +273,28 @@
     <MixedAssignment>
       <code><![CDATA[$json]]></code>
     </MixedAssignment>
-    <RedundantConditionGivenDocblockType>
-      <code><![CDATA[$this->client->getErrors() !== null]]></code>
-    </RedundantConditionGivenDocblockType>
+    <PossiblyNullOperand>
+      <code><![CDATA[$this->client->getErrors()]]></code>
+    </PossiblyNullOperand>
   </file>
   <file src="src/Services/IPFinder.php">
     <ClassMustBeFinal>
       <code><![CDATA[IPFinder]]></code>
     </ClassMustBeFinal>
-    <MissingOverrideAttribute>
-      <code><![CDATA[public function boot(): void]]></code>
-      <code><![CDATA[public function locate($ip)]]></code>
-    </MissingOverrideAttribute>
     <MixedArgument>
       <code><![CDATA[$json]]></code>
     </MixedArgument>
     <MixedAssignment>
       <code><![CDATA[$json]]></code>
     </MixedAssignment>
-    <RedundantConditionGivenDocblockType>
-      <code><![CDATA[$this->client->getErrors() !== null]]></code>
-    </RedundantConditionGivenDocblockType>
+    <PossiblyNullOperand>
+      <code><![CDATA[$this->client->getErrors()]]></code>
+    </PossiblyNullOperand>
   </file>
   <file src="src/Services/IPGeoLocation.php">
     <ClassMustBeFinal>
       <code><![CDATA[IPGeoLocation]]></code>
     </ClassMustBeFinal>
-    <MissingOverrideAttribute>
-      <code><![CDATA[public function boot(): void]]></code>
-      <code><![CDATA[public function locate($ip)]]></code>
-    </MissingOverrideAttribute>
     <MixedArgument>
       <code><![CDATA[$json]]></code>
     </MixedArgument>
@@ -344,9 +304,9 @@
     <MixedOperand>
       <code><![CDATA[$this->config('key')]]></code>
     </MixedOperand>
-    <RedundantConditionGivenDocblockType>
-      <code><![CDATA[$this->client->getErrors() !== null]]></code>
-    </RedundantConditionGivenDocblockType>
+    <PossiblyNullOperand>
+      <code><![CDATA[$this->client->getErrors()]]></code>
+    </PossiblyNullOperand>
   </file>
   <file src="src/Services/MaxMindDatabase.php">
     <ClassMustBeFinal>
@@ -358,10 +318,6 @@
     <InvalidReturnType>
       <code><![CDATA[array<string, string|null>]]></code>
     </InvalidReturnType>
-    <MissingOverrideAttribute>
-      <code><![CDATA[public function boot(): void]]></code>
-      <code><![CDATA[public function locate($ip)]]></code>
-    </MissingOverrideAttribute>
     <MixedArgument>
       <code><![CDATA[$lang]]></code>
       <code><![CDATA[$lang]]></code>
@@ -416,10 +372,6 @@
     <InvalidReturnType>
       <code><![CDATA[array<string, string|null>]]></code>
     </InvalidReturnType>
-    <MissingOverrideAttribute>
-      <code><![CDATA[public function boot(): void]]></code>
-      <code><![CDATA[public function locate($ip)]]></code>
-    </MissingOverrideAttribute>
     <MixedArgument>
       <code><![CDATA[$lang]]></code>
       <code><![CDATA[$lang]]></code>
@@ -443,9 +395,6 @@
     <ClassMustBeFinal>
       <code><![CDATA[HttpClient]]></code>
     </ClassMustBeFinal>
-    <DocblockTypeContradiction>
-      <code><![CDATA[is_null($this->errors)]]></code>
-    </DocblockTypeContradiction>
     <MixedArgument>
       <code><![CDATA[$header_size]]></code>
       <code><![CDATA[$row]]></code>
@@ -478,10 +427,6 @@
     <PossiblyFalseIterator>
       <code><![CDATA[preg_split("/\\r\\n|\\r|\\n/", $headers)]]></code>
     </PossiblyFalseIterator>
-    <PossiblyNullPropertyAssignmentValue>
-      <code><![CDATA[null]]></code>
-      <code><![CDATA[null]]></code>
-    </PossiblyNullPropertyAssignmentValue>
     <RiskyTruthyFalsyComparison>
       <code><![CDATA[strpos($url, '?')]]></code>
     </RiskyTruthyFalsyComparison>

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP\Services;
 
 use InteractionDesignFoundation\GeoIP\Location;
-use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
 
@@ -21,32 +20,27 @@ abstract class AbstractService implements ServiceInterface
         $this->boot();
     }
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
-    public function boot()
+    /** The "booting" method of the service. */
+    #[\Override]
+    public function boot(): void
     {
     }
 
     /** {@inheritDoc} */
-    public function hydrate(array $attributes = [])
+    #[\Override]
+    public function hydrate(array $attributes = []): Location
     {
         return new Location($attributes);
     }
 
     /**
      * Get configuration value.
-     *
-     * @param string $key
-     * @param mixed $default
-     *
      * @return mixed
      */
-    public function config($key, $default = null)
+    #[\Override]
+    public function config(string $key, mixed $default = null)
     {
-        return Arr::get($this->config, $key, $default);
+        return $this->config[$key] ?? $default;
     }
 
     /**

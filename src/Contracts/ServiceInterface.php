@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Contracts;
 
+use InteractionDesignFoundation\GeoIP\Location;
+
 /**
  * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
  */
@@ -11,10 +13,9 @@ interface ServiceInterface
 {
     /**
      * The "booting" method of the service.
-     *
      * @return void
      */
-    public function boot();
+    public function boot(): void;
 
     /**
      * Determine a location based off of
@@ -26,24 +27,19 @@ interface ServiceInterface
      *
      * @throws \InvalidArgumentException if an invalid IP address is passed
      */
-    public function locate($ip);
+    public function locate($ip): Location;
 
     /**
      * Create a location instance from the provided attributes.
      *
      * @param array $attributes
      * @psalm-param LocationArray $attributes
-     *
-     * @return \InteractionDesignFoundation\GeoIP\Location
      */
-    public function hydrate(array $attributes = []);
+    public function hydrate(array $attributes = []): Location;
 
     /**
      * Get configuration value.
-     *
-     * @param string $key
-     *
      * @return mixed
      */
-    public function config($key, mixed $default = null);
+    public function config(string $key, mixed $default = null);
 }

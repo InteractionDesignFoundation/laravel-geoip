@@ -22,6 +22,7 @@ class MaxMindWebService extends AbstractService
      *
      * @return void
      */
+    #[\Override]
     public function boot(): void
     {
         $this->ensureConfigurationParameterDefined(['user_id', 'license_key']);
@@ -34,7 +35,8 @@ class MaxMindWebService extends AbstractService
     }
 
     /** {@inheritDoc} */
-    public function locate($ip)
+    #[\Override]
+    public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
         $record = $this->client->city($ip);
 
