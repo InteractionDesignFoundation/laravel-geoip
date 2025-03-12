@@ -290,6 +290,13 @@ Thanks to:
                 </a>
             </td>
             <td align="center">
+                <a href="https://github.com/szepeviktor">
+                    <img src="https://avatars.githubusercontent.com/u/952007?v=4" width="100;" alt="szepeviktor"/>
+                    <br />
+                    <sub><b>Viktor Szépe</b></sub>
+                </a>
+            </td>
+            <td align="center">
                 <a href="https://github.com/rasoulrahimii">
                     <img src="https://avatars.githubusercontent.com/u/24825810?v=4" width="100;" alt="rasoulrahimii"/>
                     <br />
@@ -303,6 +310,8 @@ Thanks to:
                     <sub><b>Phoenix Eve Aspacio</b></sub>
                 </a>
             </td>
+		</tr>
+		<tr>
             <td align="center">
                 <a href="https://github.com/lloricode">
                     <img src="https://avatars.githubusercontent.com/u/8251344?v=4" width="100;" alt="lloricode"/>
@@ -310,8 +319,6 @@ Thanks to:
                     <sub><b>Lloric Mayuga Garcia</b></sub>
                 </a>
             </td>
-		</tr>
-		<tr>
             <td align="center">
                 <a href="https://github.com/sakalauskas">
                     <img src="https://avatars.githubusercontent.com/u/1455148?v=4" width="100;" alt="sakalauskas"/>
@@ -347,6 +354,8 @@ Thanks to:
                     <sub><b>Brian Faust</b></sub>
                 </a>
             </td>
+		</tr>
+		<tr>
             <td align="center">
                 <a href="https://github.com/Omranic">
                     <img src="https://avatars.githubusercontent.com/u/406705?v=4" width="100;" alt="Omranic"/>
