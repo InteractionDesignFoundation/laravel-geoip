@@ -96,9 +96,7 @@ class IPApi extends AbstractService
         ]);
     }
 
-    /**
-     * Update function for service.
-     */
+    /** Update function for service. */
     public function update(): string
     {
         $output = self::countryContinentMap();
