@@ -35,9 +35,9 @@ class MaxMindDatabase extends AbstractService
 
         // Copy test database for now
         if (is_file($path) === false) {
-            if (!is_dir($concurrentDirectory = dirname($path)) &&
-                !mkdir($concurrentDirectory) &&
-                !is_dir($concurrentDirectory)) {
+            if (!is_dir($concurrentDirectory = dirname($path))
+                && !mkdir($concurrentDirectory)
+                && !is_dir($concurrentDirectory)) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
             }
 
@@ -223,6 +223,7 @@ class MaxMindDatabase extends AbstractService
                 fclose($fp);
                 throw new \RuntimeException('Failed to initialize cURL');
             }
+
             curl_setopt($ch, \CURLOPT_URL, $url);
             curl_setopt($ch, \CURLOPT_FILE, $fp);
             curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);

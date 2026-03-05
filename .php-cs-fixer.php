@@ -23,8 +23,8 @@ return (new \PhpCsFixer\Config())
     ->setIndent('    ')
     ->setLineEnding("\n")
     ->setRules([
-        // Basic PER Coding Style 2.0 ruleset plus our "fixes" for it
-        '@PER-CS2.0' => true, // https://www.php-fig.org/per/coding-style/}
+        // Basic PER Coding Style 3.0 ruleset plus our "fixes" for it
+        '@PER-CS3x0' => true, // https://www.php-fig.org/per/coding-style/}
         // 'concat_space' => ['spacing' => 'none'], // make strings shorter "'hello' . $name . '!'" => "'hello'.$name.'!'"
         // 'blank_line_after_opening_tag' => false, // it makes "<?php declare(strict_types=1);" multiline (and more verbose)
         'function_declaration' => false, // It makes "fn ()" into "fn()" and conflicts with our PHPCS ruleset

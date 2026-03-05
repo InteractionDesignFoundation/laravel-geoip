@@ -28,7 +28,7 @@ final class Cache
      * @param array $tags
      * @param int $expires
      */
-    public function __construct(CacheManager $cache, $tags, private int $expires = 30)
+    public function __construct(CacheManager $cache, $tags, private readonly int $expires = 30)
     {
         $this->cache = ($tags === [] || !$cache->supportsTags()) ? $cache : $cache->tags($tags);
     }
