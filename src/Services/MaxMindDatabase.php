@@ -95,7 +95,7 @@ class MaxMindDatabase extends AbstractService
             $archive->extractTo($directory, $relativePath);
 
             $sourcePath = sprintf('%s/%s', $directory, $relativePath);
-            $sourceStream = fopen($sourcePath, 'rb');
+            $sourceStream = @fopen($sourcePath, 'rb');
             if ($sourceStream === false) {
                 throw new \RuntimeException(sprintf('Failed to open extracted database file: %s', $sourcePath));
             }
@@ -198,7 +198,7 @@ class MaxMindDatabase extends AbstractService
     {
         $canUseFopenForUrl = in_array(strtolower((string) ini_get('allow_url_fopen')), ['1', 'on'], true);
         if ($canUseFopenForUrl) {
-            $sourceStream = fopen($url, 'rb');
+            $sourceStream = @fopen($url, 'rb');
             if ($sourceStream === false) {
                 throw new \RuntimeException(sprintf('Failed to open URL for reading: %s', $url));
             }
@@ -210,7 +210,7 @@ class MaxMindDatabase extends AbstractService
                 throw new \RuntimeException(sprintf('Failed to write downloaded file: %s', $filename));
             }
         } elseif (extension_loaded('curl')) {
-            $fp = fopen($filename, 'wb+');
+            $fp = @fopen($filename, 'wb+');
             if ($fp === false) {
                 throw new \RuntimeException(sprintf('Cannot open %s file for writing.', $filename));
             }
