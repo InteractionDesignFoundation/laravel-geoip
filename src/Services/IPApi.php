@@ -8,7 +8,9 @@ use Exception;
 use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
-/** @internal */
+/**
+ * @internal
+ */
 class IPApi extends AbstractService
 {
     /**
