@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 
 return RectorConfig::configure()
+    ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_82)
     ->withPaths([
         __DIR__ . '/config',
         __DIR__ . '/src',
