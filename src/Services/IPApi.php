@@ -8,6 +8,7 @@ use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 /**
+ * @psalm-api
  * @internal
  */
 class IPApi extends AbstractService
@@ -24,7 +25,7 @@ class IPApi extends AbstractService
      *
      * @var array
      */
-    protected array $continents;
+    protected array $continents = [];
 
     /** The "booting" method of the service. */
     #[\Override]
@@ -96,9 +97,7 @@ class IPApi extends AbstractService
         ]);
     }
 
-    /**
-     * Update function for service.
-     */
+    /** Update function for service. */
     public function update(): string
     {
         $output = $this->countryContinentMap();

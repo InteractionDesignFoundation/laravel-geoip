@@ -6,22 +6,21 @@ namespace InteractionDesignFoundation\GeoIP\Support;
 
 use Illuminate\Support\Arr;
 
+/**
+ * @psalm-api
+ */
 class HttpClient
 {
-    /**
-     * Last request http status.
-     *
-     * @var int
-     **/
-    protected int $http_code = 200;
+    /** Last request http status. */
+    private int $http_code = 200;
 
     /** Last request error string. */
-    protected ?string $errors = null;
+    private ?string $errors = null;
 
     /**
      * HttpClient constructor.
      *
-     * @param array $config
+     * @param array<string, mixed> $config
      */
     public function __construct(
         /** Request configurations. */
@@ -32,11 +31,9 @@ class HttpClient
     /**
      * Perform a get request.
      *
-     * @param string $url
-     * @param array $query
-     * @param array $headers
-     *
-     * @return array
+     * @param array<string, mixed> $query
+     * @param array<int, string> $headers
+     * @return array{string, array<array-key, string>}
      */
     public function get(string $url, array $query = [], array $headers = []): array
     {
@@ -46,32 +43,28 @@ class HttpClient
     /**
      * Execute the curl request
      *
-     * @param string $method
-     * @param string $url
-     * @param array $query
-     * @param array $headers
-     *
-     * @return array{string, array}
+     * @param array<string, mixed> $query
+     * @param array<int, string> $headers
+     * @return array{string, array<array-key, string>}
      *
      * @throws \RuntimeException
      */
     public function execute(string $method, string $url, array $query = [], array $headers = []): array
     {
-        // Merge global and request headers
-        $headers = array_merge(
-            Arr::get($this->config, 'headers', []),
-            $headers
-        );
+        /** @var array<int, string> $globalHeaders */
+        $globalHeaders = Arr::get($this->config, 'headers', []);
+        $headers = array_merge($globalHeaders, $headers);
 
-        // Merge global and request queries
-        $query = array_merge(
-            Arr::get($this->config, 'query', []),
-            $query
-        );
+        /** @var array<string, mixed> $globalQuery */
+        $globalQuery = Arr::get($this->config, 'query', []);
+        $query = array_merge($globalQuery, $query);
 
         $this->errors = null;
 
         $curl = curl_init();
+        if ($curl === false) {
+            throw new \RuntimeException('Failed to initialize cURL');
+        }
 
         // Set options
         curl_setopt_array($curl, [
@@ -106,7 +99,7 @@ class HttpClient
         }
 
         // Set HTTP response code
-        $this->http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $this->http_code = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
         // Set errors if there are any
         if (curl_errno($curl) !== 0) {
@@ -114,7 +107,7 @@ class HttpClient
         }
 
         // Parse body
-        $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+        $header_size = (int) curl_getinfo($curl, CURLINFO_HEADER_SIZE);
         $header = substr($response, 0, $header_size);
         $body = substr($response, $header_size);
 
@@ -123,11 +116,7 @@ class HttpClient
         return [$body, $this->parseHeaders($header)];
     }
 
-    /**
-     * Check if the curl request ended up with errors
-     *
-     * @return bool
-     */
+    /** Check if the curl request ended up with errors */
     public function hasErrors(): bool
     {
         return $this->errors !== null;
@@ -139,11 +128,7 @@ class HttpClient
         return $this->errors;
     }
 
-    /**
-     * Get last curl HTTP code.
-     *
-     * @return int
-     */
+    /** Get last curl HTTP code. */
     public function getHttpCode(): int
     {
         return $this->http_code;
@@ -152,15 +137,18 @@ class HttpClient
     /**
      * Parse string headers into array
      *
-     * @param string $headers
-     *
-     * @return array
+     * @return array<array-key, string>
      */
     private function parseHeaders(string $headers): array
     {
         $result = [];
 
-        foreach (preg_split("/\\r\\n|\\r|\\n/", $headers) as $row) {
+        $rows = preg_split("/\\r\\n|\\r|\\n/", $headers);
+        if ($rows === false) {
+            return $result;
+        }
+
+        foreach ($rows as $row) {
             $header = explode(':', $row, 2);
 
             if (count($header) === 2) {
@@ -178,7 +166,7 @@ class HttpClient
     {
         // Check for URL scheme
         if (parse_url($url, PHP_URL_SCHEME) === null) {
-            $url = Arr::get($this->config, 'base_uri') . $url;
+            $url = (string) Arr::get($this->config, 'base_uri') . $url;
         }
 
         return $url;
@@ -187,23 +175,19 @@ class HttpClient
     /**
      * Build a GET request string.
      *
-     * @param string $url
-     * @param array $query
-     * @return string
+     * @param array<string, mixed> $query
      */
     private function buildGetUrl(string $url, array $query = []): string
     {
-        // Merge global and request queries
-        $query = array_merge(
-            Arr::get($this->config, 'query', []),
-            $query
-        );
+        /** @var array<string, mixed> $globalQuery */
+        $globalQuery = Arr::get($this->config, 'query', []);
+        $query = array_merge($globalQuery, $query);
 
         $stringQuery = http_build_query($query);
 
         // Append query
         if ($stringQuery !== '' && $stringQuery !== '0') {
-            $url .= strpos($url, '?') ? $stringQuery : '?' . $stringQuery;
+            $url .= str_contains($url, '?') ? $stringQuery : '?' . $stringQuery;
         }
 
         return $url;

@@ -9,17 +9,17 @@ use Illuminate\Cache\CacheManager;
 /**
  * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
  */
-class Cache
+final class Cache
 {
     /**
      * Instance of cache manager.
      *
      * @var \Illuminate\Cache\CacheManager|\Illuminate\Cache\TaggedCache
      */
-    protected $cache;
+    private $cache;
 
     /** Cache prefix */
-    protected string $prefix = '';
+    private string $prefix = '';
 
     /**
      * Create a new cache instance.
@@ -28,7 +28,7 @@ class Cache
      * @param array $tags
      * @param int $expires
      */
-    public function __construct(CacheManager $cache, $tags, protected int $expires = 30)
+    public function __construct(CacheManager $cache, $tags, private int $expires = 30)
     {
         $this->cache = ($tags === [] || !$cache->supportsTags()) ? $cache : $cache->tags($tags);
     }
