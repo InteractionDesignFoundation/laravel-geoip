@@ -138,7 +138,7 @@ class Location implements ArrayAccess
      * Get the location's attribute
      * @return mixed
      */
-    public function __get(string $key)
+    public function __get(string $key): mixed
     {
         return $this->getAttribute($key);
     }
@@ -196,7 +196,7 @@ class Location implements ArrayAccess
     }
 
     /** Check if the location's attribute is set */
-    public function __isset($key): bool
+    public function __isset(string $key): bool
     {
         return array_key_exists($key, $this->attributes);
     }

@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Psr\Log\LoggerInterface;
 
 #[CoversClass(GeoIP::class)]
-class GeoIPTest extends TestCase
+final class GeoIPTest extends TestCase
 {
     #[Test]
     public function should_get_usd_currency(): void
@@ -130,7 +130,11 @@ class GeoIPTest extends TestCase
             ->method('error')
             ->with(
                 'GeoIP lookup failed',
-                $this->callback(fn(array $context): bool => isset($context['exception']) && $context['exception'] instanceof \Exception),
+                $this->callback(function (array $context): bool {
+                    $this->assertArrayHasKey('exception', $context);
+                    $this->assertInstanceOf(\Exception::class, $context['exception']);
+                    return true;
+                }),
             );
 
         $service = $this->createFailingService();
@@ -169,7 +173,7 @@ class GeoIPTest extends TestCase
         $service->method('locate')
             ->willThrowException(new \Exception('Service lookup failed'));
         $service->method('hydrate')
-            ->willReturnCallback(fn(array $attributes): Location => new Location($attributes));
+            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
 
         return $service;
     }

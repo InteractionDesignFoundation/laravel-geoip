@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(IP2Location::class)]
-class IP2LocationTest extends TestCase
+final class IP2LocationTest extends TestCase
 {
     #[Test]
     public function it_throws_when_api_key_is_missing(): void
@@ -45,7 +45,7 @@ class IP2LocationTest extends TestCase
         $this->assertSame('Mountain View', $location->city);
         $this->assertSame('California', $location->state_name);
         $this->assertSame('94043', $location->postal_code);
-        $this->assertSame(37.38605, $location->lat);
+        $this->assertEqualsWithDelta(37.38605, $location->lat, PHP_FLOAT_EPSILON);
         $this->assertSame(-122.08385, $location->lon);
         $this->assertSame('-07:00', $location->timezone);
         $this->assertFalse($location->default);

@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 
 #[CoversClass(Cache::class)]
-class CacheTest extends TestCase
+final class CacheTest extends TestCase
 {
     #[Test]
     public function should_return_valid_location(): void

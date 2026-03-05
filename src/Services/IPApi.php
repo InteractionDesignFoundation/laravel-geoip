@@ -101,7 +101,7 @@ class IPApi extends AbstractService
      */
     public function update(): string
     {
-        $output = self::countryContinentMap();
+        $output = $this->countryContinentMap();
 
         // Get path
         $path = $this->config('continent_path');
@@ -116,7 +116,7 @@ class IPApi extends AbstractService
      *
      * @return array<string, string>
      */
-    private static function countryContinentMap(): array
+    private function countryContinentMap(): array
     {
         return [
             'AD' => 'EU', 'AE' => 'AS', 'AF' => 'AS', 'AG' => 'NA', 'AI' => 'NA',

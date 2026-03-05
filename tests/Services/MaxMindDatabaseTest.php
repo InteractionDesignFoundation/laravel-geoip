@@ -10,7 +10,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 
 #[CoversClass(MaxMindDatabase::class)]
-class MaxMindDatabaseTest extends TestCase
+final class MaxMindDatabaseTest extends TestCase
 {
     #[Test]
     public function should_return_config_value(): void
@@ -115,11 +115,8 @@ class MaxMindDatabaseTest extends TestCase
  */
 class TestableMaxMindDatabase
 {
-    private MaxMindDatabase $service;
-
-    public function __construct(MaxMindDatabase $service)
+    public function __construct(private readonly MaxMindDatabase $service)
     {
-        $this->service = $service;
     }
 
     public function exposedDownloadFileByUrl(string $filename, string $url): void

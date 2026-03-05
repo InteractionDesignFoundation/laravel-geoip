@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 
 #[CoversClass(Location::class)]
-class LocationTest extends TestCase
+final class LocationTest extends TestCase
 {
     #[Test]
     public function with_attribute_returns_new_instance_and_original_is_unchanged(): void
@@ -97,7 +97,7 @@ class LocationTest extends TestCase
         $this->assertSame('United States', $location->country);
         $this->assertSame('New Haven', $location->city);
         $this->assertSame('CT', $location->state);
-        $this->assertSame(41.31, $location->lat);
+        $this->assertEqualsWithDelta(41.31, $location->lat, PHP_FLOAT_EPSILON);
         $this->assertSame(-72.92, $location->lon);
     }
 

@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 
 #[CoversClass(GeoIP::class)]
-class ShouldCacheTest extends TestCase
+final class ShouldCacheTest extends TestCase
 {
     private const string VALID_IP = '81.2.69.142';
 
@@ -24,7 +24,7 @@ class ShouldCacheTest extends TestCase
         $geoIp->getLocation(self::VALID_IP);
 
         $cached = $geoIp->getCache()->get(self::VALID_IP);
-        $this->assertNotNull($cached, 'Location should be cached when cache mode is "all" with explicit IP');
+        $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $cached, 'Location should be cached when cache mode is "all" with explicit IP');
     }
 
     #[Test]
@@ -38,7 +38,7 @@ class ShouldCacheTest extends TestCase
         $geoIp->getLocation(self::VALID_IP);
 
         $cached = $geoIp->getCache()->get(self::VALID_IP);
-        $this->assertNotNull($cached, 'Location should be cached when cache mode is "some" with explicit IP');
+        $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $cached, 'Location should be cached when cache mode is "some" with explicit IP');
     }
 
     #[Test]
@@ -58,7 +58,7 @@ class ShouldCacheTest extends TestCase
         // and additionally $ip is null so "some" would return false.
         $clientIp = $geoIp->getClientIP();
         $cached = $geoIp->getCache()->get($clientIp);
-        $this->assertNull($cached, 'Location should not be cached when cache mode is "some" without explicit IP');
+        $this->assertNotInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $cached, 'Location should not be cached when cache mode is "some" without explicit IP');
     }
 
     #[Test]
@@ -72,7 +72,7 @@ class ShouldCacheTest extends TestCase
         $geoIp->getLocation(self::VALID_IP);
 
         $cached = $geoIp->getCache()->get(self::VALID_IP);
-        $this->assertNull($cached, 'Location should not be cached when cache mode is "none"');
+        $this->assertNotInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $cached, 'Location should not be cached when cache mode is "none"');
     }
 
     #[Test]
@@ -88,7 +88,7 @@ class ShouldCacheTest extends TestCase
 
         $this->assertTrue($location->default, 'Location should be marked as default for private IP');
         $cached = $geoIp->getCache()->get('127.0.0.0');
-        $this->assertNull($cached, 'Default location should never be cached');
+        $this->assertNotInstanceOf(\InteractionDesignFoundation\GeoIP\Location::class, $cached, 'Default location should never be cached');
     }
 
     #[Test]
@@ -105,7 +105,7 @@ class ShouldCacheTest extends TestCase
 
         // Second call: should retrieve from cache, not re-cache
         $secondLocation = $geoIp->getLocation(self::VALID_IP);
-        $this->assertTrue($secondLocation->cached === true, 'Second call should be from cache');
+        $this->assertTrue($secondLocation->cached, 'Second call should be from cache');
 
         // Verify the cached flag prevents re-caching by confirming
         // the second call came from cache (cached=true means shouldCache returns false)
