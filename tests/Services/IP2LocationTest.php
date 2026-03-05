@@ -74,6 +74,24 @@ class IP2LocationTest extends TestCase
     }
 
     #[Test]
+    public function it_throws_on_api_error_response(): void
+    {
+        $errorResponse = (object) [
+            'error' => (object) [
+                'error_code' => 10001,
+                'error_message' => 'Invalid API key.',
+            ],
+        ];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('IP2Location.io API error: Invalid API key.');
+
+        $service = $this->createServiceWithMockedClient(json_encode($errorResponse));
+
+        $service->locate('8.8.8.8');
+    }
+
+    #[Test]
     public function it_handles_partial_response_gracefully(): void
     {
         $partialResponse = (object) [
