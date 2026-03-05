@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
+use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\GeoIP;
+use InteractionDesignFoundation\GeoIP\Location;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Psr\Log\LoggerInterface;
 
 #[CoversClass(GeoIP::class)]
 class GeoIPTest extends TestCase
@@ -117,5 +120,63 @@ class GeoIPTest extends TestCase
         $geoIp = $this->makeGeoIP();
 
         $this->assertSame('127.0.0.0', $geoIp->getClientIP());
+    }
+
+    #[Test]
+    public function it_logs_error_when_service_lookup_fails_and_log_failures_is_enabled(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('error')
+            ->with(
+                'GeoIP lookup failed',
+                $this->callback(fn(array $context): bool => isset($context['exception']) && $context['exception'] instanceof \Exception),
+            );
+
+        $service = $this->createFailingService();
+
+        $geoIp = $this->makeGeoIPWithLogger(['log_failures' => true, 'cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $geoIp->getLocation('8.8.8.8');
+    }
+
+    #[Test]
+    public function it_does_not_log_when_service_lookup_fails_and_log_failures_is_disabled(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())
+            ->method('error');
+
+        $service = $this->createFailingService();
+
+        $geoIp = $this->makeGeoIPWithLogger(['log_failures' => false, 'cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $geoIp->getLocation('8.8.8.8');
+    }
+
+    private function makeGeoIPWithLogger(array $config, LoggerInterface $logger): GeoIP
+    {
+        $config = array_merge($this->getConfig(), $config);
+
+        return new GeoIP($config, $this->app['cache'], $logger);
+    }
+
+    private function createFailingService(): ServiceInterface
+    {
+        $service = $this->createStub(ServiceInterface::class);
+        $service->method('locate')
+            ->willThrowException(new \Exception('Service lookup failed'));
+        $service->method('hydrate')
+            ->willReturnCallback(fn(array $attributes): Location => new Location($attributes));
+
+        return $service;
+    }
+
+    private function setService(GeoIP $geoIp, ServiceInterface $service): void
+    {
+        $reflection = new \ReflectionProperty($geoIp, 'service');
+        $reflection->setValue($geoIp, $service);
     }
 }
