@@ -24,9 +24,7 @@ class HttpClient
      * @param array $config
      */
     public function __construct(
-        /**
-         * Request configurations.
-         **/
+        /** Request configurations. */
         private readonly array $config = []
     ) {
     }
