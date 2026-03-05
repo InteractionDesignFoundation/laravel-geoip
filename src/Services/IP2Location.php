@@ -47,6 +47,10 @@ class IP2Location extends AbstractService
             throw new \RuntimeException('Unexpected ip2location.io response');
         }
 
+        if (property_exists($json, 'error')) {
+            throw new \RuntimeException('IP2Location.io API error: ' . ($json->error->error_message ?? 'Unknown error'));
+        }
+
         return $this->hydrate([
             'ip' => $ip,
             'iso_code' => $json->country_code ?? null,
