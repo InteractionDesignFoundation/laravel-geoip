@@ -183,11 +183,11 @@ class GeoIP
             // Get service class
             $class = Arr::pull($config, 'class');
 
-            if ($class === null || !is_string($class)) {
+            if ($class === null || ! is_string($class)) {
                 throw new \InvalidArgumentException('No GeoIP service is configured.');
             }
 
-            if (!is_subclass_of($class, Contracts\ServiceInterface::class)) {
+            if (! is_subclass_of($class, Contracts\ServiceInterface::class)) {
                 throw new \InvalidArgumentException(sprintf(
                     'GeoIP service [%s] must implement %s.',
                     $class,
