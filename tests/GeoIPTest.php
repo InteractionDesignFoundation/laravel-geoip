@@ -56,6 +56,42 @@ class GeoIPTest extends TestCase
     }
 
     #[Test]
+    public function get_service_throws_when_class_is_not_configured(): void
+    {
+        $geoIp = $this->makeGeoIP([
+            'service' => 'missing_class',
+            'services' => [
+                'missing_class' => [
+                    'key' => 'value',
+                ],
+            ],
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('No GeoIP service is configured.');
+
+        $geoIp->getService();
+    }
+
+    #[Test]
+    public function get_service_throws_when_class_does_not_implement_service_interface(): void
+    {
+        $geoIp = $this->makeGeoIP([
+            'service' => 'invalid_service',
+            'services' => [
+                'invalid_service' => [
+                    'class' => \stdClass::class,
+                ],
+            ],
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('must implement');
+
+        $geoIp->getService();
+    }
+
+    #[Test]
     public function get_cache_returns_cache_instance(): void
     {
         $geoIp = $this->makeGeoIP();

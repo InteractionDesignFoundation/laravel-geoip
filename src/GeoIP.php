@@ -176,10 +176,9 @@ class GeoIP
     /**
      * Get service instance.
      *
-     * @return \InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
-    public function getService()
+    public function getService(): Contracts\ServiceInterface
     {
         if ($this->service === null) {
             // Get service configuration
@@ -188,9 +187,16 @@ class GeoIP
             // Get service class
             $class = Arr::pull($config, 'class');
 
-            // Sanity check
-            if ($class === null) {
-                throw new \Exception('No GeoIP service is configured.');
+            if ($class === null || ! is_string($class)) {
+                throw new \InvalidArgumentException('No GeoIP service is configured.');
+            }
+
+            if (! is_subclass_of($class, Contracts\ServiceInterface::class)) {
+                throw new \InvalidArgumentException(sprintf(
+                    'GeoIP service [%s] must implement %s.',
+                    $class,
+                    Contracts\ServiceInterface::class
+                ));
             }
 
             // Create service instance
