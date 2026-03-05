@@ -94,7 +94,20 @@ class MaxMindDatabase extends AbstractService
 
             $archive->extractTo($directory, $relativePath);
 
-            file_put_contents($this->config('database_path'), fopen(sprintf('%s/%s', $directory, $relativePath), 'rb'));
+            $sourcePath = sprintf('%s/%s', $directory, $relativePath);
+            $sourceStream = @fopen($sourcePath, 'rb');
+            if ($sourceStream === false) {
+                throw new \RuntimeException(sprintf('Failed to open extracted database file: %s', $sourcePath));
+            }
+
+            $databasePath = $this->config('database_path');
+            assert(is_string($databasePath));
+            $bytesWritten = file_put_contents($databasePath, $sourceStream);
+            fclose($sourceStream);
+
+            if ($bytesWritten === false) {
+                throw new \RuntimeException(sprintf('Failed to write database file: %s', $databasePath));
+            }
         });
 
         return sprintf('Database file (%s) updated.', $this->config('database_path'));
@@ -185,9 +198,19 @@ class MaxMindDatabase extends AbstractService
     {
         $canUseFopenForUrl = in_array(strtolower((string) ini_get('allow_url_fopen')), ['1', 'on'], true);
         if ($canUseFopenForUrl) {
-            file_put_contents($filename, fopen($url, 'rb'));
+            $sourceStream = @fopen($url, 'rb');
+            if ($sourceStream === false) {
+                throw new \RuntimeException(sprintf('Failed to open URL for reading: %s', $url));
+            }
+
+            $bytesWritten = file_put_contents($filename, $sourceStream);
+            fclose($sourceStream);
+
+            if ($bytesWritten === false) {
+                throw new \RuntimeException(sprintf('Failed to write downloaded file: %s', $filename));
+            }
         } elseif (extension_loaded('curl')) {
-            $fp = fopen($filename, 'wb+');
+            $fp = @fopen($filename, 'wb+');
             if ($fp === false) {
                 throw new \RuntimeException(sprintf('Cannot open %s file for writing.', $filename));
             }
@@ -196,9 +219,16 @@ class MaxMindDatabase extends AbstractService
             curl_setopt($ch, \CURLOPT_URL, $url);
             curl_setopt($ch, \CURLOPT_FILE, $fp);
             curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);
-            curl_exec($ch);
-            curl_close($ch);
-            fclose($fp);
+            try {
+                $result = curl_exec($ch);
+                if ($result === false) {
+                    $error = curl_error($ch);
+                    throw new \RuntimeException(sprintf('Failed to download file via curl: %s', $error));
+                }
+            } finally {
+                curl_close($ch);
+                fclose($fp);
+            }
         } else {
             throw new \RuntimeException('Cannot download the file. Please enable allow_url_fopen or install curl extension.');
         }

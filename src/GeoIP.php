@@ -8,6 +8,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Cache\CacheManager;
 use League\ISO3166\Exception\OutOfBoundsException;
 use League\ISO3166\ISO3166;
+use Psr\Log\LoggerInterface;
 
 /**
  * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
@@ -57,7 +58,11 @@ class GeoIP
      * @param array $config
      * @param CacheManager $cache
      */
-    public function __construct(protected array $config, CacheManager $cache)
+    public function __construct(
+        protected array $config,
+        CacheManager $cache,
+        private readonly LoggerInterface $logger,
+    )
     {
         // Create caching instance
         $this->cache = new Cache(
@@ -92,7 +97,7 @@ class GeoIP
 
         // Should cache location
         if ($this->shouldCache($this->location, $ip)) {
-            $this->getCache()->set($ip, $this->location);
+            $this->getCache()->set($ip ?? $this->location->ip, $this->location);
         }
 
         return $this->location;
@@ -110,7 +115,7 @@ class GeoIP
 
         // Check cache for location
         if ($this->config('cache', 'none') !== 'none' && $location = $this->getCache()->get($ip)) {
-            $location->cached = true;
+            $location = $location->withAttribute('cached', true);
 
             return $location;
         }
@@ -123,26 +128,18 @@ class GeoIP
 
                 // Set currency if not already set by the service
                 if (! $location->currency) {
-                    $location->currency = $this->getCurrency($location->iso_code);
+                    $location = $location->withAttribute('currency', $this->getCurrency($location->iso_code));
                 }
 
                 // Set default
-                $location->default = false;
+                $location = $location->withAttribute('default', false);
 
                 return $location;
             } catch (\Exception $e) {
                 if ($this->config('log_failures', true) === true) {
-                    if (! class_exists(\Monolog\Logger::class)) {
-                        throw new \RuntimeException(
-                            'monolog/monolog composer package is not installed, but required with the enabled geoip.log_failures config option.',
-                            0,
-                            $e
-                        );
-                    }
-
-                    $log = new \Monolog\Logger('geoip');
-                    $log->pushHandler(new \Monolog\Handler\StreamHandler(storage_path('logs/geoip.log'), \Monolog\Logger::ERROR));
-                    $log->error($e);
+                    $this->logger->error('GeoIP lookup failed', [
+                        'exception' => $e,
+                    ]);
                 }
             }
         }
@@ -176,10 +173,9 @@ class GeoIP
     /**
      * Get service instance.
      *
-     * @return \InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
-    public function getService()
+    public function getService(): Contracts\ServiceInterface
     {
         if ($this->service === null) {
             // Get service configuration
@@ -188,9 +184,16 @@ class GeoIP
             // Get service class
             $class = Arr::pull($config, 'class');
 
-            // Sanity check
-            if ($class === null) {
-                throw new \Exception('No GeoIP service is configured.');
+            if ($class === null || ! is_string($class)) {
+                throw new \InvalidArgumentException('No GeoIP service is configured.');
+            }
+
+            if (! is_subclass_of($class, Contracts\ServiceInterface::class)) {
+                throw new \InvalidArgumentException(sprintf(
+                    'GeoIP service [%s] must implement %s.',
+                    $class,
+                    Contracts\ServiceInterface::class
+                ));
             }
 
             // Create service instance
@@ -213,35 +216,14 @@ class GeoIP
     /**
      * Get the client IP address.
      *
-     * @return string
+     * Delegates to Laravel's Request::ip() which respects
+     * the TrustProxies middleware configuration.
      */
     public function getClientIP(): string
     {
-        /** @see \Symfony\Component\HttpKernel\HttpCache\SubRequestHandler */
-        $remotes_keys = [
-            'HTTP_X_FORWARDED_IP',
-            'HTTP_X_FORWARDED_FOR',
-            'HTTP_CLIENT_IP',
-            'HTTP_X_REAL_IP',
-            'HTTP_X_FORWARDED',
-            'HTTP_FORWARDED_FOR',
-            'HTTP_FORWARDED',
-            'REMOTE_ADDR',
-            'HTTP_X_CLUSTER_CLIENT_IP',
-            'HTTP_CF_CONNECTING_IP',
-        ];
+        $request = request();
 
-        foreach ($remotes_keys as $key) {
-            if ($address = getenv($key)) {
-                foreach (explode(',', $address) as $ip) {
-                    if ($this->isValid($ip)) {
-                        return $ip;
-                    }
-                }
-            }
-        }
-
-        return '127.0.0.0';
+        return $request->ip() ?? '127.0.0.0';
     }
 
     /**
@@ -264,20 +246,16 @@ class GeoIP
      * @param string|null $ip
      *
      * @return bool
-     * @psalm-assert-if-true string $ip
      */
     private function shouldCache(Location $location, ?string $ip = null): bool
     {
-        if ($ip === null) {
-            return false;
-        }
-
         if ($location->default === true || $location->cached === true) {
             return false;
         }
 
         return match ($this->config('cache', 'none')) {
-            'all', 'some' && $ip === null => true,
+            'all' => true,
+            'some' => $ip !== null,
             default => false,
         };
     }
