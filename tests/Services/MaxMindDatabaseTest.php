@@ -55,10 +55,10 @@ class MaxMindDatabaseTest extends TestCase
         assert(is_string($targetFile));
 
         try {
+            $this->expectException(\RuntimeException::class);
+            $this->expectExceptionMessage('Failed to open URL for reading:');
+
             $testableService->exposedDownloadFileByUrl($targetFile, 'file:///nonexistent/path/that/does/not/exist.tar.gz');
-            $this->fail('Expected RuntimeException was not thrown');
-        } catch (\RuntimeException $e) {
-            $this->assertStringContainsString('Failed to open URL for reading:', $e->getMessage());
         } finally {
             if (file_exists($targetFile)) {
                 unlink($targetFile);
@@ -69,18 +69,20 @@ class MaxMindDatabaseTest extends TestCase
     #[Test]
     public function should_throw_runtime_exception_when_curl_target_file_is_not_writable(): void
     {
+        if (!extension_loaded('curl')) {
+            $this->markTestSkipped('curl extension is not loaded');
+        }
+
         [$service] = $this->getService();
         $testableService = new TestableMaxMindDatabase($service);
 
-        try {
-            $testableService->exposedDownloadFileByUrlViaCurl(
-                '/nonexistent/directory/file.tar.gz',
-                'https://example.com/nonexistent.tar.gz'
-            );
-            $this->fail('Expected RuntimeException was not thrown');
-        } catch (\RuntimeException $e) {
-            $this->assertStringContainsString('Cannot open', $e->getMessage());
-        }
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Cannot open');
+
+        $testableService->exposedDownloadFileByUrlViaCurl(
+            '/nonexistent/directory/file.tar.gz',
+            'https://example.com/nonexistent.tar.gz'
+        );
     }
 
     #[Test]
@@ -91,12 +93,10 @@ class MaxMindDatabaseTest extends TestCase
 
         $service = new MaxMindDatabase($config);
 
-        try {
-            $service->update();
-            $this->fail('Expected RuntimeException was not thrown');
-        } catch (\RuntimeException $e) {
-            $this->assertStringContainsString('Failed to open URL for reading:', $e->getMessage());
-        }
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Failed to open URL for reading:');
+
+        $service->update();
     }
 
     /** @return list{\InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface, array<string, mixed>} */
@@ -129,8 +129,13 @@ class TestableMaxMindDatabase
     }
 
     /**
-     * Test the curl branch of downloadFileByUrl by attempting to open an unwritable file.
-     * This directly tests the fopen($filename, 'wb+') check in the curl branch.
+     * Exercises the curl branch of downloadFileByUrl.
+     *
+     * Because allow_url_fopen is a PHP_INI_SYSTEM directive and cannot be
+     * changed at runtime with ini_set(), we cannot force downloadFileByUrl
+     * into its curl branch during tests. This helper reproduces the curl
+     * code path from MaxMindDatabase::downloadFileByUrl() so we can verify
+     * that an unwritable target file is rejected with a RuntimeException.
      */
     public function exposedDownloadFileByUrlViaCurl(string $filename, string $url): void
     {
@@ -143,14 +148,15 @@ class TestableMaxMindDatabase
         curl_setopt($ch, \CURLOPT_URL, $url);
         curl_setopt($ch, \CURLOPT_FILE, $fp);
         curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);
-        $result = curl_exec($ch);
-        if ($result === false) {
-            $error = curl_error($ch);
+        try {
+            $result = curl_exec($ch);
+            if ($result === false) {
+                $error = curl_error($ch);
+                throw new \RuntimeException(sprintf('Failed to download file via curl: %s', $error));
+            }
+        } finally {
             curl_close($ch);
             fclose($fp);
-            throw new \RuntimeException(sprintf('Failed to download file via curl: %s', $error));
         }
-        curl_close($ch);
-        fclose($fp);
     }
 }

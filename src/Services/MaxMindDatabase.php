@@ -219,15 +219,16 @@ class MaxMindDatabase extends AbstractService
             curl_setopt($ch, \CURLOPT_URL, $url);
             curl_setopt($ch, \CURLOPT_FILE, $fp);
             curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);
-            $result = curl_exec($ch);
-            if ($result === false) {
-                $error = curl_error($ch);
+            try {
+                $result = curl_exec($ch);
+                if ($result === false) {
+                    $error = curl_error($ch);
+                    throw new \RuntimeException(sprintf('Failed to download file via curl: %s', $error));
+                }
+            } finally {
                 curl_close($ch);
                 fclose($fp);
-                throw new \RuntimeException(sprintf('Failed to download file via curl: %s', $error));
             }
-            curl_close($ch);
-            fclose($fp);
         } else {
             throw new \RuntimeException('Cannot download the file. Please enable allow_url_fopen or install curl extension.');
         }
