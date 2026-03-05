@@ -6,6 +6,8 @@ namespace InteractionDesignFoundation\GeoIP;
 
 use Illuminate\Support\Arr;
 use Illuminate\Cache\CacheManager;
+use League\ISO3166\Exception\OutOfBoundsException;
+use League\ISO3166\ISO3166;
 
 /**
  * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
@@ -19,12 +21,7 @@ class GeoIP
      */
     protected $location = null;
 
-    /**
-     * Currency data.
-     *
-     * @var array<string, string>|null
-     */
-    protected $currencies = null;
+    protected ?ISO3166 $iso3166 = null;
 
     /**
      * GeoIP service instance.
@@ -162,11 +159,18 @@ class GeoIP
      */
     public function getCurrency($iso)
     {
-        if ($this->currencies === null && $this->config('include_currency', false)) {
-            $this->currencies = include(__DIR__ . '/Support/Currencies.php');
+        if (! $this->config('include_currency', false)) {
+            return null;
         }
 
-        return Arr::get($this->currencies, $iso);
+        try {
+            $this->iso3166 ??= new ISO3166();
+            $country = $this->iso3166->alpha2($iso);
+
+            return $country['currency'][0] ?? null;
+        } catch (OutOfBoundsException) {
+            return null;
+        }
     }
 
     /**

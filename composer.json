@@ -16,7 +16,8 @@
         "ext-curl": "*",
         "illuminate/cache": "^12.0 || ^13.0",
         "illuminate/console": "^12.0 || ^13.0",
-        "illuminate/support": "^12.0 || ^13.0"
+        "illuminate/support": "^12.0 || ^13.0",
+        "league/iso3166": "^4.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.50",
