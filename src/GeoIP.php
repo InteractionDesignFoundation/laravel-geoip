@@ -95,7 +95,7 @@ class GeoIP
 
         // Should cache location
         if ($this->shouldCache($this->location, $ip)) {
-            $this->getCache()->set($ip, $this->location);
+            $this->getCache()->set($ip ?? $this->location->ip, $this->location);
         }
 
         return $this->location;
@@ -260,7 +260,6 @@ class GeoIP
      * @param string|null $ip
      *
      * @return bool
-     * @psalm-assert-if-true string $ip
      */
     private function shouldCache(Location $location, ?string $ip = null): bool
     {
