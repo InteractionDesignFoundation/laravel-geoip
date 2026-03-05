@@ -57,10 +57,8 @@ abstract class AbstractService implements ServiceInterface
         $keys = is_string($keys) ? [$keys] : $keys;
 
         foreach ($keys as $key) {
-            $configValue = $this->config($key);
-
             // If the config is not defined / is empty.
-            if (empty($configValue)) {
+            if (empty($this->config($key))) {
                 $service = (new \ReflectionClass($this))->getShortName();
 
                 throw new MissingConfigurationException(sprintf("Missing '%s' parameter (service: %s)", $key, $service));

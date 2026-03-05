@@ -7,6 +7,9 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 use Exception;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
+/**
+ * @psalm-api
+ */
 class IPGeoLocation extends AbstractService
 {
     /**

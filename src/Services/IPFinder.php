@@ -6,6 +6,9 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
+/**
+ * @psalm-api
+ */
 class IPFinder extends AbstractService
 {
     /**
