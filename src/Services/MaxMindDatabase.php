@@ -8,6 +8,9 @@ use GeoIp2\Database\Reader;
 use GeoIp2\Model\City;
 use Illuminate\Support\Arr;
 
+/**
+ * @psalm-api
+ */
 class MaxMindDatabase extends AbstractService
 {
     /**
@@ -216,6 +219,10 @@ class MaxMindDatabase extends AbstractService
             }
 
             $ch = curl_init();
+            if ($ch === false) {
+                fclose($fp);
+                throw new \RuntimeException('Failed to initialize cURL');
+            }
             curl_setopt($ch, \CURLOPT_URL, $url);
             curl_setopt($ch, \CURLOPT_FILE, $fp);
             curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);

@@ -62,8 +62,7 @@ class GeoIP
         protected array $config,
         CacheManager $cache,
         private readonly LoggerInterface $logger,
-    )
-    {
+    ) {
         // Create caching instance
         $this->cache = new Cache(
             $cache,
@@ -97,7 +96,8 @@ class GeoIP
 
         // Should cache location
         if ($this->shouldCache($this->location, $ip)) {
-            $this->getCache()->set($ip ?? $this->location->ip, $this->location);
+            $cacheKey = $ip ?? (string) $this->location->ip;
+            $this->getCache()->set($cacheKey, $this->location);
         }
 
         return $this->location;

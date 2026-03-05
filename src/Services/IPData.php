@@ -8,6 +8,9 @@ use Exception;
 use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
+/**
+ * @psalm-api
+ */
 class IPData extends AbstractService
 {
     /**
