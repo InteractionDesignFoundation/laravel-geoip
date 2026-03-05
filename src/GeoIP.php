@@ -65,8 +65,7 @@ class GeoIP
         protected array $config,
         CacheManager $cache,
         private readonly LoggerInterface $logger,
-    )
-    {
+    ) {
         // Create caching instance
         $this->cache = new Cache(
             $cache,
