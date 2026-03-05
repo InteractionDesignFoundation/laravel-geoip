@@ -38,7 +38,7 @@ return [
     | Here you may specify the default storage driver that should be used
     | by the framework using the services listed below.
     |
-    | Supported: "maxmind_database", "maxmind_api", "ipapi", "ipgeolocation", "ipdata", "ipfinder"
+    | Supported: "maxmind_database", "maxmind_api", "ipapi", "ipgeolocation", "ipdata", "ipfinder", "ip2location"
     |
     */
 
@@ -96,6 +96,11 @@ return [
             'key' => env('IPFINDER_API_KEY'),
             'secure' => true,
             'locales' => ['en'],
+        ],
+
+        'ip2location' => [
+            'class' => \InteractionDesignFoundation\GeoIP\Services\IP2Location::class,
+            'key' => env('IP2LOCATION_API_KEY'),
         ],
 
     ],
