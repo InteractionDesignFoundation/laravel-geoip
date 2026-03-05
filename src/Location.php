@@ -185,6 +185,16 @@ class Location implements ArrayAccess
         throw new \BadMethodCallException('Location is immutable.');
     }
 
+    /**
+     * Prevent setting properties directly.
+     *
+     * @throws \BadMethodCallException Always, as Location is immutable.
+     */
+    public function __set(string $key, mixed $value): void
+    {
+        throw new \BadMethodCallException('Location is immutable. Use withAttribute() instead.');
+    }
+
     /** Check if the location's attribute is set */
     public function __isset($key): bool
     {

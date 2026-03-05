@@ -28,6 +28,16 @@ class LocationTest extends TestCase
     }
 
     #[Test]
+    public function setting_property_via_magic_set_throws_bad_method_call_exception(): void
+    {
+        $location = new Location(['ip' => '127.0.0.1']);
+
+        $this->expectException(\BadMethodCallException::class);
+
+        $location->ip = '10.0.0.1';
+    }
+
+    #[Test]
     public function offset_set_throws_bad_method_call_exception(): void
     {
         $location = new Location(['ip' => '127.0.0.1']);
