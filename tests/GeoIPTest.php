@@ -62,4 +62,24 @@ class GeoIPTest extends TestCase
 
         $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Cache::class, $geoIp->getCache());
     }
+
+    #[Test]
+    public function get_client_ip_returns_request_ip(): void
+    {
+        $this->app['request']->server->set('REMOTE_ADDR', '8.8.8.8');
+
+        $geoIp = $this->makeGeoIP();
+
+        $this->assertSame('8.8.8.8', $geoIp->getClientIP());
+    }
+
+    #[Test]
+    public function get_client_ip_returns_fallback_when_request_ip_is_null(): void
+    {
+        $this->app['request']->server->remove('REMOTE_ADDR');
+
+        $geoIp = $this->makeGeoIP();
+
+        $this->assertSame('127.0.0.0', $geoIp->getClientIP());
+    }
 }

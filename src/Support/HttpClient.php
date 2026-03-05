@@ -13,7 +13,7 @@ class HttpClient
      *
      * @var int
      **/
-    protected $http_code = 200;
+    protected int $http_code = 200;
 
     /** Last request error string. */
     protected ?string $errors = null;
@@ -55,7 +55,7 @@ class HttpClient
      *
      * @throws \RuntimeException
      */
-    public function execute($method, string $url, array $query = [], array $headers = []): array
+    public function execute(string $method, string $url, array $query = [], array $headers = []): array
     {
         // Merge global and request headers
         $headers = array_merge(
@@ -80,8 +80,8 @@ class HttpClient
             CURLOPT_CONNECTTIMEOUT => 20,
             CURLOPT_TIMEOUT => 90,
             CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_SSL_VERIFYPEER => 0,
-            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_HEADER => 1,
             CURLINFO_HEADER_OUT => 1,
             CURLOPT_VERBOSE => 1,
@@ -144,7 +144,7 @@ class HttpClient
      *
      * @return int
      */
-    public function getHttpCode()
+    public function getHttpCode(): int
     {
         return $this->http_code;
     }

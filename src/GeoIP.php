@@ -213,35 +213,14 @@ class GeoIP
     /**
      * Get the client IP address.
      *
-     * @return string
+     * Delegates to Laravel's Request::ip() which respects
+     * the TrustProxies middleware configuration.
      */
     public function getClientIP(): string
     {
-        /** @see \Symfony\Component\HttpKernel\HttpCache\SubRequestHandler */
-        $remotes_keys = [
-            'HTTP_X_FORWARDED_IP',
-            'HTTP_X_FORWARDED_FOR',
-            'HTTP_CLIENT_IP',
-            'HTTP_X_REAL_IP',
-            'HTTP_X_FORWARDED',
-            'HTTP_FORWARDED_FOR',
-            'HTTP_FORWARDED',
-            'REMOTE_ADDR',
-            'HTTP_X_CLUSTER_CLIENT_IP',
-            'HTTP_CF_CONNECTING_IP',
-        ];
+        $request = request();
 
-        foreach ($remotes_keys as $key) {
-            if ($address = getenv($key)) {
-                foreach (explode(',', $address) as $ip) {
-                    if ($this->isValid($ip)) {
-                        return $ip;
-                    }
-                }
-            }
-        }
-
-        return '127.0.0.0';
+        return $request->ip() ?? '127.0.0.0';
     }
 
     /**
