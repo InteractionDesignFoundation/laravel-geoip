@@ -20,7 +20,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         $config = array_merge($this->getConfig(), $config);
 
-        return new GeoIP($config, $this->app['cache']);
+        return new GeoIP($config, $this->app['cache'], $this->app['log']);
     }
 
     protected function getConfig(): array
