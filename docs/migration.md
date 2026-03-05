@@ -1,13 +1,12 @@
-# Migration
-To migrate from `torann/geoip` you simply need to :
+# Migration from torann/geoip
 
-1. change your composer.json:
-```diff
--"torann/geoip": "^3.0",
-+"interaction-design-foundation/laravel-geoip": "^3.1",
+1. Swap the packages:
+```bash
+composer remove torann/geoip
+composer require interaction-design-foundation/laravel-geoip
 ```
 
-2. update namespaces in your application:
+2. Update namespaces:
 ```diff
 -use Torann\GeoIP;
 +use InteractionDesignFoundation\GeoIP;
