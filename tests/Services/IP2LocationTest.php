@@ -125,7 +125,7 @@ final class IP2LocationTest extends TestCase
         return $service;
     }
 
-    private function sampleApiResponse(): object
+    private function sampleApiResponse(): \stdClass
     {
         return (object) [
             'ip' => '8.8.8.8',

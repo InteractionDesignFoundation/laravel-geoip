@@ -22,8 +22,6 @@ return RectorConfig::configure()
     ->withRules([
         \Rector\Php55\Rector\String_\StringClassNameToClassConstantRector::class,
         \Rector\CodingStyle\Rector\ArrowFunction\StaticArrowFunctionRector::class,
-        \Rector\CodingStyle\Rector\Catch_\CatchExceptionNameMatchingTypeRector::class,
-        \Rector\CodingStyle\Rector\ClassMethod\MakeInheritedMethodVisibilitySameAsParentRector::class,
         \Rector\CodingStyle\Rector\Closure\StaticClosureRector::class,
 
     ])
