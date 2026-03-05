@@ -222,18 +222,12 @@
     <PossiblyNullArgument>
       <code><![CDATA[$this->client->getErrors()]]></code>
     </PossiblyNullArgument>
-    <PossiblyNullArrayOffset>
-      <code><![CDATA[$output]]></code>
-    </PossiblyNullArrayOffset>
-    <PossiblyNullOperand>
+<PossiblyNullOperand>
       <code><![CDATA[$this->client->getErrors()]]></code>
     </PossiblyNullOperand>
     <PropertyNotSetInConstructor>
       <code><![CDATA[$continents]]></code>
     </PropertyNotSetInConstructor>
-    <RedundantCastGivenDocblockType>
-      <code><![CDATA[(string) $line]]></code>
-    </RedundantCastGivenDocblockType>
   </file>
   <file src="src/Services/IPData.php">
     <ClassMustBeFinal>
