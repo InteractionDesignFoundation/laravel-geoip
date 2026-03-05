@@ -110,7 +110,7 @@ class GeoIP
 
         // Check cache for location
         if ($this->config('cache', 'none') !== 'none' && $location = $this->getCache()->get($ip)) {
-            $location->cached = true;
+            $location = $location->withAttribute('cached', true);
 
             return $location;
         }
@@ -123,11 +123,11 @@ class GeoIP
 
                 // Set currency if not already set by the service
                 if (! $location->currency) {
-                    $location->currency = $this->getCurrency($location->iso_code);
+                    $location = $location->withAttribute('currency', $this->getCurrency($location->iso_code));
                 }
 
                 // Set default
-                $location->default = false;
+                $location = $location->withAttribute('default', false);
 
                 return $location;
             } catch (\Exception $e) {
