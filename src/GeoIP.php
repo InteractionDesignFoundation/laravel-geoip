@@ -6,6 +6,7 @@ namespace InteractionDesignFoundation\GeoIP;
 
 use Illuminate\Support\Arr;
 use Illuminate\Cache\CacheManager;
+use Psr\Log\LoggerInterface;
 
 /**
  * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
@@ -60,7 +61,11 @@ class GeoIP
      * @param array $config
      * @param CacheManager $cache
      */
-    public function __construct(protected array $config, CacheManager $cache)
+    public function __construct(
+        protected array $config,
+        CacheManager $cache,
+        private readonly LoggerInterface $logger,
+    )
     {
         // Create caching instance
         $this->cache = new Cache(
@@ -135,17 +140,9 @@ class GeoIP
                 return $location;
             } catch (\Exception $e) {
                 if ($this->config('log_failures', true) === true) {
-                    if (! class_exists(\Monolog\Logger::class)) {
-                        throw new \RuntimeException(
-                            'monolog/monolog composer package is not installed, but required with the enabled geoip.log_failures config option.',
-                            0,
-                            $e
-                        );
-                    }
-
-                    $log = new \Monolog\Logger('geoip');
-                    $log->pushHandler(new \Monolog\Handler\StreamHandler(storage_path('logs/geoip.log'), \Monolog\Logger::ERROR));
-                    $log->error($e);
+                    $this->logger->error('GeoIP lookup failed', [
+                        'exception' => $e,
+                    ]);
                 }
             }
         }

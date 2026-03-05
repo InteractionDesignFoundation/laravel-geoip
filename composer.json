@@ -29,8 +29,7 @@
         "vimeo/psalm": "^6.0"
     },
     "suggest": {
-        "geoip2/geoip2": "Required to use the MaxMind database or web service with GeoIP (~2.1).",
-        "monolog/monolog": "Allows for storing location not found errors to the log"
+        "geoip2/geoip2": "Required to use the MaxMind database or web service with GeoIP (~2.1)."
     },
     "autoload": {
         "psr-4": {
