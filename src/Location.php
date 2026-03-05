@@ -77,9 +77,7 @@ class Location implements ArrayAccess
         return $this->getAttribute('ip') === $ip;
     }
 
-    /**
-     * Return a new instance with the given attribute changed.
-     */
+    /** Return a new instance with the given attribute changed. */
     public function withAttribute(string $key, mixed $value): static
     {
         $clone = clone $this;
