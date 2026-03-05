@@ -12,20 +12,20 @@ use Illuminate\Support\Arr;
  * Class Location
  *
  *
- * @property string|null $ip
- * @property string|null $iso_code
- * @property string|null $country
- * @property string|null $city
- * @property string|null $state
- * @property string|null $state_name
- * @property string|null $postal_code
- * @property float|null $lat
- * @property float|null $lon
- * @property string|null $timezone
- * @property string|null $continent
- * @property string|null $currency
- * @property bool $default
- * @property bool $cached
+ * @property-read string|null $ip
+ * @property-read string|null $iso_code
+ * @property-read string|null $country
+ * @property-read string|null $city
+ * @property-read string|null $state
+ * @property-read string|null $state_name
+ * @property-read string|null $postal_code
+ * @property-read float|null $lat
+ * @property-read float|null $lon
+ * @property-read string|null $timezone
+ * @property-read string|null $continent
+ * @property-read string|null $currency
+ * @property-read bool $default
+ * @property-read bool $cached
  * @property-read string $displayName {@see static::getDisplayNameAttribute()}
  *
  * @psalm-type LocationArray = array{
@@ -59,6 +59,10 @@ class Location implements ArrayAccess
      */
     public function __construct(protected array $attributes = [])
     {
+        $this->attributes = array_merge(
+            ['default' => false, 'cached' => false],
+            $this->attributes,
+        );
     }
 
     /**
@@ -74,17 +78,14 @@ class Location implements ArrayAccess
     }
 
     /**
-     * Set a given attribute on the location.
-     *
-     * @param string $key
-     *
-     * @return $this
+     * Return a new instance with the given attribute changed.
      */
-    public function setAttribute($key, mixed $value): static
+    public function withAttribute(string $key, mixed $value): static
     {
-        $this->attributes[$key] = $value;
+        $clone = clone $this;
+        $clone->attributes[$key] = $value;
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -119,9 +120,9 @@ class Location implements ArrayAccess
      *
      * @return bool
      */
-    public function getDefaultAttribute($value): bool
+    public function getDefaultAttribute(mixed $value): bool
     {
-        return is_null($value) ? false : $value;
+        return $value === true;
     }
 
     /**
@@ -140,15 +141,6 @@ class Location implements ArrayAccess
     public function __get(string $key)
     {
         return $this->getAttribute($key);
-    }
-
-    /**
-     * Set the location's attribute
-     * @param string $key
-     */
-    public function __set(string $key, mixed $value)
-    {
-        $this->setAttribute($key, $value);
     }
 
     /**
@@ -173,33 +165,29 @@ class Location implements ArrayAccess
 
     /**
      * Set the value for a given offset.
-     * @return void
+     *
+     * @throws \BadMethodCallException Always, as Location is immutable.
      */
     #[\Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        $this->$offset = $value;
+        throw new \BadMethodCallException('Location is immutable. Use withAttribute() instead.');
     }
 
     /**
      * Unset the value for a given offset.
-     * @return void
+     *
+     * @throws \BadMethodCallException Always, as Location is immutable.
      */
     #[\Override]
     public function offsetUnset(mixed $offset): void
     {
-        unset($this->$offset);
+        throw new \BadMethodCallException('Location is immutable.');
     }
 
     /** Check if the location's attribute is set */
     public function __isset($key): bool
     {
         return array_key_exists($key, $this->attributes);
-    }
-
-    /** Unset an attribute on the location. */
-    public function __unset(string $key): void
-    {
-        unset($this->attributes[$key]);
     }
 }
