@@ -21,6 +21,8 @@ class GeoIP
      */
     protected $location = null;
 
+    protected ?ISO3166 $iso3166 = null;
+
     /**
      * GeoIP service instance.
      *
@@ -162,7 +164,8 @@ class GeoIP
         }
 
         try {
-            $country = (new ISO3166())->alpha2($iso);
+            $this->iso3166 ??= new ISO3166();
+            $country = $this->iso3166->alpha2($iso);
 
             return $country['currency'][0] ?? null;
         } catch (OutOfBoundsException) {
