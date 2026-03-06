@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\Test;
 #[CoversClass(GeoIP::class)]
 final class ShouldCacheTest extends TestCase
 {
-    private const VALID_IP = '81.2.69.142';
+    private const string VALID_IP = '81.2.69.142';
 
     #[Test]
     public function cache_mode_all_caches_location_with_explicit_ip(): void
