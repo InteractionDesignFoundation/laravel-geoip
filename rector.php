@@ -5,14 +5,14 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 
 return RectorConfig::configure()
-    ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_82)
+    ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_83)
     ->withPaths([
         __DIR__ . '/config',
         __DIR__ . '/src',
         __DIR__ . '/tests',
     ])
     ->withSets([
-        \Rector\Set\ValueObject\LevelSetList::UP_TO_PHP_82,
+        \Rector\Set\ValueObject\LevelSetList::UP_TO_PHP_83,
         \Rector\Set\ValueObject\SetList::CODE_QUALITY,
         \Rector\Set\ValueObject\SetList::CODING_STYLE,
         \Rector\Set\ValueObject\SetList::TYPE_DECLARATION,
