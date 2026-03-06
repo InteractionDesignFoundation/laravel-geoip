@@ -6,6 +6,7 @@ auth.json
 .phpunit.cache/
 .phpunit.result.cache
 
+.cache/
 .php-cs-fixer.cache
 
 psalm.xml
