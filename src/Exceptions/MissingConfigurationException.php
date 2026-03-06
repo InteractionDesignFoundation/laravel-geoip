@@ -1,11 +1,7 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Exceptions;
 
 use RuntimeException;
 
-class MissingConfigurationException extends RuntimeException
-{
-}
+final class MissingConfigurationException extends RuntimeException {}

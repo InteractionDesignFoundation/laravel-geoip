@@ -1,11 +1,9 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP;
 
-use Illuminate\Support\Arr;
 use Illuminate\Cache\CacheManager;
+use Illuminate\Support\Arr;
 use League\ISO3166\Exception\OutOfBoundsException;
 use League\ISO3166\ISO3166;
 use Psr\Log\LoggerInterface;
@@ -13,29 +11,27 @@ use Psr\Log\LoggerInterface;
 /**
  * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
  */
-class GeoIP
+final class GeoIP
 {
     /**
      * Current location instance.
-     *
-     * @var Location|null
+     * @var \InteractionDesignFoundation\GeoIP\Location|null
      */
-    protected $location = null;
+    private $location = null;
 
-    protected ?ISO3166 $iso3166 = null;
+    private ?ISO3166 $iso3166 = null;
 
     /**
      * GeoIP service instance.
-     *
-     * @var Contracts\ServiceInterface
+     * @var \InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface
      */
-    protected $service;
+    private $service;
 
     /** Cache manager instance. */
-    protected \InteractionDesignFoundation\GeoIP\Cache $cache;
+    private \InteractionDesignFoundation\GeoIP\Cache $cache;
 
     /** Default Location data. */
-    protected array $default_location = [
+    private array $default_location = [
         'ip' => '127.0.0.0',
         'iso_code' => 'US',
         'country' => 'United States',
@@ -52,17 +48,9 @@ class GeoIP
         'cached' => false,
     ];
 
-    /**
-     * Create a new GeoIP instance.
-     *
-     * @param array $config
-     * @param CacheManager $cache
-     */
-    public function __construct(
-        protected array $config,
-        CacheManager $cache,
-        private readonly LoggerInterface $logger,
-    ) {
+    /** Create a new GeoIP instance. */
+    public function __construct(private array $config, CacheManager $cache, private readonly LoggerInterface $logger)
+    {
         // Create caching instance
         $this->cache = new Cache(
             $cache,
@@ -83,9 +71,7 @@ class GeoIP
 
     /**
      * Get the location from the provided IP.
-     *
      * @param string $ip
-     *
      * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
@@ -105,7 +91,6 @@ class GeoIP
 
     /**
      * Find location from IP.
-     * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
     private function find(?string $ip = null): Location
@@ -135,7 +120,7 @@ class GeoIP
                 $location = $location->withAttribute('default', false);
 
                 return $location;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 if ($this->config('log_failures', true) === true) {
                     $this->logger->error('GeoIP lookup failed', [
                         'exception' => $e,
@@ -149,9 +134,6 @@ class GeoIP
 
     /**
      * Get the currency code from ISO.
-     *
-     * @param string $iso
-     *
      * @return string|null
      */
     public function getCurrency(string $iso)
@@ -172,14 +154,13 @@ class GeoIP
 
     /**
      * Get service instance.
-     *
      * @throws \InvalidArgumentException
      */
     public function getService(): Contracts\ServiceInterface
     {
         if ($this->service === null) {
             // Get service configuration
-            $config = $this->config('services.' . $this->config('service'), []);
+            $config = $this->config('services.'.$this->config('service'), []);
 
             // Get service class
             $class = Arr::pull($config, 'class');
@@ -203,11 +184,7 @@ class GeoIP
         return $this->service;
     }
 
-    /**
-     * Get cache instance.
-     *
-     * @return \InteractionDesignFoundation\GeoIP\Cache
-     */
+    /** Get cache instance. */
     public function getCache(): \InteractionDesignFoundation\GeoIP\Cache
     {
         return $this->cache;
@@ -226,27 +203,14 @@ class GeoIP
         return $request->ip() ?? '127.0.0.0';
     }
 
-    /**
-     * Checks if the ip is valid.
-     *
-     * @param string $ip
-     *
-     * @return bool
-     */
+    /** Checks if the ip is valid. */
     private function isValid(string $ip): bool
     {
-        return !(! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
-            && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE));
+        return !(! filter_var($ip, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV4 | \FILTER_FLAG_NO_PRIV_RANGE | \FILTER_FLAG_NO_RES_RANGE)
+            && ! filter_var($ip, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV6 | \FILTER_FLAG_NO_PRIV_RANGE));
     }
 
-    /**
-     * Determine if the location should be cached.
-     *
-     * @param Location $location
-     * @param string|null $ip
-     *
-     * @return bool
-     */
+    /** Determine if the location should be cached. */
     private function shouldCache(Location $location, ?string $ip = null): bool
     {
         if ($location->default === true || $location->cached === true) {
@@ -262,10 +226,8 @@ class GeoIP
 
     /**
      * Get configuration value.
-     *
      * @param string $key
-     * @param array|bool|int|null|string $default
-     *
+     * @param array|bool|int|string|null $default
      * @return mixed
      */
     public function config($key, mixed $default = null)

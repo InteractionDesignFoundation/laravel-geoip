@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Support;
 
@@ -17,20 +15,11 @@ class HttpClient
     /** Last request error string. */
     private ?string $errors = null;
 
-    /**
-     * HttpClient constructor.
-     *
-     * @param array<string, mixed> $config
-     */
-    public function __construct(
-        /** Request configurations. */
-        private readonly array $config = []
-    ) {
-    }
+    /** @param array<string, mixed> $config */
+    public function __construct(/** Request configurations. */ private readonly array $config = []) {}
 
     /**
      * Perform a get request.
-     *
      * @param array<string, mixed> $query
      * @param array<int, string> $headers
      * @return array{string, array<array-key, string>}
@@ -42,11 +31,9 @@ class HttpClient
 
     /**
      * Execute the curl request
-     *
      * @param array<string, mixed> $query
      * @param array<int, string> $headers
      * @return array{string, array<array-key, string>}
-     *
      * @throws \RuntimeException
      */
     public function execute(string $method, string $url, array $query = [], array $headers = []): array
@@ -68,16 +55,16 @@ class HttpClient
 
         // Set options
         curl_setopt_array($curl, [
-            CURLOPT_URL => $this->getUrl($url),
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_CONNECTTIMEOUT => 20,
-            CURLOPT_TIMEOUT => 90,
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_HEADER => 1,
-            CURLINFO_HEADER_OUT => 1,
-            CURLOPT_VERBOSE => 1,
+            \CURLOPT_URL => $this->getUrl($url),
+            \CURLOPT_HTTPHEADER => $headers,
+            \CURLOPT_CONNECTTIMEOUT => 20,
+            \CURLOPT_TIMEOUT => 90,
+            \CURLOPT_RETURNTRANSFER => 1,
+            \CURLOPT_SSL_VERIFYPEER => true,
+            \CURLOPT_SSL_VERIFYHOST => 2,
+            \CURLOPT_HEADER => 1,
+            \CURLINFO_HEADER_OUT => 1,
+            \CURLOPT_VERBOSE => 1,
         ]);
 
         match ($method) {
@@ -86,12 +73,12 @@ class HttpClient
                 \CURLOPT_POST => true,
                 \CURLOPT_POSTFIELDS => $query,
             ]),
-            'DELETE' => curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'DELETE'),
-            default => curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET'),
+            'DELETE' => curl_setopt($curl, \CURLOPT_CUSTOMREQUEST, 'DELETE'),
+            default => curl_setopt($curl, \CURLOPT_CUSTOMREQUEST, 'GET'),
         };
 
         // Make request
-        curl_setopt($curl, CURLOPT_HEADER, true);
+        curl_setopt($curl, \CURLOPT_HEADER, true);
         $response = curl_exec($curl);
         if (! is_string($response)) {
             $curlError = curl_error($curl);
@@ -99,7 +86,7 @@ class HttpClient
         }
 
         // Set HTTP response code
-        $this->http_code = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $this->http_code = (int) curl_getinfo($curl, \CURLINFO_HTTP_CODE);
 
         // Set errors if there are any
         if (curl_errno($curl) !== 0) {
@@ -107,9 +94,9 @@ class HttpClient
         }
 
         // Parse body
-        $header_size = (int) curl_getinfo($curl, CURLINFO_HEADER_SIZE);
-        $header = substr($response, 0, $header_size);
-        $body = substr($response, $header_size);
+        $header_size = (int) curl_getinfo($curl, \CURLINFO_HEADER_SIZE);
+        $header = mb_substr($response, 0, $header_size);
+        $body = mb_substr($response, $header_size);
 
         curl_close($curl);
 
@@ -136,7 +123,6 @@ class HttpClient
 
     /**
      * Parse string headers into array
-     *
      * @return array<array-key, string>
      */
     private function parseHeaders(string $headers): array
@@ -152,7 +138,7 @@ class HttpClient
             $header = explode(':', $row, 2);
 
             if (count($header) === 2) {
-                $result[$header[0]] = trim($header[1]);
+                $result[$header[0]] = mb_trim($header[1]);
             } else {
                 $result[] = $header[0];
             }
@@ -165,8 +151,8 @@ class HttpClient
     private function getUrl(string $url): string
     {
         // Check for URL scheme
-        if (parse_url($url, PHP_URL_SCHEME) === null) {
-            $url = (string) Arr::get($this->config, 'base_uri') . $url;
+        if (parse_url($url, \PHP_URL_SCHEME) === null) {
+            $url = (string) Arr::get($this->config, 'base_uri').$url;
         }
 
         return $url;
@@ -174,7 +160,6 @@ class HttpClient
 
     /**
      * Build a GET request string.
-     *
      * @param array<string, mixed> $query
      */
     private function buildGetUrl(string $url, array $query = []): string
@@ -187,7 +172,7 @@ class HttpClient
 
         // Append query
         if ($stringQuery !== '' && $stringQuery !== '0') {
-            $url .= str_contains($url, '?') ? $stringQuery : '?' . $stringQuery;
+            $url .= str_contains($url, '?') ? $stringQuery : '?'.$stringQuery;
         }
 
         return $url;

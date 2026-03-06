@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
@@ -11,20 +9,15 @@ use Illuminate\Support\Arr;
 /**
  * @psalm-api
  */
-class MaxMindWebService extends AbstractService
+final class MaxMindWebService extends AbstractService
 {
     /**
      * Service client instance.
-     *
      * @var \GeoIp2\WebService\Client
      */
     protected $client;
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
+    /** The "booting" method of the service. */
     #[\Override]
     public function boot(): void
     {

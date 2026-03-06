@@ -1,24 +1,20 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
 use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
 
-class Update extends Command
+final class Update extends Command
 {
     /**
      * The console command name.
-     *
      * @var string
      */
     protected $name = 'geoip:update';
 
     /**
      * The console command description.
-     *
      * @var string
      */
     protected $description = 'Update GeoIP database files to the latest version';
@@ -32,14 +28,14 @@ class Update extends Command
         } catch (MissingConfigurationException $missingConfigurationException) {
             $this->components->error($missingConfigurationException->getMessage());
 
-            return static::FAILURE;
+            return self::FAILURE;
         }
 
         // Ensure the selected service supports updating
         if (method_exists($service, 'update') === false) {
-            $this->info('The current service "' . $service::class . '" does not support updating.');
+            $this->info('The current service "'.$service::class.'" does not support updating.');
 
-            return static::SUCCESS;
+            return self::SUCCESS;
         }
 
         $this->comment('Updating...');
@@ -49,9 +45,9 @@ class Update extends Command
             $this->info($result);
         } else {
             $this->error('Update failed!');
-            return static::FAILURE;
+            return self::FAILURE;
         }
 
-        return static::SUCCESS;
+        return self::SUCCESS;
     }
 }

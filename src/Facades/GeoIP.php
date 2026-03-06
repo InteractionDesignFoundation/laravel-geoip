@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Facades;
 
@@ -15,10 +13,7 @@ use Illuminate\Support\Facades\Facade;
  */
 final class GeoIP extends Facade
 {
-    /**
-     * Get the registered name of the component.
-     * @return string
-     */
+    /** Get the registered name of the component. */
     #[\Override]
     protected static function getFacadeAccessor(): string
     {

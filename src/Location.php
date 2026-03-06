@@ -1,17 +1,12 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP;
 
 use ArrayAccess;
-use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 /**
- * Class Location
- *
- *
  * @property-read string|null $ip
  * @property-read string|null $iso_code
  * @property-read string|null $country
@@ -27,7 +22,6 @@ use Illuminate\Support\Arr;
  * @property-read bool $default
  * @property-read bool $cached
  * @property-read string $displayName {@see static::getDisplayNameAttribute()}
- *
  * @psalm-type LocationArray = array{
  *     ip: string,
  *     iso_code: string|null,
@@ -45,32 +39,26 @@ use Illuminate\Support\Arr;
  *     cached?: bool,
  *     localizations?: array<string, string|null>,
  * }
- * How to use it: @@psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
- *
  * @template-implements \ArrayAccess<string, mixed>
  */
-class Location implements ArrayAccess
+final class Location implements ArrayAccess
 {
     /**
      * Create a new location instance.
-     *
      * @param array<string, mixed> $attributes
      * @psalm-param LocationArray $attributes
      */
-    public function __construct(protected array $attributes = [])
+    public function __construct(private array $attributes = [])
     {
         $this->attributes = array_merge(
             ['default' => false, 'cached' => false],
-            $this->attributes,
+            $this->attributes
         );
     }
 
     /**
      * Determine if the location is for the same IP address.
-     *
      * @param string $ip
-     *
-     * @return bool
      */
     public function same($ip): bool
     {
@@ -88,9 +76,6 @@ class Location implements ArrayAccess
 
     /**
      * Get an attribute from the $attributes array.
-     *
-     * @param string $key
-     *
      * @return mixed
      */
     public function getAttribute(string $key)
@@ -99,7 +84,7 @@ class Location implements ArrayAccess
 
         // First we will check for the presence of a mutator for the set operation
         // which simply lets the developers tweak the attribute as it is set.
-        $method = 'get' . Str::studly($key) . 'Attribute';
+        $method = 'get'.Str::studly($key).'Attribute';
         if (method_exists($this, $method)) {
             return $this->{$method}($value);
         }
@@ -113,11 +98,7 @@ class Location implements ArrayAccess
         return preg_replace('/^,\s/', '', sprintf('%s, %s', $this->city, $this->state));
     }
 
-    /**
-     * Is the location the default?
-     *
-     * @return bool
-     */
+    /** Is the location the default? */
     public function getDefaultAttribute(mixed $value): bool
     {
         return $value === true;
@@ -132,29 +113,20 @@ class Location implements ArrayAccess
         return $this->attributes;
     }
 
-    /**
-     * Get the location's attribute
-     * @return mixed
-     */
+    /** Get the location's attribute */
     public function __get(string $key): mixed
     {
         return $this->getAttribute($key);
     }
 
-    /**
-     * Determine if the given attribute exists.
-     * @return bool
-     */
+    /** Determine if the given attribute exists. */
     #[\Override]
     public function offsetExists(mixed $offset): bool
     {
         return isset($this->$offset);
     }
 
-    /**
-     * Get the value for a given offset.
-     * @return mixed
-     */
+    /** Get the value for a given offset. */
     #[\Override]
     public function offsetGet(mixed $offset): mixed
     {
@@ -163,7 +135,6 @@ class Location implements ArrayAccess
 
     /**
      * Set the value for a given offset.
-     *
      * @throws \BadMethodCallException Always, as Location is immutable.
      */
     #[\Override]
@@ -174,7 +145,6 @@ class Location implements ArrayAccess
 
     /**
      * Unset the value for a given offset.
-     *
      * @throws \BadMethodCallException Always, as Location is immutable.
      */
     #[\Override]
@@ -185,7 +155,6 @@ class Location implements ArrayAccess
 
     /**
      * Prevent setting properties directly.
-     *
      * @throws \BadMethodCallException Always, as Location is immutable.
      */
     public function __set(string $key, mixed $value): void

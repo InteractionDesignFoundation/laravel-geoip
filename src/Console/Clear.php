@@ -1,12 +1,10 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
 
-class Clear extends Command
+final class Clear extends Command
 {
     /**
      * The console command name.
@@ -16,7 +14,6 @@ class Clear extends Command
 
     /**
      * The console command description.
-     *
      * @var string
      */
     protected $description = 'Clear GeoIP cached locations.';
@@ -33,11 +30,7 @@ class Clear extends Command
         return self::SUCCESS;
     }
 
-    /**
-     * Is cache flushing supported.
-     *
-     * @return bool
-     */
+    /** Is cache flushing supported. */
     protected function isSupported(): bool
     {
         return (empty(app('geoip')->config('cache_tags')) === false)
@@ -46,15 +39,14 @@ class Clear extends Command
 
     /**
      * Flush the cache.
-     *
      * @return void
      */
     protected function performFlush()
     {
-        $this->output->write("Clearing cache...");
+        $this->output->write('Clearing cache...');
 
         app('geoip')->getCache()->flush();
 
-        $this->output->writeln("<info>complete</info>");
+        $this->output->writeln('<info>complete</info>');
     }
 }

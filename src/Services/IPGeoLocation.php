@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
@@ -10,20 +8,15 @@ use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 /**
  * @psalm-api
  */
-class IPGeoLocation extends AbstractService
+final class IPGeoLocation extends AbstractService
 {
     /**
      * Http client instance.
-     *
-     * @var HttpClient
+     * @var \InteractionDesignFoundation\GeoIP\Support\HttpClient
      */
     protected $client;
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
+    /** The "booting" method of the service. */
     #[\Override]
     public function boot(): void
     {
@@ -32,7 +25,7 @@ class IPGeoLocation extends AbstractService
         ];
 
         if ($this->config('key')) {
-            $base['base_uri'] = $base['base_uri'] . 'ipgeo?apiKey=' . $this->config('key');
+            $base['base_uri'] = $base['base_uri'].'ipgeo?apiKey='.$this->config('key');
         }
 
         $this->client = new HttpClient($base);
@@ -43,11 +36,11 @@ class IPGeoLocation extends AbstractService
     public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
         // Get data from a client
-        $data = $this->client->get('&ip=' . $ip);
+        $data = $this->client->get('&ip='.$ip);
 
         // Verify server response
         if ($this->client->getErrors() !== null) {
-            throw new Exception('Request failed (' . $this->client->getErrors() . ')');
+            throw new Exception('Request failed ('.$this->client->getErrors().')');
         }
 
         // Parse body content

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
@@ -9,12 +7,11 @@ use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 /**
  * @psalm-api
  */
-class IPFinder extends AbstractService
+final class IPFinder extends AbstractService
 {
     /**
      * Http client instance.
-     *
-     * @var HttpClient
+     * @var \InteractionDesignFoundation\GeoIP\Support\HttpClient
      */
     protected $client;
 
@@ -47,7 +44,7 @@ class IPFinder extends AbstractService
 
         // Verify server response
         if ($this->client->getErrors() !== null || empty($data[0])) {
-            throw new \Exception('Request failed (' . $this->client->getErrors() . ')');
+            throw new \Exception('Request failed ('.$this->client->getErrors().')');
         }
 
         $json = json_decode((string) $data[0], true);

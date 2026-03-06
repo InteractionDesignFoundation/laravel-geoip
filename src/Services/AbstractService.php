@@ -1,34 +1,25 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use InteractionDesignFoundation\GeoIP\Location;
 use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
+use InteractionDesignFoundation\GeoIP\Location;
 
 abstract class AbstractService implements ServiceInterface
 {
-    /**
-     * Create a new service instance.
-     *
-     * @param array $config
-     */
+    /** Create a new service instance. */
     public function __construct(protected array $config = [])
     {
         $this->boot();
     }
 
     /** The "booting" method of the service. */
-    #[\Override]
-    public function boot(): void
-    {
-    }
+    public function boot(): void {}
 
     /** {@inheritDoc} */
     #[\Override]
-    public function hydrate(array $attributes = []): Location
+    final public function hydrate(array $attributes = []): Location
     {
         return new Location($attributes);
     }
@@ -38,7 +29,7 @@ abstract class AbstractService implements ServiceInterface
      * @return mixed
      */
     #[\Override]
-    public function config(string $key, mixed $default = null)
+    final public function config(string $key, mixed $default = null)
     {
         return $this->config[$key] ?? $default;
     }
@@ -47,11 +38,9 @@ abstract class AbstractService implements ServiceInterface
      * This method ensures that the given key was filled
      * by the user, so that the service can be called without
      * errors raised linked to missing configuration.
-     *
      * @param string|list<string> $keys
-     * @return void
      */
-    public function ensureConfigurationParameterDefined(string | array $keys): void
+    final public function ensureConfigurationParameterDefined(string | array $keys): void
     {
         // Be able to accept a string and an array of strings.
         $keys = is_string($keys) ? [$keys] : $keys;

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
@@ -11,20 +9,15 @@ use Illuminate\Support\Arr;
 /**
  * @psalm-api
  */
-class MaxMindDatabase extends AbstractService
+final class MaxMindDatabase extends AbstractService
 {
     /**
      * Service reader instance.
-     *
      * @var \GeoIp2\Database\Reader
      */
     protected $reader;
 
-    /**
-     * The "booting" method of the service.
-     *
-     * @return void
-     */
+    /** The "booting" method of the service. */
     #[\Override]
     public function boot(): void
     {
@@ -37,11 +30,12 @@ class MaxMindDatabase extends AbstractService
         if (is_file($path) === false) {
             if (!is_dir($concurrentDirectory = dirname($path))
                 && !mkdir($concurrentDirectory)
-                && !is_dir($concurrentDirectory)) {
+                && !is_dir($concurrentDirectory)
+            ) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
             }
 
-            copy(__DIR__ . '/../../resources/geoip.mmdb', $path);
+            copy(__DIR__.'/../../resources/geoip.mmdb', $path);
         }
 
         $this->reader = new Reader(
@@ -74,8 +68,6 @@ class MaxMindDatabase extends AbstractService
 
     /**
      * Update function for service.
-     *
-     * @return string
      * @throws \Exception
      */
     public function update(): string
@@ -119,9 +111,7 @@ class MaxMindDatabase extends AbstractService
     /**
      * Provide a temporary directory to perform operations in
      * and ensure it is removed afterward.
-     *
      * @param callable(string):void $callback
-     *
      * @return void
      */
     protected function withTemporaryDirectory(callable $callback)
@@ -145,9 +135,6 @@ class MaxMindDatabase extends AbstractService
 
     /**
      * Recursively search the given archive to find the .mmdb file.
-     *
-     * @param \PharData $archive
-     *
      * @return \PharFileInfo
      * @throws \Exception
      */
@@ -169,9 +156,6 @@ class MaxMindDatabase extends AbstractService
 
     /**
      * Recursively delete the given directory.
-     *
-     * @param string $directory
-     *
      * @return mixed
      */
     protected function deleteDirectory(string $directory)
@@ -189,7 +173,7 @@ class MaxMindDatabase extends AbstractService
                 continue;
             }
 
-            if (! $this->deleteDirectory($directory . DIRECTORY_SEPARATOR . $item)) {
+            if (! $this->deleteDirectory($directory.\DIRECTORY_SEPARATOR.$item)) {
                 return false;
             }
         }
@@ -199,7 +183,7 @@ class MaxMindDatabase extends AbstractService
 
     protected function downloadFileByUrl(string $filename, string $url): void
     {
-        $canUseFopenForUrl = in_array(strtolower((string) ini_get('allow_url_fopen')), ['1', 'on'], true);
+        $canUseFopenForUrl = in_array(mb_strtolower((string) ini_get('allow_url_fopen')), ['1', 'on'], true);
         if ($canUseFopenForUrl) {
             $sourceStream = @fopen($url, 'rb');
             if ($sourceStream === false) {

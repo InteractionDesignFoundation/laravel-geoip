@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP;
 
@@ -13,7 +11,6 @@ final class Cache
 {
     /**
      * Instance of cache manager.
-     *
      * @var \Illuminate\Cache\CacheManager|\Illuminate\Cache\TaggedCache
      */
     private $cache;
@@ -23,10 +20,7 @@ final class Cache
 
     /**
      * Create a new cache instance.
-     *
-     * @param CacheManager $cache
      * @param array $tags
-     * @param int $expires
      */
     public function __construct(CacheManager $cache, $tags, private readonly int $expires = 30)
     {
@@ -42,17 +36,11 @@ final class Cache
         $this->prefix = (string) $prefix;
     }
 
-    /**
-     * Get an item from the cache.
-     *
-     * @param string $name
-     *
-     * @return Location|null
-     */
+    /** Get an item from the cache. */
     public function get(string $name): ?\InteractionDesignFoundation\GeoIP\Location
     {
         /** @psalm-var LocationArray|null $value */
-        $value = $this->cache->get($this->prefix . $name);
+        $value = $this->cache->get($this->prefix.$name);
 
         return is_array($value)
             ? new Location($value)
@@ -61,22 +49,14 @@ final class Cache
 
     /**
      * Store an item in cache.
-     *
-     * @param string $name
-     * @param Location $location
-     *
      * @return bool
      */
     public function set(string $name, Location $location)
     {
-        return $this->cache->put($this->prefix . $name, $location->toArray(), $this->expires);
+        return $this->cache->put($this->prefix.$name, $location->toArray(), $this->expires);
     }
 
-    /**
-     * Flush cache for tags.
-     *
-     * @return bool
-     */
+    /** Flush cache for tags. */
     public function flush(): bool
     {
         return $this->cache->flush();
