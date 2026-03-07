@@ -24,12 +24,26 @@ jobs:
       -   name: Checkout code
           uses: actions/checkout@v6
 
+      -   name: Setup PHP
+          uses: shivammathur/setup-php@v2
+          with:
+            php-version: 8.4
+            coverage: none
+          env:
+            COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      -   name: Install composer dependencies
+          run: composer install --no-interaction --no-progress --no-scripts
+
+      -   name: Lint facade docblocks
+          run: php -f vendor/bin/facade.php InteractionDesignFoundation\\GeoIP\\Facades\\GeoIP
+
       -   name: Fix style
           uses: docker://oskarstark/php-cs-fixer-ga
           with:
             args: --config=.php-cs-fixer.php --allow-risky=yes
 
       -   name: Commit changes
-          uses: stefanzweifel/git-auto-commit-action@v5
+          uses: stefanzweifel/git-auto-commit-action@v7
           with:
             commit_message: Fix coding style
