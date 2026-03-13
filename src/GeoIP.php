@@ -154,9 +154,9 @@ class GeoIP
      *
      * @return string|null
      */
-    public function getCurrency(string $iso)
+    public function getCurrency(?string $iso)
     {
-        if (! $this->config('include_currency', false)) {
+        if ($iso === null || ! $this->config('include_currency', false)) {
             return null;
         }
 

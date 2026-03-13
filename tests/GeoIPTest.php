@@ -167,6 +167,37 @@ final class GeoIPTest extends TestCase
         return new GeoIP($config, $this->app['cache'], $logger);
     }
 
+    #[Test]
+    public function it_handles_null_iso_code_when_resolving_currency(): void
+    {
+        $locationWithNullIsoCode = new Location([
+            'ip' => '8.8.8.8',
+            'iso_code' => null,
+            'country' => null,
+            'city' => null,
+            'state' => null,
+            'state_name' => null,
+            'postal_code' => null,
+            'lat' => null,
+            'lon' => null,
+            'timezone' => null,
+            'continent' => null,
+        ]);
+
+        $service = $this->createStub(ServiceInterface::class);
+        $service->method('locate')->willReturn($locationWithNullIsoCode);
+        $service->method('hydrate')
+            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+
+        $geoIp = $this->makeGeoIP(['include_currency' => true, 'cache' => 'none']);
+        $this->setService($geoIp, $service);
+
+        $location = $geoIp->getLocation('8.8.8.8');
+
+        $this->assertNull($location->currency);
+        $this->assertNull($location->iso_code);
+    }
+
     private function createFailingService(): ServiceInterface
     {
         $service = $this->createStub(ServiceInterface::class);
