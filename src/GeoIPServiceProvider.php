@@ -23,7 +23,7 @@ class GeoIPServiceProvider extends ServiceProvider
             $this->registerGeoIpCommands();
         }
 
-        $this->mergeConfigFrom(__DIR__ . '/../config/geoip.php', 'geoip');
+        $this->mergeConfigFrom(__DIR__.'/../config/geoip.php', 'geoip');
     }
 
     /**
@@ -53,7 +53,7 @@ class GeoIPServiceProvider extends ServiceProvider
     public function registerResources(): void
     {
         $this->publishes([
-            __DIR__ . '/../config/geoip.php' => config_path('geoip.php'),
+            __DIR__.'/../config/geoip.php' => config_path('geoip.php'),
         ], 'config');
     }
 

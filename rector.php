@@ -7,9 +7,9 @@ use Rector\Config\RectorConfig;
 return RectorConfig::configure()
     ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_82)
     ->withPaths([
-        __DIR__ . '/config',
-        __DIR__ . '/src',
-        __DIR__ . '/tests',
+        __DIR__.'/config',
+        __DIR__.'/src',
+        __DIR__.'/tests',
     ])
     ->withSets([
         \Rector\Set\ValueObject\LevelSetList::UP_TO_PHP_82,

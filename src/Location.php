@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP;
 
 use ArrayAccess;
-use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 /**
  * Class Location
@@ -99,7 +99,7 @@ class Location implements ArrayAccess
 
         // First we will check for the presence of a mutator for the set operation
         // which simply lets the developers tweak the attribute as it is set.
-        $method = 'get' . Str::studly($key) . 'Attribute';
+        $method = 'get'.Str::studly($key).'Attribute';
         if (method_exists($this, $method)) {
             return $this->{$method}($value);
         }

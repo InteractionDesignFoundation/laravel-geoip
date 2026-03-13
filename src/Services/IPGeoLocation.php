@@ -32,7 +32,7 @@ class IPGeoLocation extends AbstractService
         ];
 
         if ($this->config('key')) {
-            $base['base_uri'] = $base['base_uri'] . 'ipgeo?apiKey=' . $this->config('key');
+            $base['base_uri'] = $base['base_uri'].'ipgeo?apiKey='.$this->config('key');
         }
 
         $this->client = new HttpClient($base);
@@ -43,11 +43,11 @@ class IPGeoLocation extends AbstractService
     public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
         // Get data from a client
-        $data = $this->client->get('&ip=' . $ip);
+        $data = $this->client->get('&ip='.$ip);
 
         // Verify server response
         if ($this->client->getErrors() !== null) {
-            throw new Exception('Request failed (' . $this->client->getErrors() . ')');
+            throw new Exception('Request failed ('.$this->client->getErrors().')');
         }
 
         // Parse body content

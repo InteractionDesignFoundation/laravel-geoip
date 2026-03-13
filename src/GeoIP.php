@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP;
 
-use Illuminate\Support\Arr;
 use Illuminate\Cache\CacheManager;
+use Illuminate\Support\Arr;
 use League\ISO3166\Exception\OutOfBoundsException;
 use League\ISO3166\ISO3166;
 use Psr\Log\LoggerInterface;
@@ -179,7 +179,7 @@ class GeoIP
     {
         if ($this->service === null) {
             // Get service configuration
-            $config = $this->config('services.' . $this->config('service'), []);
+            $config = $this->config('services.'.$this->config('service'), []);
 
             // Get service class
             $class = Arr::pull($config, 'class');

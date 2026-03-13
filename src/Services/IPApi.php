@@ -44,7 +44,7 @@ class IPApi extends AbstractService
 
         // Using the Pro service
         if ($this->config('key')) {
-            $base['base_uri'] = ($this->config('secure') ? 'https' : 'http') . '://pro.ip-api.com/';
+            $base['base_uri'] = ($this->config('secure') ? 'https' : 'http').'://pro.ip-api.com/';
             $base['query']['key'] = $this->config('key');
         }
 
@@ -64,22 +64,22 @@ class IPApi extends AbstractService
     public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
         // Get data from the client
-        $data = $this->client->get('json/' . $ip);
+        $data = $this->client->get('json/'.$ip);
 
         // Verify server response
         if ($this->client->getErrors() !== null) {
-            throw new \RuntimeException('Unexpected ip-api.com response: ' . $this->client->getErrors());
+            throw new \RuntimeException('Unexpected ip-api.com response: '.$this->client->getErrors());
         }
 
         // Parse body content
         $json = json_decode((string) $data[0]);
         if (! is_object($json) || ! property_exists($json, 'status')) {
-            throw new \RuntimeException('Unexpected ip-api.com response: ' . $json->message);
+            throw new \RuntimeException('Unexpected ip-api.com response: '.$json->message);
         }
 
         // Verify response status
         if ($json->status !== 'success') {
-            throw new \RuntimeException('Failed ip-api.com response: ' . $json->message);
+            throw new \RuntimeException('Failed ip-api.com response: '.$json->message);
         }
 
         return $this->hydrate([

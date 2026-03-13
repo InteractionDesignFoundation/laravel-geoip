@@ -41,7 +41,7 @@ class MaxMindDatabase extends AbstractService
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
             }
 
-            copy(__DIR__ . '/../../resources/geoip.mmdb', $path);
+            copy(__DIR__.'/../../resources/geoip.mmdb', $path);
         }
 
         $this->reader = new Reader(
@@ -189,7 +189,7 @@ class MaxMindDatabase extends AbstractService
                 continue;
             }
 
-            if (! $this->deleteDirectory($directory . DIRECTORY_SEPARATOR . $item)) {
+            if (! $this->deleteDirectory($directory.DIRECTORY_SEPARATOR.$item)) {
                 return false;
             }
         }

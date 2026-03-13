@@ -52,7 +52,7 @@ final class Cache
     public function get(string $name): ?\InteractionDesignFoundation\GeoIP\Location
     {
         /** @psalm-var LocationArray|null $value */
-        $value = $this->cache->get($this->prefix . $name);
+        $value = $this->cache->get($this->prefix.$name);
 
         return is_array($value)
             ? new Location($value)
@@ -69,7 +69,7 @@ final class Cache
      */
     public function set(string $name, Location $location)
     {
-        return $this->cache->put($this->prefix . $name, $location->toArray(), $this->expires);
+        return $this->cache->put($this->prefix.$name, $location->toArray(), $this->expires);
     }
 
     /**

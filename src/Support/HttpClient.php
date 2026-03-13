@@ -25,8 +25,7 @@ class HttpClient
     public function __construct(
         /** Request configurations. */
         private readonly array $config = []
-    ) {
-    }
+    ) {}
 
     /**
      * Perform a get request.
@@ -166,7 +165,7 @@ class HttpClient
     {
         // Check for URL scheme
         if (parse_url($url, PHP_URL_SCHEME) === null) {
-            $url = (string) Arr::get($this->config, 'base_uri') . $url;
+            $url = (string) Arr::get($this->config, 'base_uri').$url;
         }
 
         return $url;
@@ -187,7 +186,7 @@ class HttpClient
 
         // Append query
         if ($stringQuery !== '' && $stringQuery !== '0') {
-            $url .= str_contains($url, '?') ? $stringQuery : '?' . $stringQuery;
+            $url .= str_contains($url, '?') ? $stringQuery : '?'.$stringQuery;
         }
 
         return $url;

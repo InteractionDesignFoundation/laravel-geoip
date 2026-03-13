@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use InteractionDesignFoundation\GeoIP\Location;
 use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
+use InteractionDesignFoundation\GeoIP\Location;
 
 abstract class AbstractService implements ServiceInterface
 {
@@ -22,9 +22,7 @@ abstract class AbstractService implements ServiceInterface
 
     /** The "booting" method of the service. */
     #[\Override]
-    public function boot(): void
-    {
-    }
+    public function boot(): void {}
 
     /** {@inheritDoc} */
     #[\Override]

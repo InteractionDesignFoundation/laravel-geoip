@@ -25,7 +25,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
     protected function getConfig(): array
     {
-        $config = include(__DIR__ . '/../config/geoip.php');
+        $config = include(__DIR__.'/../config/geoip.php');
 
         $this->databaseCheck($config['services']['maxmind_database']['database_path']);
 
@@ -37,7 +37,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         if (file_exists($databaseFilepath) === false) {
             @mkdir(dirname($databaseFilepath), 0755, true);
-            copy(__DIR__ . '/../resources/geoip.mmdb', $databaseFilepath);
+            copy(__DIR__.'/../resources/geoip.mmdb', $databaseFilepath);
         }
     }
 }

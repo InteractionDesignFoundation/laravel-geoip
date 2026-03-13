@@ -37,7 +37,7 @@ class Update extends Command
 
         // Ensure the selected service supports updating
         if (method_exists($service, 'update') === false) {
-            $this->info('The current service "' . $service::class . '" does not support updating.');
+            $this->info('The current service "'.$service::class.'" does not support updating.');
 
             return static::SUCCESS;
         }

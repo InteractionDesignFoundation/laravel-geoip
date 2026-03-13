@@ -39,7 +39,7 @@ class IP2Location extends AbstractService
         ]);
 
         if ($this->client->getErrors() !== null) {
-            throw new \RuntimeException('Request failed (' . ($this->client->getErrors() ?? '') . ')');
+            throw new \RuntimeException('Request failed ('.($this->client->getErrors() ?? '').')');
         }
 
         $json = json_decode((string) $data[0]);
@@ -51,7 +51,7 @@ class IP2Location extends AbstractService
         if (property_exists($json, 'error')) {
             /** @var object{error_message?: string} $error */
             $error = $json->error;
-            throw new \RuntimeException('IP2Location.io API error: ' . ($error->error_message ?? 'Unknown error'));
+            throw new \RuntimeException('IP2Location.io API error: '.($error->error_message ?? 'Unknown error'));
         }
 
         return $this->hydrate([
