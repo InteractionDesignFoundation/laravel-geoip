@@ -33,10 +33,17 @@ final class CacheTest extends TestCase
     }
 
     #[Test]
-    public function should_work_without_tags_on_non_tagging_driver(): void
+    public function should_fall_back_to_untagged_cache_when_driver_does_not_support_tags(): void
     {
-        // Simulates file/database cache driver which doesn't support tagging
-        $cache = new Cache(app(CacheManager::class), ['some-tag'], 30);
+        // Switch to file driver which does not support tagging
+        config(['cache.default' => 'file']);
+        $cacheManager = app(CacheManager::class);
+
+        $this->assertFalse($cacheManager->supportsTags(), 'File cache driver should not support tags');
+
+        // Tags are configured, but driver doesn't support them — should not throw
+        $cache = new Cache($cacheManager, ['some-tag'], 30);
+
         $location = new Location([
             'ip' => '81.2.69.142',
             'iso_code' => 'US',

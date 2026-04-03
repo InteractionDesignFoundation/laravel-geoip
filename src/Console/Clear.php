@@ -24,7 +24,10 @@ class Clear extends Command
     public function handle(): int
     {
         if ($this->isSupported() === false) {
-            $this->output->error('Default cache system does not support tags');
+            $this->output->error(
+                'Cannot selectively clear GeoIP cache: either cache tags are not configured'
+                .' or the active cache driver does not support tagging.'
+            );
             return self::FAILURE;
         }
 
