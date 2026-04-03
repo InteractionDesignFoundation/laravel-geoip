@@ -64,9 +64,15 @@ class GeoIP
         private readonly LoggerInterface $logger,
     ) {
         // Create caching instance
+        /** @var list<string> $cacheTags */
+        $cacheTags = array_values((array) $this->config('cache_tags', []));
+        if ($cacheTags !== [] && !$cache->supportsTags()) {
+            $this->logger->info('GeoIP: cache tags are configured but the active cache driver does not support tagging. Tags will be ignored.');
+        }
+
         $this->cache = new Cache(
             $cache,
-            $this->config('cache_tags'),
+            $cacheTags,
             $this->config('cache_expires', 30)
         );
         $this->cache->setPrefix((string) $this->config('cache_prefix'));

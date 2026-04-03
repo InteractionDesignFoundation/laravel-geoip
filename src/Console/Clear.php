@@ -24,7 +24,10 @@ class Clear extends Command
     public function handle(): int
     {
         if ($this->isSupported() === false) {
-            $this->output->error('Default cache system does not support tags');
+            $this->output->error(
+                'Cannot selectively clear GeoIP cache: either cache tags are not configured'
+                .' or the active cache driver does not support tagging.'
+            );
             return self::FAILURE;
         }
 
@@ -40,8 +43,8 @@ class Clear extends Command
      */
     protected function isSupported(): bool
     {
-        return (empty(app('geoip')->config('cache_tags')) === false)
-            && (in_array(config('cache.default'), ['file', 'database'], true) === false);
+        return !empty(app('geoip')->config('cache_tags'))
+            && app(\Illuminate\Cache\CacheManager::class)->supportsTags();
     }
 
     /**

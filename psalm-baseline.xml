@@ -71,7 +71,6 @@
     <MixedArgument>
       <code><![CDATA[$config]]></code>
       <code><![CDATA[$this->config('cache_expires', 30)]]></code>
-      <code><![CDATA[$this->config('cache_tags')]]></code>
       <code><![CDATA[$this->config('default_location', [])]]></code>
     </MixedArgument>
     <MixedArgumentTypeCoercion>

@@ -24,11 +24,9 @@ final class Cache
     /**
      * Create a new cache instance.
      *
-     * @param CacheManager $cache
-     * @param array $tags
-     * @param int $expires
+     * @param list<string> $tags
      */
-    public function __construct(CacheManager $cache, $tags, private readonly int $expires = 30)
+    public function __construct(CacheManager $cache, array $tags, private readonly int $expires = 30)
     {
         $this->cache = ($tags === [] || !$cache->supportsTags()) ? $cache : $cache->tags($tags);
     }
