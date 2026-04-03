@@ -40,8 +40,8 @@ class Clear extends Command
      */
     protected function isSupported(): bool
     {
-        return (empty(app('geoip')->config('cache_tags')) === false)
-            && (in_array(config('cache.default'), ['file', 'database'], true) === false);
+        return !empty(app('geoip')->config('cache_tags'))
+            && app(\Illuminate\Cache\CacheManager::class)->supportsTags();
     }
 
     /**

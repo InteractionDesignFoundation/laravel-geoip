@@ -128,8 +128,10 @@ return [
     | Cache Tags
     |--------------------------------------------------------------------------
     |
-    | Cache tags are not supported when using the file or database cache
-    | drivers in Laravel. This is done so that only locations can be cleared.
+    | Cache tags allow you to selectively clear only GeoIP cached locations
+    | without affecting other cached data. If the active cache driver does
+    | not support tagging (e.g. file, database), tags are automatically
+    | ignored at runtime. Set to null or an empty array to disable tagging.
     |
     */
 

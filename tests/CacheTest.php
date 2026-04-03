@@ -33,6 +33,25 @@ final class CacheTest extends TestCase
     }
 
     #[Test]
+    public function should_work_without_tags_on_non_tagging_driver(): void
+    {
+        // Simulates file/database cache driver which doesn't support tagging
+        $cache = new Cache(app(CacheManager::class), ['some-tag'], 30);
+        $location = new Location([
+            'ip' => '81.2.69.142',
+            'iso_code' => 'US',
+            'lat' => 41.31,
+            'lon' => -72.92,
+        ]);
+
+        $cache->set($location['ip'], $location);
+        $cachedLocation = $cache->get($location['ip']);
+
+        $this->assertInstanceOf(Location::class, $cachedLocation);
+        $this->assertSame('81.2.69.142', $cachedLocation->ip);
+    }
+
+    #[Test]
     public function it_flushes_empty_cache(): void
     {
         $cache = new Cache(app(CacheManager::class), [], 30);
