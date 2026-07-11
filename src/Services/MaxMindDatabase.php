@@ -6,9 +6,7 @@ use GeoIp2\Database\Reader;
 use GeoIp2\Model\City;
 use Illuminate\Support\Arr;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 final class MaxMindDatabase extends AbstractService
 {
     /**
@@ -114,7 +112,7 @@ final class MaxMindDatabase extends AbstractService
      * @param callable(string):void $callback
      * @return void
      */
-    protected function withTemporaryDirectory(callable $callback)
+    protected function withTemporaryDirectory(callable $callback): void
     {
         $directory = tempnam(sys_get_temp_dir(), 'maxmind');
 

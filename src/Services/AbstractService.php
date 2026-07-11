@@ -15,7 +15,7 @@ abstract class AbstractService implements ServiceInterface
     }
 
     /** The "booting" method of the service. */
-    public function boot(): void {}
+    final public function boot(): void {}
 
     /** {@inheritDoc} */
     #[\Override]
@@ -48,7 +48,7 @@ abstract class AbstractService implements ServiceInterface
         foreach ($keys as $key) {
             // If the config is not defined / is empty.
             if (empty($this->config($key))) {
-                $service = (new \ReflectionClass($this))->getShortName();
+                $service = new \ReflectionClass($this)->getShortName();
 
                 throw new MissingConfigurationException(sprintf("Missing '%s' parameter (service: %s)", $key, $service));
             }

@@ -4,9 +4,7 @@ namespace InteractionDesignFoundation\GeoIP;
 
 use Illuminate\Cache\CacheManager;
 
-/**
- * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
- */
+/** @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location */
 final class Cache
 {
     /**

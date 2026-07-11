@@ -2,12 +2,9 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Exception;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 final class IPGeoLocation extends AbstractService
 {
     /**
@@ -40,7 +37,7 @@ final class IPGeoLocation extends AbstractService
 
         // Verify server response
         if ($this->client->getErrors() !== null) {
-            throw new Exception('Request failed ('.$this->client->getErrors().')');
+            throw new \Exception('Request failed ('.$this->client->getErrors().')');
         }
 
         // Parse body content

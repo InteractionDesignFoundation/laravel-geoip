@@ -97,7 +97,7 @@ final class LocationTest extends TestCase
         $this->assertSame('United States', $location->country);
         $this->assertSame('New Haven', $location->city);
         $this->assertSame('CT', $location->state);
-        $this->assertEqualsWithDelta(41.31, $location->lat, PHP_FLOAT_EPSILON);
+        $this->assertEqualsWithDelta(41.31, $location->lat, \PHP_FLOAT_EPSILON);
         $this->assertSame(-72.92, $location->lon);
     }
 

@@ -2,7 +2,6 @@
 
 namespace InteractionDesignFoundation\GeoIP;
 
-use ArrayAccess;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
@@ -41,7 +40,7 @@ use Illuminate\Support\Str;
  * }
  * @template-implements \ArrayAccess<string, mixed>
  */
-final class Location implements ArrayAccess
+final class Location implements \ArrayAccess
 {
     /**
      * Create a new location instance.

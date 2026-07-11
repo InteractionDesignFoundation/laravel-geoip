@@ -4,9 +4,7 @@ namespace InteractionDesignFoundation\GeoIP\Contracts;
 
 use InteractionDesignFoundation\GeoIP\Location;
 
-/**
- * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
- */
+/** @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location */
 interface ServiceInterface
 {
     /** The "booting" method of the service. */

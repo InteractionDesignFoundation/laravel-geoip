@@ -36,7 +36,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function databaseCheck(string $databaseFilepath): void
     {
         if (file_exists($databaseFilepath) === false) {
-            @mkdir(dirname($databaseFilepath), 0755, true);
+            @mkdir(dirname($databaseFilepath), 0o755, true);
             copy(__DIR__.'/../resources/geoip.mmdb', $databaseFilepath);
         }
     }

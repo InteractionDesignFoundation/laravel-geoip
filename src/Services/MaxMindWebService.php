@@ -6,9 +6,7 @@ use GeoIp2\Model\City;
 use GeoIp2\WebService\Client;
 use Illuminate\Support\Arr;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 final class MaxMindWebService extends AbstractService
 {
     /**

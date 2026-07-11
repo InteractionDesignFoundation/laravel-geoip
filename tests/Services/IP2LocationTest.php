@@ -45,7 +45,7 @@ final class IP2LocationTest extends TestCase
         $this->assertSame('Mountain View', $location->city);
         $this->assertSame('California', $location->state_name);
         $this->assertSame('94043', $location->postal_code);
-        $this->assertEqualsWithDelta(37.38605, $location->lat, PHP_FLOAT_EPSILON);
+        $this->assertEqualsWithDelta(37.38605, $location->lat, \PHP_FLOAT_EPSILON);
         $this->assertSame(-122.08385, $location->lon);
         $this->assertSame('-07:00', $location->timezone);
         $this->assertFalse($location->default);

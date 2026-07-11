@@ -8,9 +8,7 @@ use League\ISO3166\Exception\OutOfBoundsException;
 use League\ISO3166\ISO3166;
 use Psr\Log\LoggerInterface;
 
-/**
- * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
- */
+/** @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location */
 final class GeoIP
 {
     /**

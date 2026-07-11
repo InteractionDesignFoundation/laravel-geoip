@@ -2,13 +2,10 @@
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Exception;
 use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 final class IPData extends AbstractService
 {
     /**
@@ -43,7 +40,7 @@ final class IPData extends AbstractService
 
         // Verify server response
         if ($this->client->getErrors() !== null || empty($data[0])) {
-            throw new Exception('Request failed ('.$this->client->getErrors().')');
+            throw new \Exception('Request failed ('.$this->client->getErrors().')');
         }
 
         $json = json_decode((string) $data[0], true);

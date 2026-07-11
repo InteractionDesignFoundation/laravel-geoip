@@ -2,6 +2,4 @@
 
 namespace InteractionDesignFoundation\GeoIP\Exceptions;
 
-use RuntimeException;
-
-final class MissingConfigurationException extends RuntimeException {}
+final class MissingConfigurationException extends \RuntimeException {}

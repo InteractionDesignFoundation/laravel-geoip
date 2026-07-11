@@ -4,9 +4,7 @@ namespace InteractionDesignFoundation\GeoIP\Support;
 
 use Illuminate\Support\Arr;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 class HttpClient
 {
     /** Last request http status. */
@@ -129,7 +127,7 @@ class HttpClient
     {
         $result = [];
 
-        $rows = preg_split("/\\r\\n|\\r|\\n/", $headers);
+        $rows = preg_split('/\\r\\n|\\r|\\n/', $headers);
         if ($rows === false) {
             return $result;
         }

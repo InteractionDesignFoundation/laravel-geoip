@@ -41,7 +41,7 @@ final class Clear extends Command
      * Flush the cache.
      * @return void
      */
-    protected function performFlush()
+    protected function performFlush(): void
     {
         $this->output->write('Clearing cache...');
 
