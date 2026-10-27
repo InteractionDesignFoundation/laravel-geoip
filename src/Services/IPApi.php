@@ -51,8 +51,12 @@ class IPApi extends AbstractService
         $this->client = new HttpClient($base);
 
         // Set continents
-        if (file_exists($this->config('continent_path'))) {
-            $this->continents = json_decode(file_get_contents($this->config('continent_path')), true);
+        $continentPath = $this->config('continent_path');
+        if (is_string($continentPath) && file_exists($continentPath)) {
+            $continents = json_decode((string) file_get_contents($continentPath), true);
+            if (is_array($continents)) {
+                $this->continents = $continents;
+            }
         }
     }
 
@@ -74,12 +78,12 @@ class IPApi extends AbstractService
         // Parse body content
         $json = json_decode((string) $data[0]);
         if (! is_object($json) || ! property_exists($json, 'status')) {
-            throw new \RuntimeException('Unexpected ip-api.com response: '.$json->message);
+            throw new \RuntimeException('Unexpected ip-api.com response: '.($json->message ?? ''));
         }
 
         // Verify response status
         if ($json->status !== 'success') {
-            throw new \RuntimeException('Failed ip-api.com response: '.$json->message);
+            throw new \RuntimeException('Failed ip-api.com response: '.($json->message ?? ''));
         }
 
         return $this->hydrate([
