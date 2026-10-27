@@ -27,6 +27,12 @@
             Psalm analyses with several threads.
         -->
         <MissingPureAnnotation errorLevel="suppress" />
+        <!-- Rector's NoSetupWithParentCallOverrideRector strips #[\Override] from PHPUnit setUp() in tests. -->
+        <MissingOverrideAttribute>
+            <errorLevel type="suppress">
+                <directory name="tests" />
+            </errorLevel>
+        </MissingOverrideAttribute>
     </issueHandlers>
 
     <plugins>
