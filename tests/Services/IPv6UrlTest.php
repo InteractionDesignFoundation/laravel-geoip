@@ -66,8 +66,8 @@ final class IPv6UrlTest extends TestCase
         try {
             $service->locate($ip);
             $this->fail('Expected the request to be intercepted');
-        } catch (\RuntimeException $e) {
-            $this->assertSame($expectedUrl, $e->getMessage());
+        } catch (\RuntimeException $runtimeException) {
+            $this->assertSame($expectedUrl, $runtimeException->getMessage());
         }
     }
 }
