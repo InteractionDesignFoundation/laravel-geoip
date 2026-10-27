@@ -6,3 +6,4 @@
  - [Services](services.md)
  - [Migration from Torann package](migration.md)
  
+ - [Upgrade guide](upgrade.md)
