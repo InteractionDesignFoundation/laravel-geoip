@@ -290,7 +290,7 @@ class GeoIP
             return (string) inet_ntop(substr($packed, 12));
         }
 
-        return self::toRfc5952($packed);
+        return $this->toRfc5952($packed);
     }
 
     /**
@@ -300,7 +300,7 @@ class GeoIP
      * @param string $packed 16 bytes
      * @psalm-pure
      */
-    private static function toRfc5952(string $packed): string
+    private function toRfc5952(string $packed): string
     {
         /** @var list<int> $hextets */
         $hextets = array_values((array) unpack('n8', $packed));
@@ -323,7 +323,7 @@ class GeoIP
             }
         }
 
-        $hex = static fn(array $parts): string => implode(':', array_map(static fn(int $h): string => dechex($h), $parts));
+        $hex = static fn(array $parts): string => implode(':', array_map(dechex(...), $parts));
 
         if ($bestLength < 2) {
             return $hex($hextets);
