@@ -89,7 +89,7 @@ When `include_currency` is enabled (default), the package resolves the visitor's
 
 ### Default Location
 
-Configure a fallback location returned when a lookup fails or the IP is local/invalid.
+Configure a fallback location returned when a lookup fails or the IP is local/non-global (private, loopback, reserved). An explicitly passed IP that is not a valid IP address throws `InvalidArgumentException`.
 
 ## Artisan Commands
 
