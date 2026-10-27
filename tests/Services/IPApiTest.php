@@ -34,7 +34,12 @@ final class IPApiTest extends TestCase
         file_put_contents($file, '{}');
 
         // Laravel turns PHP warnings into exceptions; mimic it so a warning cannot hide behind a passing test.
-        set_error_handler(static function (int $severity, string $message): never {
+        // Laravel only logs deprecations, so let them through (e.g. PHP 8.6 deprecations raised inside Laravel itself).
+        set_error_handler(static function (int $severity, string $message): bool {
+            if ($severity === \E_DEPRECATED || $severity === \E_USER_DEPRECATED) {
+                return false;
+            }
+
             throw new \ErrorException($message, 0, $severity);
         });
     }
