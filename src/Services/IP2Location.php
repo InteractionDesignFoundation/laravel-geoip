@@ -34,6 +34,8 @@ class IP2Location extends AbstractService
     #[\Override]
     public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
+        $ip = $this->assertValidIp($ip);
+
         $data = $this->client->get('', [
             'ip' => $ip,
         ]);
