@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP;
 
+use GeoIp2\Exception\AddressNotFoundException;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Support\Arr;
 use League\ISO3166\Exception\OutOfBoundsException;
@@ -141,6 +142,8 @@ class GeoIP
                 $location = $location->withAttribute('default', false);
 
                 return $location;
+            } catch (AddressNotFoundException) {
+                // Expected miss: the address is absent from the MaxMind data. Fall back to default without logging.
             } catch (\Exception $e) {
                 if ($this->config('log_failures', true) === true) {
                     $this->logger->error('GeoIP lookup failed', [

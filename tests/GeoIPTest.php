@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
+use GeoIp2\Exception\AddressNotFoundException;
 use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\GeoIP;
 use InteractionDesignFoundation\GeoIP\Location;
@@ -185,6 +186,24 @@ final class GeoIPTest extends TestCase
         $this->setService($geoIp, $service);
 
         $this->assertTrue($geoIp->getLocation($ip)->default);
+    }
+
+    #[Test]
+    public function it_returns_default_location_without_logging_when_address_is_not_in_database(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('error');
+
+        $service = $this->createStub(ServiceInterface::class);
+        $service->method('locate')
+            ->willThrowException(new AddressNotFoundException('The address 8.8.8.8 is not in the database.'));
+        $service->method('hydrate')
+            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+
+        $geoIp = $this->makeGeoIPWithLogger(['log_failures' => true, 'cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $this->assertTrue($geoIp->getLocation('8.8.8.8')->default);
     }
 
     #[Test]
