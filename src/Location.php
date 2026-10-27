@@ -75,7 +75,14 @@ class Location implements ArrayAccess
      */
     public function same($ip): bool
     {
-        return $this->getAttribute('ip') === $ip;
+        /** @var mixed $own */
+        $own = $this->getAttribute('ip');
+
+        if (is_string($own) && filter_var($own, FILTER_VALIDATE_IP) !== false && filter_var($ip, FILTER_VALIDATE_IP) !== false) {
+            return inet_pton($own) === inet_pton($ip);
+        }
+
+        return $own === $ip;
     }
 
     /** Return a new instance with the given attribute changed. */

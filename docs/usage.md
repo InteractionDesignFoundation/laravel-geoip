@@ -5,7 +5,7 @@ There are few options to use the package:
 - `InteractionDesignFoundation\GeoIP\Facades\GeoIP` facade
 
 ```php
-geoip()->getLocation('27.974.399.65'); // Get the location from the provided IP.
+geoip()->getLocation('8.8.8.8'); // Get the location from the provided IP. Throws InvalidArgumentException if the IP is not valid.
 geoip()->getClientIP(); // Will return the user IP address.
 ```
 

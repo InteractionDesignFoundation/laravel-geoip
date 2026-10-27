@@ -105,7 +105,7 @@ class GeoIP
     public function getLocation($ip = null)
     {
         if ($ip !== null) {
-            $ip = $this->unwrapIpv4Mapped($ip);
+            $ip = $this->normalizeIp($ip);
 
             if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP) === false) {
                 throw new \InvalidArgumentException('The provided value is not a valid IP address.');
@@ -132,7 +132,7 @@ class GeoIP
     private function find(?string $ip, bool $explicitIp): Location
     {
         // If IP not set, user remote IP
-        $ip = $this->unwrapIpv4Mapped($ip === null || $ip === '' ? $this->getClientIP() : $ip);
+        $ip = $this->normalizeIp($ip === null || $ip === '' ? $this->getClientIP() : $ip);
 
         // Check cache for location
         if ($this->config('cache', 'none') !== 'none' && $location = $this->getCache()->get($ip)) {
@@ -268,12 +268,13 @@ class GeoIP
     }
 
     /**
-     * Unwrap an IPv4-mapped IPv6 address (::ffff:a.b.c.d or ::ffff:abcd:ef01) to plain IPv4.
-     * GLOBAL_RANGE rejects all of ::ffff:0:0/96, so public mapped addresses must be validated as IPv4.
+     * Canonicalize an IPv6 address and unwrap IPv4-mapped ones (::ffff:a.b.c.d or ::ffff:abcd:ef01) to plain IPv4.
+     * GLOBAL_RANGE rejects all of ::ffff:0:0/96 and any IPv6 with a dotted IPv4 suffix (64:ff9b::8.8.8.8),
+     * so the address is validated, looked up and cached in its canonical form. Other input is returned as is.
      *
      * @psalm-pure
      */
-    private function unwrapIpv4Mapped(string $ip): string
+    private function normalizeIp(string $ip): string
     {
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
             return $ip;
@@ -285,11 +286,50 @@ class GeoIP
             return $ip;
         }
 
-        if (! str_starts_with($packed, str_repeat("\0", 10)."\xff\xff")) {
-            return $ip;
+        if (str_starts_with($packed, str_repeat("\0", 10)."\xff\xff")) {
+            return (string) inet_ntop(substr($packed, 12));
         }
 
-        return (string) inet_ntop(substr($packed, 12));
+        return $this->toRfc5952($packed);
+    }
+
+    /**
+     * Pure-hex RFC 5952 form: inet_ntop() emits dotted notation for some addresses (::5102:458e → ::81.2.69.142),
+     * which GLOBAL_RANGE rejects.
+     *
+     * @param string $packed 16 bytes
+     * @psalm-pure
+     */
+    private function toRfc5952(string $packed): string
+    {
+        /** @var list<int> $hextets */
+        $hextets = array_values((array) unpack('n8', $packed));
+
+        $bestStart = -1;
+        $bestLength = 0;
+        for ($i = 0; $i < 8; $i++) {
+            if ($hextets[$i] !== 0) {
+                continue;
+            }
+
+            $start = $i;
+            while ($i < 8 && $hextets[$i] === 0) {
+                $i++;
+            }
+
+            if ($i - $start > $bestLength) {
+                $bestStart = $start;
+                $bestLength = $i - $start;
+            }
+        }
+
+        $hex = static fn(array $parts): string => implode(':', array_map(dechex(...), $parts));
+
+        if ($bestLength < 2) {
+            return $hex($hextets);
+        }
+
+        return $hex(array_slice($hextets, 0, $bestStart)).'::'.$hex(array_slice($hextets, $bestStart + $bestLength));
     }
 
     /**
