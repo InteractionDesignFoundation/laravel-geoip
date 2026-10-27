@@ -71,6 +71,8 @@ return [
 
         'ipapi' => [
             'class' => \InteractionDesignFoundation\GeoIP\Services\IPApi::class,
+            // The free tier is HTTP-only. Without a key and with 'secure' => true a warning is logged;
+            // set a key to use the HTTPS Pro endpoint, or set 'secure' => false to acknowledge plain HTTP.
             'secure' => true,
             'key' => env('IPAPI_KEY'),
             'continent_path' => storage_path('app/continents.json'),

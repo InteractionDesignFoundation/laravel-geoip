@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 #[CoversClass(IPApi::class)]
 final class IPApiTest extends TestCase
@@ -108,6 +109,53 @@ final class IPApiTest extends TestCase
         $this->expectExceptionMessage('Failed ip-api.com response: invalid query');
 
         $this->locateWith($service, '{"status":"fail","message":"invalid query"}');
+    }
+
+    #[Test]
+    public function it_warns_once_when_secure_without_key_uses_plain_http(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('warning')->with($this->stringContains('HTTP-only'));
+
+        $service = new IPApi(['secure' => true, 'key' => null]);
+        $service->setLogger($logger);
+        $service->setLogger($logger);
+
+        $this->assertSame('http://ip-api.com/', $this->baseUri($service));
+    }
+
+    #[Test]
+    public function it_does_not_warn_when_secure_is_explicitly_disabled(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('warning');
+
+        $service = new IPApi(['secure' => false, 'key' => '']);
+        $service->setLogger($logger);
+
+        $this->assertSame('http://ip-api.com/', $this->baseUri($service));
+    }
+
+    #[Test]
+    public function it_uses_https_pro_endpoint_without_warning_when_key_is_set(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('warning');
+
+        $service = new IPApi(['secure' => true, 'key' => 'k']);
+        $service->setLogger($logger);
+
+        $this->assertSame('https://pro.ip-api.com/', $this->baseUri($service));
+    }
+
+    private function baseUri(IPApi $service): string
+    {
+        $client = (new \ReflectionProperty($service, 'client'))->getValue($service);
+        $this->assertInstanceOf(HttpClient::class, $client);
+        /** @var array{base_uri: string} $config */
+        $config = (new \ReflectionProperty($client, 'config'))->getValue($client);
+
+        return $config['base_uri'];
     }
 
     private function locateWith(IPApi $service, string $body): \InteractionDesignFoundation\GeoIP\Location

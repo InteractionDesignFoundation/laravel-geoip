@@ -53,7 +53,7 @@ Set the service via the `GEOIP_SERVICE` env variable or in `config/geoip.php`:
 |---------|-----|----------|
 | [MaxMind Database](https://www.maxmind.com/en/geoip2-databases) | `maxmind_database` | `geoip2/geoip2` package + license key |
 | [MaxMind Web API](https://www.maxmind.com/en/geoip2-precision-services) | `maxmind_api` | `geoip2/geoip2` package + user ID & license key |
-| [IP-API](https://ip-api.com/) | `ipapi` | API key (for HTTPS) |
+| [IP-API](https://ip-api.com/) | `ipapi` | API key (the free tier is HTTP-only; HTTPS needs a paid key) |
 | [IPGeolocation](https://ipgeolocation.io/) | `ipgeolocation` | API key |
 | [IPData](https://ipdata.co/) | `ipdata` | API key |
 | [IPFinder](https://ipfinder.io/) | `ipfinder` | API key |

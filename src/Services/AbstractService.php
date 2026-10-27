@@ -8,9 +8,13 @@ use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
 use InteractionDesignFoundation\GeoIP\Location;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
-abstract class AbstractService implements ServiceInterface
+abstract class AbstractService implements ServiceInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * Create a new service instance.
      *

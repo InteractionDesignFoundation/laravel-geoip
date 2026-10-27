@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP\Services;
 
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
+use Psr\Log\LoggerInterface;
 
 /**
  * @psalm-api
@@ -25,6 +26,9 @@ class IPApi extends AbstractService
      * @var array<string, string>
      */
     protected array $continents = [];
+
+    /** Pending until a logger arrives (boot runs before it), then emitted once. */
+    private bool $warnAboutPlainHttp = false;
 
     /** The "booting" method of the service. */
     #[\Override]
@@ -47,6 +51,8 @@ class IPApi extends AbstractService
         if ($key !== null && $key !== '') {
             $base['base_uri'] = ($this->config('secure') ? 'https' : 'http').'://pro.ip-api.com/';
             $base['query']['key'] = $key;
+        } else {
+            $this->warnAboutPlainHttp = (bool) $this->config('secure');
         }
 
         $this->client = new HttpClient($base);
@@ -60,6 +66,17 @@ class IPApi extends AbstractService
             if (is_array($continents)) {
                 $this->continents = $continents;
             }
+        }
+    }
+
+    #[\Override]
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+
+        if ($this->warnAboutPlainHttp) {
+            $this->warnAboutPlainHttp = false;
+            $logger->warning('GeoIP: the free ip-api.com tier is HTTP-only, so lookups are unencrypted and can be spoofed on the network path. Set "key" to use the HTTPS Pro endpoint, or set \'secure\' => false to acknowledge this and silence the warning.');
         }
     }
 
