@@ -8,6 +8,7 @@ use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\GeoIP;
 use InteractionDesignFoundation\GeoIP\Location;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Log\LoggerInterface;
 
@@ -158,6 +159,47 @@ final class GeoIPTest extends TestCase
         $this->setService($geoIp, $service);
 
         $geoIp->getLocation('8.8.8.8');
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function reservedIpProvider(): iterable
+    {
+        yield 'IPv6 loopback' => ['::1'];
+        yield 'IPv6 link-local' => ['fe80::1'];
+        yield 'IPv4-mapped IPv6 loopback' => ['::ffff:127.0.0.1'];
+    }
+
+    #[Test]
+    #[DataProvider('reservedIpProvider')]
+    public function it_returns_default_location_without_lookup_for_reserved_ips(string $ip): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('error');
+
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->never())->method('locate');
+        $service->method('hydrate')
+            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+
+        $geoIp = $this->makeGeoIPWithLogger(['cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $this->assertTrue($geoIp->getLocation($ip)->default);
+    }
+
+    #[Test]
+    public function it_looks_up_public_ipv6_addresses(): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->once())
+            ->method('locate')
+            ->with('2a00:1450:4001::1')
+            ->willReturn(new Location(['ip' => '2a00:1450:4001::1', 'iso_code' => 'IE']));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'none']);
+        $this->setService($geoIp, $service);
+
+        $this->assertFalse($geoIp->getLocation('2a00:1450:4001::1')->default);
     }
 
     private function makeGeoIPWithLogger(array $config, LoggerInterface $logger): GeoIP
