@@ -14,6 +14,8 @@ class MaxMindDatabase extends AbstractService
 {
     private const string DOWNLOAD_BASE_URL = 'https://download.maxmind.com';
 
+    private const int MAX_CHECKSUM_BYTES = 1024;
+
     /** Opened lazily so that `geoip:update` can bootstrap the service on a fresh install. */
     protected ?Reader $reader = null;
 
@@ -57,16 +59,23 @@ class MaxMindDatabase extends AbstractService
 
         ['archive' => $archiveUrl, 'checksum' => $checksumUrl, 'user_pwd' => $userPwd, 'edition' => $edition] = $this->resolveDownload();
 
-        $this->withTemporaryDirectory(function (string $directory) use ($archiveUrl, $checksumUrl, $userPwd, $edition, $databasePath): void {
-            $archive = $directory.'/maxmind.tar.gz';
-            $checksum = $directory.'/maxmind.tar.gz.sha256';
+        try {
+            $this->withTemporaryDirectory(function (string $directory) use ($archiveUrl, $checksumUrl, $userPwd, $edition, $databasePath): void {
+                $archive = $directory.'/maxmind.tar.gz';
+                $checksum = $directory.'/maxmind.tar.gz.sha256';
 
-            $this->downloadFileByUrl($checksum, $checksumUrl, $userPwd);
-            $this->downloadFileByUrl($archive, $archiveUrl, $userPwd);
-            $this->assertChecksumMatches($archive, $checksum);
+                $this->downloadFileByUrl($checksum, $checksumUrl, $userPwd, self::MAX_CHECKSUM_BYTES);
+                $this->downloadFileByUrl($archive, $archiveUrl, $userPwd);
+                $this->assertChecksumMatches($archive, $checksum);
 
-            $this->installDatabase($archive, $databasePath, $edition);
-        });
+                $this->installDatabase($archive, $databasePath, $edition);
+            });
+        } catch (\Exception $exception) {
+            // Single exit point: nothing that escapes update() may carry the key, whichever step produced it.
+            $message = $this->redact($exception->getMessage(), $archiveUrl, $userPwd);
+
+            throw $message === $exception->getMessage() ? $exception : new \RuntimeException($message);
+        }
 
         $this->reader?->close();
         $this->reader = null;
@@ -79,19 +88,26 @@ class MaxMindDatabase extends AbstractService
     {
         /** @var mixed $updateUrl */
         $updateUrl = $this->config('update_url');
-        /** @var mixed $accountId */
-        $accountId = $this->config('account_id');
+        /** @var mixed $rawAccountId */
+        $rawAccountId = $this->config('account_id');
+        $accountId = is_int($rawAccountId) ? (string) $rawAccountId : $rawAccountId;
 
         if (is_string($updateUrl) && $updateUrl !== '') {
             // Explicit URL: the caller owns authentication, so no credentials are sent to a host we did not pick.
             $query = [];
             parse_str((string) parse_url($updateUrl, \PHP_URL_QUERY), $query);
+            /** @var mixed $configuredEdition */
+            $configuredEdition = $this->config('edition_id');
 
             return [
                 'archive' => $updateUrl,
                 'checksum' => $this->checksumUrl($updateUrl),
                 'user_pwd' => null,
-                'edition' => isset($query['edition_id']) && is_string($query['edition_id']) ? $query['edition_id'] : null,
+                'edition' => match (true) {
+                    isset($query['edition_id']) && is_string($query['edition_id']) => $query['edition_id'],
+                    is_string($configuredEdition) && $configuredEdition !== '' => $configuredEdition,
+                    default => null,
+                },
             ];
         }
 
@@ -115,7 +131,7 @@ class MaxMindDatabase extends AbstractService
         return ['archive' => $url, 'checksum' => $this->checksumUrl($url), 'user_pwd' => $accountId.':'.$licenseKey, 'edition' => $edition];
     }
 
-    private function checksumUrl(string $archiveUrl): string
+    private function checksumUrl(#[\SensitiveParameter] string $archiveUrl): string
     {
         $checksumUrl = preg_replace('/(?<=[?&])suffix=tar\.gz(?=&|$)/', 'suffix=tar.gz.sha256', $archiveUrl, 1, $count);
 
@@ -128,11 +144,11 @@ class MaxMindDatabase extends AbstractService
 
     private function assertChecksumMatches(string $archive, string $checksumFile): void
     {
-        $token = strtok(trim((string) file_get_contents($checksumFile)), " \t\r\n");
-        $expected = $token === false ? '' : strtolower($token);
+        // Bounded read: the checksum file is attacker-influenced input.
+        $contents = (string) file_get_contents($checksumFile, false, null, 0, self::MAX_CHECKSUM_BYTES);
         $actual = hash_file('sha256', $archive);
 
-        if ($actual === false || preg_match('/^[0-9a-f]{64}$/', $expected) !== 1 || ! hash_equals($expected, $actual)) {
+        if ($actual === false || preg_match('/^\s*([0-9a-fA-F]{64})(?:\s|$)/', $contents, $match) !== 1 || ! hash_equals(strtolower($match[1]), $actual)) {
             throw new \RuntimeException('MaxMind database archive checksum verification failed; the existing database was kept.');
         }
     }
@@ -159,9 +175,14 @@ class MaxMindDatabase extends AbstractService
             $this->extractDatabase($archive, $temporary);
             $this->assertValidDatabase($temporary, $expectedEdition);
 
-            // The temp file is created 0600; keep the live database as readable as before (or the umask default).
-            $permissions = is_file($databasePath) ? fileperms($databasePath) : false;
-            chmod($temporary, $permissions === false ? 0666 & ~umask() : $permissions & 0777);
+            // The temp file is 0600 and owned by the current user; keep the live database's mode and (when
+            // permitted, e.g. root updating a www-data database) owner/group so web workers can still read it.
+            $existing = @stat($databasePath);
+            chmod($temporary, $existing === false ? 0666 & ~umask() : $existing['mode'] & 0777);
+            if ($existing !== false) {
+                @chown($temporary, $existing['uid']);
+                @chgrp($temporary, $existing['gid']);
+            }
 
             if (! rename($temporary, $databasePath)) {
                 throw new \RuntimeException(sprintf('Failed to write database file: %s', $databasePath));
@@ -302,9 +323,16 @@ class MaxMindDatabase extends AbstractService
      * Error messages carry host and path only, with every known secret masked.
      *
      * @param string|null $userPwd "account:key" for HTTP Basic auth
+     * @param int|null $maxBytes abort the transfer once more than this many bytes arrive
      */
-    protected function downloadFileByUrl(string $filename, string $url, ?string $userPwd = null): void
-    {
+    protected function downloadFileByUrl(
+        string $filename,
+        #[\SensitiveParameter]
+        string $url,
+        #[\SensitiveParameter]
+        ?string $userPwd = null,
+        ?int $maxBytes = null,
+    ): void {
         $fp = @fopen($filename, 'wb+');
         if ($fp === false) {
             throw new \RuntimeException(sprintf('Cannot open %s file for writing.', $filename));
@@ -312,7 +340,6 @@ class MaxMindDatabase extends AbstractService
 
         $options = [
             \CURLOPT_URL => $url,
-            \CURLOPT_FILE => $fp,
             \CURLOPT_FAILONERROR => true,
             \CURLOPT_FOLLOWLOCATION => true,
             \CURLOPT_MAXREDIRS => 3,
@@ -320,6 +347,19 @@ class MaxMindDatabase extends AbstractService
             \CURLOPT_TIMEOUT => 300,
             \CURLOPT_UNRESTRICTED_AUTH => false,
         ];
+
+        if ($maxBytes === null) {
+            $options[\CURLOPT_FILE] = $fp;
+        } else {
+            $options[\CURLOPT_MAXFILESIZE] = $maxBytes;
+            $received = 0;
+            // Returning fewer bytes than given makes cURL abort; Content-Length alone can be absent or wrong.
+            $options[\CURLOPT_WRITEFUNCTION] = static function (mixed $handle, string $data) use ($fp, $maxBytes, &$received): int {
+                $received += strlen($data);
+
+                return $received > $maxBytes ? 0 : (int) fwrite($fp, $data);
+            };
+        }
 
         if (defined('CURLOPT_PROTOCOLS_STR') && defined('CURLOPT_REDIR_PROTOCOLS_STR')) {
             $options[\CURLOPT_PROTOCOLS_STR] = 'https';
@@ -361,7 +401,7 @@ class MaxMindDatabase extends AbstractService
      * @param array<int, mixed> $options
      * @return array{error: string, status: int}|null null on success
      */
-    protected function curlTransfer(array $options): ?array
+    protected function curlTransfer(#[\SensitiveParameter] array $options): ?array
     {
         $ch = curl_init();
         if ($ch === false) {
@@ -378,7 +418,7 @@ class MaxMindDatabase extends AbstractService
     }
 
     /** Masks the configured key, the Basic-auth pair and any `license_key` embedded in the request URL. */
-    private function redact(string $message, string $url, ?string $userPwd): string
+    private function redact(string $message, #[\SensitiveParameter] string $url, #[\SensitiveParameter] ?string $userPwd): string
     {
         /** @var mixed $licenseKey */
         $licenseKey = $this->config('license_key');

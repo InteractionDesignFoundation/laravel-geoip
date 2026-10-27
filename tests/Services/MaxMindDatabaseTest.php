@@ -119,6 +119,111 @@ final class MaxMindDatabaseTest extends TestCase
     }
 
     #[Test]
+    public function exception_trace_does_not_contain_credentials(): void
+    {
+        $previous = ini_set('zend.exception_ignore_args', '0');
+
+        try {
+            $service = new FailingTransportMaxMindDatabase($this->isolatedConfig(), 'denied');
+            $basicAuth = $this->thrownBy($service->update(...));
+
+            $config = $this->isolatedConfig();
+            $config['update_url'] = 'https://download.example/app/geoip_download?edition_id=GeoIP2-City&license_key=SECRETKEY&suffix=tar.gz';
+            $legacy = $this->thrownBy((new FailingTransportMaxMindDatabase($config, 'denied'))->update(...));
+        } finally {
+            ini_set('zend.exception_ignore_args', (string) $previous);
+        }
+
+        foreach ([$basicAuth, $legacy] as $exception) {
+            $frames = array_filter($exception->getTrace(), static fn(array $frame): bool => ($frame['function'] ?? '') === 'downloadFileByUrl');
+            $this->assertNotEmpty($frames);
+            $this->assertStringNotContainsString('SECRETKEY', print_r($frames, true));
+        }
+    }
+
+    #[Test]
+    public function validation_failures_are_redacted_too(): void
+    {
+        $config = $this->isolatedConfig();
+        unset($config['license_key'], $config['account_id']);
+        $config['update_url'] = 'https://download.example/app/geoip_download?edition_id=SECRETKEY&license_key=SECRETKEY&suffix=tar.gz';
+        $archive = $this->makeArchive($this->fixture());
+        $service = new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive));
+
+        $exception = $this->thrownBy($service->update(...));
+
+        $this->assertStringContainsString('does not match', $exception->getMessage());
+        $this->assertStringNotContainsString('SECRETKEY', $exception->getMessage());
+    }
+
+    #[Test]
+    public function custom_update_url_without_edition_falls_back_to_configured_edition(): void
+    {
+        $config = $this->isolatedConfig();
+        $config['edition_id'] = 'GeoLite2-Country';
+        $config['update_url'] = 'https://download.example/db?suffix=tar.gz';
+        $original = $this->installOriginalDatabase($config['database_path']);
+        $archive = $this->makeArchive($this->fixture());
+        $service = new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive));
+
+        $exception = $this->thrownBy($service->update(...));
+
+        $this->assertStringContainsString('"GeoLite2-Country"', $exception->getMessage());
+        $this->assertSame($original, file_get_contents($config['database_path']));
+    }
+
+    #[Test]
+    public function integer_account_id_uses_basic_auth(): void
+    {
+        $config = $this->isolatedConfig();
+        $config['account_id'] = 12345;
+        $service = new FailingTransportMaxMindDatabase($config, 'denied');
+
+        $this->thrownBy($service->update(...));
+
+        $this->assertSame('12345:SECRETKEY', $service->transfers[0][\CURLOPT_USERPWD]);
+        $this->assertStringNotContainsString('license_key', (string) $service->transfers[0][\CURLOPT_URL]);
+    }
+
+    #[Test]
+    public function checksum_download_is_capped_and_garbage_checksum_is_rejected_cleanly(): void
+    {
+        $service = new FailingTransportMaxMindDatabase($this->isolatedConfig(), 'denied');
+        $this->thrownBy($service->update(...));
+
+        $writer = $service->transfers[0][\CURLOPT_WRITEFUNCTION];
+        $this->assertIsCallable($writer);
+        $this->assertSame(1024, $service->transfers[0][\CURLOPT_MAXFILESIZE]);
+        $this->assertSame(0, $writer(null, str_repeat('a', 2000)));
+
+        $config = $this->isolatedConfig();
+        $original = $this->installOriginalDatabase($config['database_path']);
+        $archive = $this->makeArchive($this->fixture());
+        $service = new FakeDownloadMaxMindDatabase($config, $archive, str_repeat('z', 5_000_000));
+
+        $exception = $this->thrownBy($service->update(...));
+
+        $this->assertStringContainsString('checksum', $exception->getMessage());
+        $this->assertSame(1024, $service->maxChecksumBytes);
+        $this->assertSame($original, file_get_contents($config['database_path']));
+        $this->assertSame([basename($config['database_path'])], $this->databaseDirFiles($config));
+    }
+
+    #[Test]
+    public function update_preserves_existing_database_mode(): void
+    {
+        $config = $this->isolatedConfig();
+        $this->installOriginalDatabase($config['database_path']);
+        chmod($config['database_path'], 0640);
+        $archive = $this->makeArchive($this->fixture());
+
+        (new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive)))->update();
+
+        clearstatcache();
+        $this->assertSame(0640, (int) fileperms($config['database_path']) & 0777);
+    }
+
+    #[Test]
     public function update_fails_when_database_directory_is_not_writable(): void
     {
         $config = $this->isolatedConfig();
@@ -308,7 +413,7 @@ final class MaxMindDatabaseTest extends TestCase
         }
     }
 
-    /** @return array{class: class-string, database_path: string, account_id: string, license_key: string, edition_id: string, locales: list<string>, update_url?: string} */
+    /** @return array{class: class-string, database_path: string, account_id: int|string, license_key: string, edition_id: string, locales: list<string>, update_url?: string} */
     private function isolatedConfig(): array
     {
         return [
@@ -424,6 +529,8 @@ final class FakeDownloadMaxMindDatabase extends MaxMindDatabase
     /** @var list<array{string, string|null}> */
     public array $requests = [];
 
+    public ?int $maxChecksumBytes = null;
+
     /** @param array<string, mixed> $config */
     public function __construct(array $config, private readonly string $archive, private readonly string $checksum)
     {
@@ -431,11 +538,12 @@ final class FakeDownloadMaxMindDatabase extends MaxMindDatabase
     }
 
     #[\Override]
-    protected function downloadFileByUrl(string $filename, string $url, ?string $userPwd = null): void
+    protected function downloadFileByUrl(string $filename, string $url, ?string $userPwd = null, ?int $maxBytes = null): void
     {
         $this->requests[] = [$url, $userPwd];
 
         if (str_ends_with($url, '.sha256')) {
+            $this->maxChecksumBytes = $maxBytes;
             file_put_contents($filename, $this->checksum);
 
             return;
