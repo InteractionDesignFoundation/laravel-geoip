@@ -98,6 +98,10 @@ class GeoIP
      */
     public function getLocation($ip = null)
     {
+        if ($ip !== null) {
+            $ip = $this->unwrapIpv4Mapped($ip);
+        }
+
         // Get location data
         $this->location = $this->find($ip);
 
@@ -118,7 +122,7 @@ class GeoIP
     private function find(?string $ip = null): Location
     {
         // If IP not set, user remote IP
-        $ip = $ip ?: $this->getClientIP();
+        $ip = $this->unwrapIpv4Mapped($ip ?: $this->getClientIP());
 
         // Check cache for location
         if ($this->config('cache', 'none') !== 'none' && $location = $this->getCache()->get($ip)) {
@@ -233,6 +237,29 @@ class GeoIP
         $request = request();
 
         return $request->ip() ?? '127.0.0.0';
+    }
+
+    /**
+     * Unwrap an IPv4-mapped IPv6 address (::ffff:a.b.c.d or ::ffff:abcd:ef01) to plain IPv4.
+     * NO_RES_RANGE rejects all of ::ffff:0:0/96, so public mapped addresses must be validated as IPv4.
+     */
+    private function unwrapIpv4Mapped(string $ip): string
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
+            return $ip;
+        }
+
+        $packed = inet_pton($ip);
+
+        if ($packed === false) {
+            return $ip;
+        }
+
+        if (! str_starts_with($packed, str_repeat("\0", 10)."\xff\xff")) {
+            return $ip;
+        }
+
+        return (string) inet_ntop(substr($packed, 12));
     }
 
     /**

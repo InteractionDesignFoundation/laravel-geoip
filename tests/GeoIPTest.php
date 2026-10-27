@@ -221,6 +221,32 @@ final class GeoIPTest extends TestCase
         $this->assertFalse($geoIp->getLocation('2a00:1450:4001::1')->default);
     }
 
+    /** @return iterable<string, array{string}> */
+    public static function publicMappedIpProvider(): iterable
+    {
+        yield 'dotted' => ['::ffff:8.8.8.8'];
+        yield 'hex' => ['::ffff:0808:0808'];
+    }
+
+    #[Test]
+    #[DataProvider('publicMappedIpProvider')]
+    public function it_looks_up_public_ipv4_mapped_addresses_as_ipv4(string $ip): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->once())
+            ->method('locate')
+            ->with('8.8.8.8')
+            ->willReturn(new Location(['ip' => '8.8.8.8', 'iso_code' => 'US']));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'all']);
+        $this->setService($geoIp, $service);
+
+        $this->assertFalse($geoIp->getLocation($ip)->default);
+        $this->assertTrue($geoIp->getLocation('8.8.8.8')->cached);
+
+        $geoIp->getCache()->flush();
+    }
+
     private function makeGeoIPWithLogger(array $config, LoggerInterface $logger): GeoIP
     {
         $config = array_merge($this->getConfig(), $config);
