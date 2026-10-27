@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
+use Illuminate\Container\Container;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -28,6 +29,8 @@ class IPApi extends AbstractService implements LoggerAwareInterface
      */
     protected array $continents = [];
 
+    private const string PLAIN_HTTP_WARNING_CACHE_KEY = 'geoip:ipapi:plain-http-warning';
+
     /** Pending until a logger arrives (boot runs before it), then emitted once. */
     private bool $warnAboutPlainHttp = false;
 
@@ -51,7 +54,7 @@ class IPApi extends AbstractService implements LoggerAwareInterface
         /** @var string|null $key */
         $key = $this->config('key');
         if ($key !== null && $key !== '') {
-            $base['base_uri'] = ($this->config('secure') ? 'https' : 'http').'://pro.ip-api.com/';
+            $base['base_uri'] = 'https://pro.ip-api.com/';
             $base['query']['key'] = $key;
         } else {
             $this->warnAboutPlainHttp = (bool) $this->config('secure');
@@ -76,7 +79,39 @@ class IPApi extends AbstractService implements LoggerAwareInterface
     {
         if ($this->warnAboutPlainHttp) {
             $this->warnAboutPlainHttp = false;
+
+            if (! $this->claimWarningSlot()) {
+                return;
+            }
+
             $logger->warning('GeoIP: the free ip-api.com tier is HTTP-only, so lookups are unencrypted and can be spoofed on the network path. Set "key" to use the HTTPS Pro endpoint, or set \'secure\' => false to acknowledge this and silence the warning.');
+        }
+    }
+
+    /** True unless a cache store already holds today's marker; a store that can't persist it never suppresses. */
+    private function claimWarningSlot(): bool
+    {
+        try {
+            $container = Container::getInstance();
+
+            if (! $container->bound('cache')) {
+                return true;
+            }
+
+            /** @var \Illuminate\Contracts\Cache\Factory $cache */
+            $cache = $container->make('cache');
+
+            $store = $cache->store();
+
+            if ($store->has(self::PLAIN_HTTP_WARNING_CACHE_KEY)) {
+                return false;
+            }
+
+            $store->put(self::PLAIN_HTTP_WARNING_CACHE_KEY, true, 86400);
+
+            return true;
+        } catch (\Throwable) {
+            return true;
         }
     }
 
