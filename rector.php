@@ -31,5 +31,9 @@ return RectorConfig::configure()
         \Rector\TypeDeclaration\Rector\ClassMethod\BoolReturnTypeFromBooleanConstAndStrictReturnsRector::class => [
             __DIR__.'/src/Services/MaxMindDatabase.php',
         ],
+        // normalizeIp() and toRfc5952() are static so they can stay @psalm-pure; as instance methods Psalm reports ImpureVariable.
+        \Rector\CodeQuality\Rector\ClassMethod\LocallyCalledStaticMethodToNonStaticRector::class => [
+            __DIR__.'/src/GeoIP.php',
+        ],
     ])
     ->withParallel();
