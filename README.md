@@ -14,6 +14,8 @@ Determine the geographical location and currency of website visitors based on th
 composer require interaction-design-foundation/laravel-geoip
 ```
 
+Upgrading from 4.x? See [UPGRADING.md](UPGRADING.md).
+
 Publish the config file:
 
 ```sh
