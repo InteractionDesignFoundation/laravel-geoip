@@ -127,6 +127,9 @@ class MaxMindDatabase extends AbstractService
     protected function withTemporaryDirectory(callable $callback)
     {
         $directory = tempnam(sys_get_temp_dir(), 'maxmind');
+        if ($directory === false) {
+            throw new \RuntimeException('Failed to create a temporary file');
+        }
 
         if (file_exists($directory)) {
             unlink($directory);
@@ -184,7 +187,12 @@ class MaxMindDatabase extends AbstractService
             return unlink($directory);
         }
 
-        foreach (scandir($directory) as $item) {
+        $items = @scandir($directory);
+        if ($items === false) {
+            return false;
+        }
+
+        foreach ($items as $item) {
             if ($item === '.' || $item === '..') {
                 continue;
             }

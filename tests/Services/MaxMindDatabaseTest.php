@@ -99,6 +99,27 @@ final class MaxMindDatabaseTest extends TestCase
         $service->update();
     }
 
+    #[Test]
+    public function delete_directory_returns_false_when_directory_is_unreadable(): void
+    {
+        [$service] = $this->getService();
+
+        $directory = sys_get_temp_dir().'/geoip_unreadable_'.uniqid('', true);
+        mkdir($directory);
+        chmod($directory, 0000);
+
+        try {
+            if (is_readable($directory)) {
+                $this->markTestSkipped('Cannot make a directory unreadable (running as root?)');
+            }
+
+            $this->assertFalse((new TestableMaxMindDatabase($service))->exposedDeleteDirectory($directory));
+        } finally {
+            chmod($directory, 0755);
+            rmdir($directory);
+        }
+    }
+
     /** @return list{\InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface, array<string, mixed>} */
     protected function getService(): array
     {
@@ -121,6 +142,13 @@ class TestableMaxMindDatabase
     {
         $reflection = new \ReflectionMethod($this->service, 'downloadFileByUrl');
         $reflection->invoke($this->service, $filename, $url);
+    }
+
+    public function exposedDeleteDirectory(string $directory): mixed
+    {
+        $reflection = new \ReflectionMethod($this->service, 'deleteDirectory');
+
+        return $reflection->invoke($this->service, $directory);
     }
 
     /**
