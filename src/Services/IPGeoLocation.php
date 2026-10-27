@@ -43,6 +43,8 @@ class IPGeoLocation extends AbstractService
     #[\Override]
     public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
+        $ip = $this->assertValidIp($ip);
+
         // Get data from a client
         $data = $this->client->get('&ip='.$ip);
 

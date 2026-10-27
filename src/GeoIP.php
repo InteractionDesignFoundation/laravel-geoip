@@ -98,12 +98,17 @@ class GeoIP
      * @param string $ip
      *
      * @return \InteractionDesignFoundation\GeoIP\Location
+     * @throws \InvalidArgumentException if an explicitly provided $ip is not a syntactically valid IP address
      * @throws \Exception
      */
     public function getLocation($ip = null)
     {
         if ($ip !== null) {
             $ip = $this->unwrapIpv4Mapped($ip);
+
+            if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP) === false) {
+                throw new \InvalidArgumentException('The provided value is not a valid IP address.');
+            }
         }
 
         // Get location data

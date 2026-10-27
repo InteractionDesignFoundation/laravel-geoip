@@ -10,34 +10,9 @@
       <code><![CDATA[$clone->attributes]]></code>
     </PropertyTypeCoercion>
   </file>
-  <file src="src/Support/HttpClient.php">
-    <TaintedFile>
-      <code><![CDATA[curl_setopt_array($curl, [
-            CURLOPT_URL => $this->getUrl($url),
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_CONNECTTIMEOUT => 20,
-            CURLOPT_TIMEOUT => 90,
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_HEADER => 1,
-            CURLINFO_HEADER_OUT => 1,
-            CURLOPT_VERBOSE => 1,
-        ])]]></code>
-    </TaintedFile>
-    <TaintedSSRF>
-      <code><![CDATA[curl_setopt_array($curl, [
-            CURLOPT_URL => $this->getUrl($url),
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_CONNECTTIMEOUT => 20,
-            CURLOPT_TIMEOUT => 90,
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_HEADER => 1,
-            CURLINFO_HEADER_OUT => 1,
-            CURLOPT_VERBOSE => 1,
-        ])]]></code>
-    </TaintedSSRF>
+  <file src="tests/TestCase.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[protected function setUp(): void]]></code>
+    </MissingOverrideAttribute>
   </file>
 </files>

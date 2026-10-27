@@ -63,4 +63,22 @@ abstract class AbstractService implements ServiceInterface
             }
         }
     }
+
+    /**
+     * Ensure the value is a syntactically valid IPv4/IPv6 address before it is placed into a request URL.
+     *
+     * @psalm-taint-escape ssrf
+     * @psalm-taint-escape file
+     * @psalm-pure
+     *
+     * @throws \InvalidArgumentException
+     */
+    protected function assertValidIp(string $ip): string
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            throw new \InvalidArgumentException('Invalid IP address passed to the GeoIP service.');
+        }
+
+        return $ip;
+    }
 }
