@@ -81,7 +81,7 @@ The database is opened lazily, so `geoip:update` works on a fresh install. If yo
 
 #### ip-api free tier
 
-The free ip-api.com tier is HTTP-only, so requests and responses are unencrypted. HTTPS needs a paid key (`IPAPI_KEY`). With a key, requests always go to `https://pro.ip-api.com/` and `'secure'` is ignored (before 5.0.1, `'secure' => false` sent the key over plain HTTP). With `'secure' => true` (the default) and no key, the service still uses HTTP and logs a warning at most once a day when the default cache store is shared and persistent (e.g. redis, file, database); with the array or null store it is logged per request, as before 5.0.1. Set `'secure' => false` to acknowledge plain HTTP and silence it.
+The free ip-api.com tier is HTTP-only, so requests and responses are unencrypted. HTTPS needs a paid key (`IPAPI_KEY`). With a key, requests always go to `https://pro.ip-api.com/` and `'secure'` is ignored (before 5.1.0, `'secure' => false` sent the key over plain HTTP). With `'secure' => true` (the default) and no key, the service still uses HTTP and logs a warning at most once a day when the default cache store is shared and persistent (e.g. redis, file, database); with the array or null store it is logged per request, as before 5.1.0. Set `'secure' => false` to acknowledge plain HTTP and silence it.
 
 #### Timeouts and provider errors
 
