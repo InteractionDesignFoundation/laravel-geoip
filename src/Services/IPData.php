@@ -30,6 +30,7 @@ class IPData extends AbstractService
             'query' => [
                 'api-key' => $this->config('key'),
             ],
+            ...$this->timeoutConfig(),
         ]);
     }
 

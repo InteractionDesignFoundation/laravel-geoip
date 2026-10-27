@@ -24,6 +24,7 @@ class IP2Location extends AbstractService
             'query' => [
                 'key' => $this->config('key'),
             ],
+            ...$this->timeoutConfig(),
         ]);
     }
 

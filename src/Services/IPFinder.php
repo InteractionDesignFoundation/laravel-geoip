@@ -33,6 +33,7 @@ class IPFinder extends AbstractService
             'query' => [
                 'token' => $this->config('key'),
             ],
+            ...$this->timeoutConfig(),
         ]);
     }
 

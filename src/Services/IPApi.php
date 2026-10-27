@@ -43,6 +43,7 @@ class IPApi extends AbstractService
                 'fields' => 49663,
                 'lang' => $this->config('lang', ['en']),
             ],
+            ...$this->timeoutConfig(),
         ];
 
         // Using the Pro service

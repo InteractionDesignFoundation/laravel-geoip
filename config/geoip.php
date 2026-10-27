@@ -20,6 +20,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | HTTP Timeouts
+    |--------------------------------------------------------------------------
+    |
+    | Seconds (floats allowed) that HTTP-based services wait for a connection
+    | and for the whole response. Keep them short: a lookup runs inside the
+    | web request. Any service below may override either key.
+    |
+    */
+
+    'connect_timeout' => 2,
+
+    'timeout' => 5,
+
+    /*
+    |--------------------------------------------------------------------------
     | Include Currency in Results
     |--------------------------------------------------------------------------
     |

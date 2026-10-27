@@ -88,6 +88,19 @@ abstract class AbstractService implements ServiceInterface, LoggerAwareInterface
     }
 
     /**
+     * HttpClient settings shared by all HTTP-based services; per-service values override the global ones.
+     *
+     * @return array{timeout: mixed, connect_timeout: mixed}
+     */
+    protected function timeoutConfig(): array
+    {
+        return [
+            'timeout' => $this->config('timeout', HttpClient::DEFAULT_TIMEOUT),
+            'connect_timeout' => $this->config('connect_timeout', HttpClient::DEFAULT_CONNECT_TIMEOUT),
+        ];
+    }
+
+    /**
      * An error page must never be parsed as a lookup result.
      *
      * @throws \RuntimeException

@@ -75,6 +75,10 @@ GeoIP caches lookups using Laravel's cache system to reduce API calls. Set the `
 
 You can also configure `cache_tags`, `cache_expires` (TTL in seconds), and `cache_prefix`.
 
+### Timeouts
+
+HTTP-based services and the MaxMind Web API fail fast so a slow provider cannot hold up your request: `connect_timeout` (default 2 s) and `timeout` (default 5 s) in `config/geoip.php`. Either can be overridden per service. Responses larger than 1 MiB are rejected when the server announces their size. A non-2xx HTTP status makes the lookup fail (the default location is returned).
+
 ### Currency Detection
 
 When `include_currency` is enabled (default), the package resolves the visitor's currency from their country ISO code using the [league/iso3166](https://github.com/thephpleague/iso3166) package.

@@ -203,6 +203,8 @@ class GeoIP
         if ($this->service === null) {
             // Get service configuration
             $config = (array) $this->config('services.'.(string) $this->config('service'), []);
+            // Per-service values win over the package-wide ones.
+            $config += ['timeout' => $this->config('timeout'), 'connect_timeout' => $this->config('connect_timeout')];
 
             // Get service class
             $class = Arr::pull($config, 'class');

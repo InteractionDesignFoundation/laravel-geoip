@@ -30,6 +30,7 @@ class IPGeoLocation extends AbstractService
     {
         $base = [
             'base_uri' => 'https://api.ipgeolocation.io/',
+            ...$this->timeoutConfig(),
         ];
 
         if ($this->config('key')) {
