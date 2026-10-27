@@ -20,6 +20,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | HTTP Timeouts
+    |--------------------------------------------------------------------------
+    |
+    | Seconds (floats allowed) that HTTP-based services wait for a connection
+    | and for the whole response. Keep them short: a lookup runs inside the
+    | web request. Any service below may override either key.
+    |
+    */
+
+    'connect_timeout' => 2,
+
+    'timeout' => 5,
+
+    /*
+    |--------------------------------------------------------------------------
     | Include Currency in Results
     |--------------------------------------------------------------------------
     |
@@ -58,7 +73,13 @@ return [
         'maxmind_database' => [
             'class' => \InteractionDesignFoundation\GeoIP\Services\MaxMindDatabase::class,
             'database_path' => storage_path('app/geoip.mmdb'),
-            'update_url' => sprintf('https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=%s&suffix=tar.gz', env('MAXMIND_LICENSE_KEY')),
+            // Credentials are sent as HTTP Basic auth to MaxMind's permalink endpoint (never in the URL).
+            // Without an account ID the legacy license-key-in-URL endpoint is used instead.
+            'account_id' => env('MAXMIND_ACCOUNT_ID'),
+            'license_key' => env('MAXMIND_LICENSE_KEY'),
+            'edition_id' => 'GeoLite2-City',
+            // Optional: overrides the download URL entirely (must contain "suffix=tar.gz"; no credentials are added).
+            // 'update_url' => 'https://example.com/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz',
             'locales' => ['en'],
         ],
 
@@ -71,6 +92,8 @@ return [
 
         'ipapi' => [
             'class' => \InteractionDesignFoundation\GeoIP\Services\IPApi::class,
+            // The free tier is HTTP-only. Without a key and with 'secure' => true a warning is logged;
+            // set a key to use the HTTPS Pro endpoint, or set 'secure' => false to acknowledge plain HTTP.
             'secure' => true,
             'key' => env('IPAPI_KEY'),
             'continent_path' => storage_path('app/continents.json'),

@@ -24,6 +24,7 @@ class IP2Location extends AbstractService
             'query' => [
                 'key' => $this->config('key'),
             ],
+            ...$this->timeoutConfig(),
         ]);
     }
 
@@ -43,6 +44,8 @@ class IP2Location extends AbstractService
         if ($this->client->getErrors() !== null) {
             throw new \RuntimeException('Request failed ('.($this->client->getErrors() ?? '').')');
         }
+
+        $this->ensureSuccessfulResponse($this->client, 'ip2location.io');
 
         $json = json_decode($data[0]);
 

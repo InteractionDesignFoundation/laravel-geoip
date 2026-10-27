@@ -10,9 +10,4 @@
       <code><![CDATA[$clone->attributes]]></code>
     </PropertyTypeCoercion>
   </file>
-  <file src="tests/TestCase.php">
-    <MissingOverrideAttribute>
-      <code><![CDATA[protected function setUp(): void]]></code>
-    </MissingOverrideAttribute>
-  </file>
 </files>

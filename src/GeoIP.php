@@ -9,6 +9,7 @@ use Illuminate\Cache\CacheManager;
 use Illuminate\Support\Arr;
 use League\ISO3166\Exception\OutOfBoundsException;
 use League\ISO3166\ISO3166;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -213,6 +214,8 @@ class GeoIP
         if ($this->service === null) {
             // Get service configuration
             $config = (array) $this->config('services.'.(string) $this->config('service'), []);
+            // Per-service values win over the package-wide ones.
+            $config += ['timeout' => $this->config('timeout'), 'connect_timeout' => $this->config('connect_timeout')];
 
             // Get service class
             $class = Arr::pull($config, 'class');
@@ -231,6 +234,11 @@ class GeoIP
 
             // Create service instance
             $this->service = new $class($config);
+
+            // Injected after construction so custom services keep their own constructor signature.
+            if ($this->service instanceof LoggerAwareInterface) {
+                $this->service->setLogger($this->logger);
+            }
         }
 
         return $this->service;

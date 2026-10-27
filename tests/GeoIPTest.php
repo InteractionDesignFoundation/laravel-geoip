@@ -9,6 +9,8 @@ use Illuminate\Cache\CacheManager;
 use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\GeoIP;
 use InteractionDesignFoundation\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\Services\AbstractService;
+use InteractionDesignFoundation\GeoIP\Services\IPApi;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -475,6 +477,44 @@ final class GeoIPTest extends TestCase
         $this->assertTrue($geoIp->getLocation('8.8.8.8')->cached);
 
         $geoIp->getCache()->flush();
+    }
+
+    #[Test]
+    public function get_service_constructs_services_with_config_only(): void
+    {
+        $service = new class (['key' => 'v'], false) extends AbstractService {
+            public function __construct(array $config = [], public readonly bool $customMode = false)
+            {
+                parent::__construct($config);
+            }
+
+            #[\Override]
+            public function locate($ip): Location
+            {
+                return $this->hydrate(['ip' => $ip]);
+            }
+        };
+        $geoIp = $this->makeGeoIP([
+            'service' => 'custom',
+            'services' => ['custom' => ['class' => $service::class]],
+        ]);
+
+        $this->assertInstanceOf($service::class, $geoIp->getService());
+    }
+
+    #[Test]
+    public function get_service_hands_logger_to_logger_aware_services(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('warning')->with($this->stringContains('HTTP-only'));
+
+        $geoIp = $this->makeGeoIPWithLogger([
+            'service' => 'ipapi',
+            'services' => ['ipapi' => ['class' => IPApi::class, 'secure' => true, 'key' => null]],
+        ], $logger);
+
+        $geoIp->getService();
+        $geoIp->getService();
     }
 
     private function makeGeoIPWithLogger(array $config, LoggerInterface $logger): GeoIP

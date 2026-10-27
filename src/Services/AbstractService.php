@@ -7,6 +7,7 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
 use InteractionDesignFoundation\GeoIP\Location;
+use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 abstract class AbstractService implements ServiceInterface
 {
@@ -80,5 +81,32 @@ abstract class AbstractService implements ServiceInterface
         }
 
         return $ip;
+    }
+
+    /**
+     * HttpClient settings shared by all HTTP-based services; per-service values override the global ones.
+     *
+     * @return array{timeout: mixed, connect_timeout: mixed}
+     */
+    protected function timeoutConfig(): array
+    {
+        return [
+            'timeout' => $this->config('timeout'),
+            'connect_timeout' => $this->config('connect_timeout'),
+        ];
+    }
+
+    /**
+     * An error page must never be parsed as a lookup result.
+     *
+     * @throws \RuntimeException
+     */
+    protected function ensureSuccessfulResponse(HttpClient $client, string $provider): void
+    {
+        $status = $client->getHttpCode();
+
+        if ($status < 200 || $status > 299) {
+            throw new \RuntimeException(sprintf('%s request failed with HTTP status %d', $provider, $status));
+        }
     }
 }

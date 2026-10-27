@@ -33,6 +33,7 @@ class IPFinder extends AbstractService
             'query' => [
                 'token' => $this->config('key'),
             ],
+            ...$this->timeoutConfig(),
         ]);
     }
 
@@ -50,8 +51,14 @@ class IPFinder extends AbstractService
 
         // Verify server response
         $errors = $this->client->getErrors();
-        if ($errors !== null || $data[0] === '') {
-            throw new \Exception('Request failed ('.($errors ?? '').')');
+        if ($errors !== null) {
+            throw new \Exception('Request failed ('.$errors.')');
+        }
+
+        $this->ensureSuccessfulResponse($this->client, 'ipfinder.io');
+
+        if ($data[0] === '') {
+            throw new \Exception('Empty ipfinder.io response');
         }
 
         $json = json_decode($data[0], true);

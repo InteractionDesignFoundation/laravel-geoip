@@ -51,9 +51,9 @@ Set the service via the `GEOIP_SERVICE` env variable or in `config/geoip.php`:
 
 | Service | Key | Requires |
 |---------|-----|----------|
-| [MaxMind Database](https://www.maxmind.com/en/geoip2-databases) | `maxmind_database` | `geoip2/geoip2` package + license key |
+| [MaxMind Database](https://www.maxmind.com/en/geoip2-databases) | `maxmind_database` | `geoip2/geoip2` package + account ID & license key (then run `geoip:update`) |
 | [MaxMind Web API](https://www.maxmind.com/en/geoip2-precision-services) | `maxmind_api` | `geoip2/geoip2` package + user ID & license key |
-| [IP-API](https://ip-api.com/) | `ipapi` | API key (for HTTPS) |
+| [IP-API](https://ip-api.com/) | `ipapi` | API key (the free tier is HTTP-only; HTTPS needs a paid key) |
 | [IPGeolocation](https://ipgeolocation.io/) | `ipgeolocation` | API key |
 | [IPData](https://ipdata.co/) | `ipdata` | API key |
 | [IPFinder](https://ipfinder.io/) | `ipfinder` | API key |
@@ -76,6 +76,10 @@ GeoIP caches lookups using Laravel's cache system to reduce API calls. Set the `
 You can also configure `cache_tags`, `cache_expires` (TTL in seconds), and `cache_prefix`.
 
 Addresses the service reports as not found (MaxMind `AddressNotFoundException`) are cached too, as the default location with `default` and `cached` set to `true`, for `cache_not_found_expires` seconds (defaults to `cache_expires`). Other failures, such as timeouts, are never cached. Set `cache` to `none` to disable this.
+
+### Timeouts
+
+HTTP-based services and the MaxMind Web API fail fast so a slow provider cannot hold up your request: `connect_timeout` (default 2 s) and `timeout` (default 5 s) in `config/geoip.php`. Either can be overridden per service. Responses larger than 1 MiB are rejected when the server announces their size. A non-2xx HTTP status makes the lookup fail (the default location is returned).
 
 ### Currency Detection
 

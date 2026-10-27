@@ -6,6 +6,7 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 
 use GeoIp2\Model\City;
 use GeoIp2\WebService\Client;
+use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 /**
  * @psalm-api
@@ -34,7 +35,10 @@ class MaxMindWebService extends AbstractService
         /** @var list<string> $locales */
         $locales = $this->config('locales', ['en']);
 
-        $this->client = new Client((int) $this->config('user_id'), $licenseKey, $locales);
+        $this->client = new Client((int) $this->config('user_id'), $licenseKey, $locales, [
+            'connectTimeout' => HttpClient::resolveTimeout($this->config('connect_timeout'), HttpClient::DEFAULT_CONNECT_TIMEOUT),
+            'timeout' => HttpClient::resolveTimeout($this->config('timeout'), HttpClient::DEFAULT_TIMEOUT),
+        ]);
     }
 
     /** {@inheritDoc} */
