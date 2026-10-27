@@ -9,6 +9,7 @@ if (!function_exists('geoip')) {
      * @param string|null $ip
      * @return \InteractionDesignFoundation\GeoIP\GeoIP|\InteractionDesignFoundation\GeoIP\Location
      * @psalm-return ($ip is null ? \InteractionDesignFoundation\GeoIP\GeoIP : \InteractionDesignFoundation\GeoIP\Location)
+     * @throws \InvalidArgumentException if the provided $ip is not a syntactically valid IP address
      * @throws \Exception
      */
     function geoip($ip = null)

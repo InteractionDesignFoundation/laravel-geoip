@@ -43,6 +43,8 @@ class IPFinder extends AbstractService
     #[\Override]
     public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
     {
+        $ip = $this->assertValidIp($ip);
+
         // Get data from client
         $data = $this->client->get($ip);
 
