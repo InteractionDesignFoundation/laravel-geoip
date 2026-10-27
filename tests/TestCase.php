@@ -12,6 +12,7 @@ use Psr\Log\LoggerInterface;
 #[CoversNothing]
 class TestCase extends \Orchestra\Testbench\TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
