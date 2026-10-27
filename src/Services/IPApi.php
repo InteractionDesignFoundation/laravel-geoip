@@ -81,6 +81,8 @@ class IPApi extends AbstractService
             throw new \RuntimeException('Unexpected ip-api.com response: '.$errors);
         }
 
+        $this->ensureSuccessfulResponse($this->client, 'ip-api.com');
+
         // Parse body content
         $json = json_decode($data[0]);
         if (! is_object($json) || ! property_exists($json, 'status')) {

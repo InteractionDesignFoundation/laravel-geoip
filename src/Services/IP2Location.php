@@ -44,6 +44,8 @@ class IP2Location extends AbstractService
             throw new \RuntimeException('Request failed ('.($this->client->getErrors() ?? '').')');
         }
 
+        $this->ensureSuccessfulResponse($this->client, 'ip2location.io');
+
         $json = json_decode($data[0]);
 
         if (! is_object($json)) {

@@ -54,6 +54,8 @@ class IPGeoLocation extends AbstractService
             throw new Exception('Request failed ('.$errors.')');
         }
 
+        $this->ensureSuccessfulResponse($this->client, 'ipgeolocation.io');
+
         // Parse body content
         $json = json_decode($data[0], true);
         if (! is_array($json)) {

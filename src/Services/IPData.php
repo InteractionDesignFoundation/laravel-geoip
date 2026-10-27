@@ -47,8 +47,14 @@ class IPData extends AbstractService
 
         // Verify server response
         $errors = $this->client->getErrors();
-        if ($errors !== null || $data[0] === '') {
-            throw new Exception('Request failed ('.($errors ?? '').')');
+        if ($errors !== null) {
+            throw new Exception('Request failed ('.$errors.')');
+        }
+
+        $this->ensureSuccessfulResponse($this->client, 'ipdata.co');
+
+        if ($data[0] === '') {
+            throw new Exception('Empty ipdata.co response');
         }
 
         $json = json_decode($data[0], true);

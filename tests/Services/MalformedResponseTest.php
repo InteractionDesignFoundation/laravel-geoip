@@ -50,6 +50,7 @@ final class MalformedResponseTest extends TestCase
         $client = $this->createStub(HttpClient::class);
         $client->method('get')->willReturn([$body, []]);
         $client->method('getErrors')->willReturn(null);
+        $client->method('getHttpCode')->willReturn(200);
         (new \ReflectionProperty($service, 'client'))->setValue($service, $client);
 
         $this->expectException(\Exception::class);
