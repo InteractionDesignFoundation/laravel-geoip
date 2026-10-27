@@ -75,7 +75,6 @@
         "rector:dry": "vendor/bin/rector process --config rector.php --dry-run",
         "cs:check": "@php -d memory_limit=-1 vendor/bin/php-cs-fixer fix --no-interaction --ansi --verbose --dry-run",
         "sa": "@psalm",
-        "sa:bl": "@psalm --set-baseline=psalm-baseline.xml",
         "test": "vendor/bin/phpunit"
     }
 }
