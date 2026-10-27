@@ -362,8 +362,13 @@ final class GeoIPTest extends TestCase
         $this->setService($geoIp, $service);
 
         $geoIp->getLocation('8.8.8.8');
+
+        $hit = $geoIp->getLocation('8.8.8.8');
+        $this->assertTrue($hit->cached);
+        $this->assertTrue($hit->default);
+
         $this->travel(11)->seconds();
-        $geoIp->getLocation('8.8.8.8');
+        $this->assertFalse($geoIp->getLocation('8.8.8.8')->cached);
     }
 
     #[Test]
