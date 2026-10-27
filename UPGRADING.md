@@ -75,8 +75,8 @@ The database is opened lazily, so `geoip:update` works on a fresh install. If yo
 - The archive's SHA-256 is verified. A custom `update_url` must contain the literal (not URL-encoded) query parameter `suffix=tar.gz`, and the same URL with `suffix=tar.gz.sha256` must serve a file that starts with the hex digest. The package adds no credentials to a custom URL.
 - The database must open as an MMDB file. Its type must match the edition: for the default endpoint that is `edition_id`; for a custom URL, an `edition_id` query parameter in the URL wins over the config value, and with neither the type isn't checked.
 - The new file is written to a temporary file in the same directory as `database_path`, validated and renamed over the old one. The process needs write access to that directory. If the download, checksum or validation fails, the existing database stays untouched.
-- If `database_path` is a symlink, the link itself is replaced by a regular file and its target is no longer updated (4.x wrote through the link). Point `database_path` at the real file.
-- The command catches `\Exception` from `update()`, prints its message and exits with a failure code. The bundled MaxMind updater removes the license key from its messages; custom services must sanitize their own. Errors while resolving the service, other than a missing config key (for example, no `service` configured), aren't caught. Scripts and scheduled tasks that run the command should check the exit code.
+- If `database_path` is a symlink, the link is kept and its target is replaced atomically. The target's directory must be writable, because the temporary file is created there. (5.0.0 replaced the link itself with a regular file; fixed in 5.0.1.)
+- The command catches `\Exception` from `update()`, prints its message and exits with a failure code. The bundled MaxMind updater removes the license key from its messages; custom services must sanitize their own. Errors while resolving the service (a missing config key, no `service` configured) are printed the same way and also exit with a failure code (5.0.0 let some of them escape as uncaught exceptions). Scripts and scheduled tasks that run the command should check the exit code.
 - The command updates the configured `service`. It reports success only when the service's `update()` returns a non-empty string, and it reports success without doing anything for a service that has no `update()` method.
 
 #### ip-api free tier
@@ -114,7 +114,7 @@ Other failures (timeouts, HTTP errors) are still not cached.
 - `MaxMindDatabase` subclasses:
   - `downloadFileByUrl()` is now `downloadFileByUrl(string $filename, string $url, ?string $userPwd = null, ?int $maxBytes = null): void`.
   - The transfer itself runs in a new protected `curlTransfer(array $options): ?array`.
-  - `boot()` no longer opens the database. `$reader` is typed `?Reader`. It stays `null` until the base `locate()` opens it, and a successful `update()` resets it to `null`. A subclass that overrides `locate()` and uses `$this->reader` must open it itself, for example `$this->reader ??= new Reader($this->config('database_path'), $this->config('locales', ['en']));`. A redeclared `$reader` property must be typed `?Reader`.
+  - `boot()` no longer opens the database. `$reader` is typed `?Reader`. It stays `null` until the base `locate()` opens it, and a successful `update()` resets it to `null`. A subclass that overrides `locate()` must get the reader from the protected `$this->reader()` (since 5.0.1), which opens it on first use, instead of reading `$this->reader` directly. On 5.0.0, where `reader()` is private, open it yourself: `$this->reader ??= new Reader($this->config('database_path'), $this->config('locales', ['en']));`. A redeclared `$reader` property must be typed `?Reader`.
   - `findDatabaseFile()` was removed.
 - Custom services with an `update()` method: `geoip:update` treats only a non-empty string return value as success.
 - `Cache::set()` accepts an optional third argument: the TTL in seconds.
@@ -156,8 +156,6 @@ Report every change, and list decisions that need a human instead of guessing.
      suffix=tar.gz and serves the matching suffix=tar.gz.sha256 checksum over HTTPS.
    - If the app uses the default MaxMind endpoint (no custom update_url), add MAXMIND_ACCOUNT_ID
      to .env.example and ask the human to set it in every environment.
-   - If database_path is a symlink, tell the human: geoip:update now replaces the link with a
-     regular file.
    - Make sure php artisan geoip:update runs during build/deploy, or that a valid database is
      kept at database_path. Check that scripts calling geoip:update handle a non-zero exit code.
    - Tell the human to run php artisan geoip:update once on every host after upgrading: 4.x may
@@ -173,7 +171,7 @@ Report every change, and list decisions that need a human instead of guessing.
    ::ffff:a.b.c.d is converted to IPv4.
 8. Custom services or subclasses: check them against "Custom services and subclasses" in
    UPGRADING.md (new protected methods and HttpClient constants,
-   MaxMindDatabase::downloadFileByUrl() signature, $reader no longer opened in boot(),
+   MaxMindDatabase::downloadFileByUrl() signature, $reader no longer opened in boot() (use $this->reader() in an overridden locate()),
    removed findDatabaseFile(), update() must return a non-empty string).
 9. Run the test suite and static analysis. Add tests only where the app's own behavior changed.
 ```
