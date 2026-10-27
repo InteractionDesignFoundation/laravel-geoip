@@ -30,6 +30,7 @@ class IPGeoLocation extends AbstractService
     {
         $base = [
             'base_uri' => 'https://api.ipgeolocation.io/',
+            ...$this->timeoutConfig(),
         ];
 
         if ($this->config('key')) {
@@ -53,6 +54,8 @@ class IPGeoLocation extends AbstractService
         if ($errors !== null) {
             throw new Exception('Request failed ('.$errors.')');
         }
+
+        $this->ensureSuccessfulResponse($this->client, 'ipgeolocation.io');
 
         // Parse body content
         $json = json_decode($data[0], true);

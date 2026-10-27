@@ -11,6 +11,18 @@ use Illuminate\Support\Arr;
  */
 class HttpClient
 {
+    /** Seconds. A slow provider must not hold a web request for longer than this. */
+    public const float DEFAULT_CONNECT_TIMEOUT = 2.0;
+
+    /** Seconds, for the whole request. */
+    public const float DEFAULT_TIMEOUT = 5.0;
+
+    /**
+     * Geolocation responses are tiny. Only enforced by cURL when the server announces Content-Length;
+     * a chunked body is not cut off.
+     */
+    private const int MAX_RESPONSE_BYTES = 1024 * 1024;
+
     /** Last request http status. */
     private int $http_code = 200;
 
@@ -65,19 +77,7 @@ class HttpClient
             throw new \RuntimeException('Failed to initialize cURL');
         }
 
-        // Set options
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $this->getUrl($url),
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_CONNECTTIMEOUT => 20,
-            CURLOPT_TIMEOUT => 90,
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_HEADER => 1,
-            CURLINFO_HEADER_OUT => 1,
-            CURLOPT_VERBOSE => 1,
-        ]);
+        curl_setopt_array($curl, $this->curlOptions($this->getUrl($url), $headers));
 
         match ($method) {
             'PUT', 'PATCH', 'POST' => curl_setopt_array($curl, [
@@ -113,6 +113,42 @@ class HttpClient
         curl_close($curl);
 
         return [$body, $this->parseHeaders($header)];
+    }
+
+    /**
+     * @param array<int, string> $headers
+     * @return array<int, mixed>
+     */
+    protected function curlOptions(string $url, array $headers): array
+    {
+        return [
+            CURLOPT_URL => $url,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_CONNECTTIMEOUT_MS => $this->timeoutMs('connect_timeout', self::DEFAULT_CONNECT_TIMEOUT),
+            CURLOPT_TIMEOUT_MS => $this->timeoutMs('timeout', self::DEFAULT_TIMEOUT),
+            CURLOPT_MAXFILESIZE => self::MAX_RESPONSE_BYTES,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_HEADER => 1,
+            CURLINFO_HEADER_OUT => 1,
+            CURLOPT_VERBOSE => 1,
+        ];
+    }
+
+    /**
+     * Zero means "no deadline" to cURL and MaxMind, so anything but a positive number falls back to the default.
+     *
+     * @psalm-pure
+     */
+    public static function resolveTimeout(mixed $seconds, float $default): float
+    {
+        return is_numeric($seconds) && (float) $seconds > 0.0 ? (float) $seconds : $default;
+    }
+
+    private function timeoutMs(string $key, float $default): int
+    {
+        return (int) ceil(self::resolveTimeout(Arr::get($this->config, $key), $default) * 1000.0);
     }
 
     /** Check if the curl request ended up with errors */

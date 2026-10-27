@@ -115,6 +115,7 @@ final class IP2LocationTest extends TestCase
         $client = $this->createMock(HttpClient::class);
         $client->method('get')->willReturn([$responseBody, []]);
         $client->method('getErrors')->willReturn($error);
+        $client->method('getHttpCode')->willReturn(200);
 
         $service = new IP2Location(['key' => 'test-key']);
 

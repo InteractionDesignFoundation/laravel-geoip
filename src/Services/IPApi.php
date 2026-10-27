@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP\Services;
 
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * @psalm-api
  * @internal
  */
-class IPApi extends AbstractService
+class IPApi extends AbstractService implements LoggerAwareInterface
 {
     /**
      * Http client instance.
@@ -26,6 +28,9 @@ class IPApi extends AbstractService
      */
     protected array $continents = [];
 
+    /** Pending until a logger arrives (boot runs before it), then emitted once. */
+    private bool $warnAboutPlainHttp = false;
+
     /** The "booting" method of the service. */
     #[\Override]
     public function boot(): void
@@ -39,6 +44,7 @@ class IPApi extends AbstractService
                 'fields' => 49663,
                 'lang' => $this->config('lang', ['en']),
             ],
+            ...$this->timeoutConfig(),
         ];
 
         // Using the Pro service
@@ -47,6 +53,8 @@ class IPApi extends AbstractService
         if ($key !== null && $key !== '') {
             $base['base_uri'] = ($this->config('secure') ? 'https' : 'http').'://pro.ip-api.com/';
             $base['query']['key'] = $key;
+        } else {
+            $this->warnAboutPlainHttp = (bool) $this->config('secure');
         }
 
         $this->client = new HttpClient($base);
@@ -60,6 +68,15 @@ class IPApi extends AbstractService
             if (is_array($continents)) {
                 $this->continents = $continents;
             }
+        }
+    }
+
+    #[\Override]
+    public function setLogger(LoggerInterface $logger): void
+    {
+        if ($this->warnAboutPlainHttp) {
+            $this->warnAboutPlainHttp = false;
+            $logger->warning('GeoIP: the free ip-api.com tier is HTTP-only, so lookups are unencrypted and can be spoofed on the network path. Set "key" to use the HTTPS Pro endpoint, or set \'secure\' => false to acknowledge this and silence the warning.');
         }
     }
 
@@ -80,6 +97,8 @@ class IPApi extends AbstractService
         if ($errors !== null) {
             throw new \RuntimeException('Unexpected ip-api.com response: '.$errors);
         }
+
+        $this->ensureSuccessfulResponse($this->client, 'ip-api.com');
 
         // Parse body content
         $json = json_decode($data[0]);

@@ -20,6 +20,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | HTTP Timeouts
+    |--------------------------------------------------------------------------
+    |
+    | Seconds (floats allowed) that HTTP-based services wait for a connection
+    | and for the whole response. Keep them short: a lookup runs inside the
+    | web request. Any service below may override either key.
+    |
+    */
+
+    'connect_timeout' => 2,
+
+    'timeout' => 5,
+
+    /*
+    |--------------------------------------------------------------------------
     | Include Currency in Results
     |--------------------------------------------------------------------------
     |
@@ -77,6 +92,8 @@ return [
 
         'ipapi' => [
             'class' => \InteractionDesignFoundation\GeoIP\Services\IPApi::class,
+            // The free tier is HTTP-only. Without a key and with 'secure' => true a warning is logged;
+            // set a key to use the HTTPS Pro endpoint, or set 'secure' => false to acknowledge plain HTTP.
             'secure' => true,
             'key' => env('IPAPI_KEY'),
             'continent_path' => storage_path('app/continents.json'),

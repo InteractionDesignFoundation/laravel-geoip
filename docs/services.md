@@ -22,3 +22,11 @@ If `geoip:update` failed in an earlier version of this package, the error output
 ```php
 'service' => 'maxmind_database',
 ```
+
+## IP-API
+
+The free ip-api.com tier is **HTTP-only**: lookups are unencrypted and can be spoofed by anyone on the network path, so it is not suitable for production. Set `key` to use the HTTPS Pro endpoint. With `'secure' => true` and no key a warning is logged once when the service boots; set `'secure' => false` to acknowledge plain HTTP and silence it.
+
+## Timeouts
+
+All HTTP-based services and `maxmind_api` use the top-level `connect_timeout` (2 s) and `timeout` (5 s) values from `config/geoip.php`. Put `connect_timeout` or `timeout` inside a service's section to override them for that service.
