@@ -39,6 +39,11 @@ final class HttpClientTest extends TestCase
         yield 'non-numeric' => ['invalid'];
         yield 'negative' => [-1];
         yield 'null' => [null];
+        yield 'INF' => [INF];
+        yield 'NAN' => [NAN];
+        yield 'numeric string overflowing to INF' => ['1e309'];
+        yield 'finite value overflowing integer milliseconds' => [1e300];
+        yield 'largest integer' => [PHP_INT_MAX];
     }
 
     /** A 0 would mean "no deadline" to cURL, so an unusable value must not reach it. */
@@ -50,6 +55,78 @@ final class HttpClientTest extends TestCase
 
         $this->assertSame(2000, $options[CURLOPT_CONNECTTIMEOUT_MS]);
         $this->assertSame(5000, $options[CURLOPT_TIMEOUT_MS]);
+    }
+
+    #[Test]
+    public function it_resolves_timeouts_to_finite_positive_seconds(): void
+    {
+        $this->assertSame(0.25, HttpClient::resolveTimeout('0.25', 5.0));
+        $this->assertSame(5.0, HttpClient::resolveTimeout(INF, 5.0));
+        $this->assertSame(5.0, HttpClient::resolveTimeout('1e309', 5.0));
+        $this->assertSame(5.0, HttpClient::resolveTimeout(1e300, 5.0));
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function urls(): iterable
+    {
+        yield 'IPv4 path' => ['8.8.8.8?k=v', 'https://api.test/v1/8.8.8.8?k=v'];
+        yield 'IPv6 path' => ['2a00:1450:4001::1?k=v', 'https://api.test/v1/2a00:1450:4001::1?k=v'];
+        yield 'IPv6 path with letters only' => ['abcd::1?k=v', 'https://api.test/v1/abcd::1?k=v'];
+        yield 'IPv6 loopback' => ['::1?k=v', 'https://api.test/v1/::1?k=v'];
+        yield 'empty path' => ['', 'https://api.test/v1/'];
+        yield 'absolute https' => ['https://other.test/x', 'https://other.test/x'];
+        yield 'absolute, uppercase scheme' => ['HTTP://other.test/x', 'HTTP://other.test/x'];
+        yield 'query-only continuation' => ['&ip=2a00::1', 'https://api.test/v1/&ip=2a00::1'];
+    }
+
+    #[Test]
+    #[DataProvider('urls')]
+    public function it_joins_relative_urls_with_base_uri(string $url, string $expected): void
+    {
+        $client = self::recordingClient(['base_uri' => 'https://api.test/v1/']);
+
+        $this->assertSame($expected, self::requestedUrl($client, $url));
+    }
+
+    #[Test]
+    public function it_appends_query_to_ipv6_path(): void
+    {
+        $client = self::recordingClient(['base_uri' => 'https://api.test/', 'query' => ['api-key' => 'K']]);
+
+        $this->assertSame('https://api.test/2a00:1450:4001::1?api-key=K', self::requestedUrl($client, '2a00:1450:4001::1'));
+    }
+
+    /** `zend.exception_ignore_args=0` puts call arguments into traces that GeoIP logs. */
+    #[Test]
+    public function it_hides_secrets_from_exception_traces(): void
+    {
+        $previous = ini_set('zend.exception_ignore_args', '0');
+        $this->assertNotFalse($previous);
+
+        try {
+            // cURL rejects the unknown protocol without touching the network.
+            (new HttpClient(['query' => ['api-key' => 'SECRET-QUERY']]))->get(
+                'unsupported://api.test/?token=SECRET-URL',
+                ['extra' => 'SECRET-EXTRA'],
+                ['Authorization: Bearer SECRET-HEADER'],
+            );
+            $this->fail('Expected the request to fail');
+        } catch (\RuntimeException $e) {
+            $trace = $e->getTrace();
+        } finally {
+            ini_set('zend.exception_ignore_args', $previous);
+        }
+
+        $this->assertNotEmpty($trace);
+        $hasArgs = false;
+        foreach ($trace as $frame) {
+            if (isset($frame['args'])) {
+                $hasArgs = true;
+                $this->assertStringNotContainsString('SECRET', var_export($frame['args'], true));
+            }
+        }
+        $this->assertTrue($hasArgs, 'Trace args must be collected for this test to be meaningful');
+        $this->assertInstanceOf(\SensitiveParameterValue::class, $trace[0]['args'][2] ?? null);
     }
 
     #[Test]
@@ -69,6 +146,30 @@ final class HttpClientTest extends TestCase
         $this->assertArrayNotHasKey(CURLOPT_VERBOSE, $options);
     }
 
+    /** @param array<string, mixed> $config */
+    private static function recordingClient(array $config): HttpClient
+    {
+        return new class ($config) extends HttpClient {
+            /** @return array<int, mixed> */
+            #[\Override]
+            protected function curlOptions(string $url, array $headers): array
+            {
+                throw new UrlCaptured($url);
+            }
+        };
+    }
+
+    private static function requestedUrl(HttpClient $client, string $url): string
+    {
+        try {
+            $client->get($url);
+        } catch (UrlCaptured $captured) {
+            return $captured->url;
+        }
+
+        throw new \LogicException('URL was not captured');
+    }
+
     /**
      * @param array<string, mixed> $config
      * @return array<int, mixed>
@@ -82,5 +183,16 @@ final class HttpClientTest extends TestCase
                 return $this->curlOptions('https://example.test/', []);
             }
         })->options();
+    }
+}
+
+/**
+ * @internal
+ */
+final class UrlCaptured extends \RuntimeException
+{
+    public function __construct(public readonly string $url)
+    {
+        parent::__construct('captured');
     }
 }

@@ -36,6 +36,7 @@ class HttpClient
      */
     public function __construct(
         /** Request configurations. */
+        #[\SensitiveParameter]
         private readonly array $config = []
     ) {}
 
@@ -46,8 +47,14 @@ class HttpClient
      * @param array<int, string> $headers
      * @return array{string, array<array-key, string>}
      */
-    public function get(string $url, array $query = [], array $headers = []): array
-    {
+    public function get(
+        #[\SensitiveParameter]
+        string $url,
+        #[\SensitiveParameter]
+        array $query = [],
+        #[\SensitiveParameter]
+        array $headers = [],
+    ): array {
         return $this->execute('GET', $this->buildGetUrl($url, $query), [], $headers);
     }
 
@@ -60,8 +67,15 @@ class HttpClient
      *
      * @throws \RuntimeException
      */
-    public function execute(string $method, string $url, array $query = [], array $headers = []): array
-    {
+    public function execute(
+        string $method,
+        #[\SensitiveParameter]
+        string $url,
+        #[\SensitiveParameter]
+        array $query = [],
+        #[\SensitiveParameter]
+        array $headers = [],
+    ): array {
         /** @var array<int, string> $globalHeaders */
         $globalHeaders = Arr::get($this->config, 'headers', []);
         $headers = array_merge($globalHeaders, $headers);
@@ -119,8 +133,12 @@ class HttpClient
      * @param array<int, string> $headers
      * @return array<int, mixed>
      */
-    protected function curlOptions(string $url, array $headers): array
-    {
+    protected function curlOptions(
+        #[\SensitiveParameter]
+        string $url,
+        #[\SensitiveParameter]
+        array $headers,
+    ): array {
         return [
             CURLOPT_URL => $url,
             CURLOPT_HTTPHEADER => $headers,
@@ -136,13 +154,20 @@ class HttpClient
     }
 
     /**
-     * Zero means "no deadline" to cURL and MaxMind, so anything but a positive number falls back to the default.
+     * Zero means "no deadline" to cURL and MaxMind, so anything but a finite positive number that fits
+     * into integer milliseconds falls back to the default.
      *
      * @psalm-pure
      */
     public static function resolveTimeout(mixed $seconds, float $default): float
     {
-        return is_numeric($seconds) && (float) $seconds > 0.0 ? (float) $seconds : $default;
+        if (! is_numeric($seconds)) {
+            return $default;
+        }
+
+        $seconds = (float) $seconds;
+
+        return is_finite($seconds) && $seconds > 0.0 && $seconds < \PHP_INT_MAX / 1000 ? $seconds : $default;
     }
 
     private function timeoutMs(string $key, float $default): int
@@ -197,10 +222,10 @@ class HttpClient
     }
 
     /** Get request URL. */
-    private function getUrl(string $url): string
+    private function getUrl(#[\SensitiveParameter] string $url): string
     {
-        // Check for URL scheme
-        if (parse_url($url, PHP_URL_SCHEME) === null) {
+        // parse_url() reads the "2a00" of an IPv6 path like "2a00::1" as a scheme, so match "://" explicitly.
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $url) !== 1) {
             $url = (string) Arr::get($this->config, 'base_uri').$url;
         }
 
@@ -212,8 +237,12 @@ class HttpClient
      *
      * @param array<string, mixed> $query
      */
-    private function buildGetUrl(string $url, array $query = []): string
-    {
+    private function buildGetUrl(
+        #[\SensitiveParameter]
+        string $url,
+        #[\SensitiveParameter]
+        array $query = [],
+    ): string {
         /** @var array<string, mixed> $globalQuery */
         $globalQuery = Arr::get($this->config, 'query', []);
         $query = array_merge($globalQuery, $query);
