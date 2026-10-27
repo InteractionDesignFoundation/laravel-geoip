@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
+use Closure;
 use InteractionDesignFoundation\GeoIP\Services\AbstractService;
 use InteractionDesignFoundation\GeoIP\Services\IPData;
 use InteractionDesignFoundation\GeoIP\Services\IPFinder;
@@ -19,12 +20,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(IPGeoLocation::class)]
 final class MalformedResponseTest extends TestCase
 {
-    /** @return iterable<string, array{class-string<AbstractService>, string}> */
+    /** @return iterable<string, array{Closure(): AbstractService, string}> */
     public static function malformedBodies(): iterable
     {
-        foreach ([IPData::class, IPFinder::class, IPGeoLocation::class] as $service) {
-            yield $service.' not json' => [$service, 'not-json'];
-            yield $service.' json scalar' => [$service, '"text"'];
+        $services = [
+            'IPData' => static fn(): AbstractService => new IPData(['key' => 'test-key']),
+            'IPFinder' => static fn(): AbstractService => new IPFinder(['key' => 'test-key']),
+            'IPGeoLocation' => static fn(): AbstractService => new IPGeoLocation(['key' => 'test-key']),
+        ];
+
+        foreach ($services as $name => $factory) {
+            yield $name.' not json' => [$factory, 'not-json'];
+            yield $name.' json scalar' => [$factory, '"text"'];
         }
     }
 
@@ -32,13 +39,13 @@ final class MalformedResponseTest extends TestCase
      * GeoIP::getLocation() only falls back to the default location for \Exception, so a malformed
      * body must not surface as a \TypeError or as a Location filled with nulls.
      *
-     * @param class-string<AbstractService> $serviceClass
+     * @param Closure(): AbstractService $serviceFactory
      */
     #[Test]
     #[DataProvider('malformedBodies')]
-    public function it_throws_exception_for_malformed_json_body(string $serviceClass, string $body): void
+    public function it_throws_exception_for_malformed_json_body(Closure $serviceFactory, string $body): void
     {
-        $service = new $serviceClass(['key' => 'test-key']);
+        $service = $serviceFactory();
 
         $client = $this->createStub(HttpClient::class);
         $client->method('get')->willReturn([$body, []]);

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
+use Illuminate\Cache\CacheManager;
 use InteractionDesignFoundation\GeoIP\GeoIP;
 use PHPUnit\Framework\Attributes\CoversNothing;
+use Psr\Log\LoggerInterface;
 
 #[CoversNothing]
 class TestCase extends \Orchestra\Testbench\TestCase
 {
-    /** @inheritDoc */
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -20,11 +22,13 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         $config = array_merge($this->getConfig(), $config);
 
-        return new GeoIP($config, $this->app['cache'], $this->app['log']);
+        return new GeoIP($config, app(CacheManager::class), app(LoggerInterface::class));
     }
 
+    /** @return array{services: array{maxmind_database: array{class: class-string, database_path: string, update_url: string, ...}, ...}, ...} */
     protected function getConfig(): array
     {
+        /** @var array{services: array{maxmind_database: array{class: class-string, database_path: string, update_url: string, ...}, ...}, ...} $config */
         $config = include(__DIR__.'/../config/geoip.php');
 
         $this->databaseCheck($config['services']['maxmind_database']['database_path']);

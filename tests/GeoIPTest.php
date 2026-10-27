@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
 use GeoIp2\Exception\AddressNotFoundException;
+use Illuminate\Cache\CacheManager;
 use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\GeoIP;
 use InteractionDesignFoundation\GeoIP\Location;
@@ -13,6 +14,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Log\LoggerInterface;
 
+/**
+ * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
+ */
 #[CoversClass(GeoIP::class)]
 final class GeoIPTest extends TestCase
 {
@@ -52,10 +56,6 @@ final class GeoIPTest extends TestCase
         $geoIp = $this->makeGeoIP([
             'service' => 'maxmind_database',
         ]);
-
-        // Get config values
-        $config = $this->getConfig()['services']['maxmind_database'];
-        unset($config['class']);
 
         $this->assertInstanceOf(\InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface::class, $geoIp->getService());
     }
@@ -107,7 +107,7 @@ final class GeoIPTest extends TestCase
     #[Test]
     public function get_client_ip_returns_request_ip(): void
     {
-        $this->app['request']->server->set('REMOTE_ADDR', '8.8.8.8');
+        request()->server->set('REMOTE_ADDR', '8.8.8.8');
 
         $geoIp = $this->makeGeoIP();
 
@@ -117,7 +117,7 @@ final class GeoIPTest extends TestCase
     #[Test]
     public function get_client_ip_returns_fallback_when_request_ip_is_null(): void
     {
-        $this->app['request']->server->remove('REMOTE_ADDR');
+        request()->server->remove('REMOTE_ADDR');
 
         $geoIp = $this->makeGeoIP();
 
@@ -127,12 +127,12 @@ final class GeoIPTest extends TestCase
     #[Test]
     public function it_does_not_treat_zero_string_as_missing_ip(): void
     {
-        $this->app['request']->server->set('REMOTE_ADDR', '8.8.8.8');
+        request()->server->set('REMOTE_ADDR', '8.8.8.8');
 
         $service = $this->createMock(ServiceInterface::class);
         $service->expects($this->never())->method('locate');
         $service->method('hydrate')
-            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+            ->willReturnCallback(self::hydrate(...));
 
         $geoIp = $this->makeGeoIP(['cache' => 'none']);
         $this->setService($geoIp, $service);
@@ -180,7 +180,10 @@ final class GeoIPTest extends TestCase
         $geoIp->getLocation('8.8.8.8');
     }
 
-    /** @return iterable<string, array{string}> */
+    /**
+     * @return iterable<string, array{string}>
+     * @psalm-pure
+     */
     public static function reservedIpProvider(): iterable
     {
         yield 'IPv6 loopback' => ['::1'];
@@ -198,7 +201,7 @@ final class GeoIPTest extends TestCase
         $service = $this->createMock(ServiceInterface::class);
         $service->expects($this->never())->method('locate');
         $service->method('hydrate')
-            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+            ->willReturnCallback(self::hydrate(...));
 
         $geoIp = $this->makeGeoIPWithLogger(['cache' => 'none'], $logger);
         $this->setService($geoIp, $service);
@@ -216,7 +219,7 @@ final class GeoIPTest extends TestCase
         $service->method('locate')
             ->willThrowException(new AddressNotFoundException('The address 8.8.8.8 is not in the database.'));
         $service->method('hydrate')
-            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+            ->willReturnCallback(self::hydrate(...));
 
         $geoIp = $this->makeGeoIPWithLogger(['log_failures' => true, 'cache' => 'none'], $logger);
         $this->setService($geoIp, $service);
@@ -239,7 +242,10 @@ final class GeoIPTest extends TestCase
         $this->assertFalse($geoIp->getLocation('2a00:1450:4001::1')->default);
     }
 
-    /** @return iterable<string, array{string}> */
+    /**
+     * @return iterable<string, array{string}>
+     * @psalm-pure
+     */
     public static function publicMappedIpProvider(): iterable
     {
         yield 'dotted' => ['::ffff:8.8.8.8'];
@@ -269,7 +275,7 @@ final class GeoIPTest extends TestCase
     {
         $config = array_merge($this->getConfig(), $config);
 
-        return new GeoIP($config, $this->app['cache'], $logger);
+        return new GeoIP($config, app(CacheManager::class), $logger);
     }
 
     #[Test]
@@ -292,7 +298,7 @@ final class GeoIPTest extends TestCase
         $service = $this->createStub(ServiceInterface::class);
         $service->method('locate')->willReturn($locationWithNullIsoCode);
         $service->method('hydrate')
-            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+            ->willReturnCallback(self::hydrate(...));
 
         $geoIp = $this->makeGeoIP(['include_currency' => true, 'cache' => 'none']);
         $this->setService($geoIp, $service);
@@ -303,13 +309,22 @@ final class GeoIPTest extends TestCase
         $this->assertNull($location->iso_code);
     }
 
+    /**
+     * @param LocationArray|array{} $attributes
+     * @psalm-impure
+     */
+    private static function hydrate(array $attributes): Location
+    {
+        return new Location($attributes);
+    }
+
     private function createFailingService(): ServiceInterface
     {
         $service = $this->createStub(ServiceInterface::class);
         $service->method('locate')
             ->willThrowException(new \Exception('Service lookup failed'));
         $service->method('hydrate')
-            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+            ->willReturnCallback(self::hydrate(...));
 
         return $service;
     }

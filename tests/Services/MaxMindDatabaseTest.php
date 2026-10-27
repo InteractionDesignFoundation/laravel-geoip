@@ -120,12 +120,12 @@ final class MaxMindDatabaseTest extends TestCase
         }
     }
 
-    /** @return list{\InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface, array<string, mixed>} */
+    /** @return list{MaxMindDatabase, array{database_path: string, ...}} */
     protected function getService(): array
     {
         $config = $this->getConfig()['services']['maxmind_database'];
 
-        $service = new $config['class']($config);
+        $service = new MaxMindDatabase($config);
 
         return [$service, $config];
     }
@@ -134,7 +134,7 @@ final class MaxMindDatabaseTest extends TestCase
 /**
  * Test subclass that exposes protected methods of MaxMindDatabase for testing.
  */
-class TestableMaxMindDatabase
+final class TestableMaxMindDatabase
 {
     public function __construct(private readonly MaxMindDatabase $service) {}
 
@@ -168,6 +168,11 @@ class TestableMaxMindDatabase
         }
 
         $ch = curl_init();
+        if ($ch === false) {
+            fclose($fp);
+            throw new \RuntimeException('Failed to initialize cURL');
+        }
+
         curl_setopt($ch, \CURLOPT_URL, $url);
         curl_setopt($ch, \CURLOPT_FILE, $fp);
         curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);

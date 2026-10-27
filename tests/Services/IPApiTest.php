@@ -58,14 +58,17 @@ final class IPApiTest extends TestCase
     #[Test]
     public function it_maps_continent_from_file(): void
     {
-        file_put_contents($this->continentFile, json_encode(['US' => 'NA']));
+        file_put_contents($this->continentFile, json_encode(['US' => 'NA'], JSON_THROW_ON_ERROR));
 
         $service = new IPApi(['continent_path' => $this->continentFile]);
 
         $this->assertSame('NA', $this->locateWith($service, $this->successBody())->continent);
     }
 
-    /** @return iterable<string, array{string}> */
+    /**
+     * @return iterable<string, array{string}>
+     * @psalm-pure
+     */
     public static function unexpectedBodies(): iterable
     {
         yield 'not json' => ['not-json'];
@@ -118,6 +121,7 @@ final class IPApiTest extends TestCase
         return $service->locate('8.8.8.8');
     }
 
+    /** @psalm-pure */
     private function successBody(): string
     {
         return json_encode([
