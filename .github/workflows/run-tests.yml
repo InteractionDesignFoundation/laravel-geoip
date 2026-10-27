@@ -33,6 +33,8 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: curl
           coverage: none
+          # Default is github.token, which setup-php writes to ~/.composer/auth.json for later steps to read.
+          github-token: ''
 
       - name: Setup problem matchers
         run: |

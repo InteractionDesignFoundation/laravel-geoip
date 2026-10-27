@@ -27,8 +27,8 @@ jobs:
         with:
           php-version: 8.4
           coverage: none
-        env:
-          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Default is github.token, which setup-php writes to ~/.composer/auth.json for later steps to read.
+          github-token: ''
 
       - name: Install composer dependencies
         run: "composer install --no-interaction --no-progress --no-scripts"
