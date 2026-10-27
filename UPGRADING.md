@@ -81,7 +81,7 @@ The database is opened lazily, so `geoip:update` works on a fresh install. If yo
 
 #### ip-api free tier
 
-The free ip-api.com tier is HTTP-only, so requests and responses are unencrypted. HTTPS needs a paid key (`IPAPI_KEY`) together with `'secure' => true`. With `'secure' => true` (the default) and no key, the service still uses HTTP and logs a warning each time it is created, which is typically once per request that does a lookup. Set `'secure' => false` to acknowledge plain HTTP and silence it. Set `'secure'` back to `true` when you add a key: with `'secure' => false`, the key is sent over plain HTTP.
+The free ip-api.com tier is HTTP-only, so requests and responses are unencrypted. HTTPS needs a paid key (`IPAPI_KEY`). With a key, requests always go to `https://pro.ip-api.com/` and `'secure'` is ignored (before 5.0.1, `'secure' => false` sent the key over plain HTTP). With `'secure' => true` (the default) and no key, the service still uses HTTP and logs a warning at most once a day (before 5.0.1, each time it was created, typically once per request). Set `'secure' => false` to acknowledge plain HTTP and silence it.
 
 #### Timeouts and provider errors
 
@@ -165,7 +165,7 @@ Report every change, and list decisions that need a human instead of guessing.
    - If tests relied on the bundled database being auto-copied, give them a fixture.
    - Tell the human to consider rotating the MaxMind license key if geoip:update failed on 4.x.
 6. ipapi without a key: do not change 'secure' on your own. Ask the human to choose between a
-   paid key (HTTPS) and 'secure' => false (accept plain HTTP). With a key, 'secure' must be true.
+   paid key (HTTPS) and 'secure' => false (accept plain HTTP). With a key, 'secure' has no effect.
 7. Check code that depends on lookup details and change it only where the new behavior breaks
    it: non-global addresses (CGNAT, documentation ranges, 6to4) now get the default location;
    providers time out after 2 s connect / 5 s total; HTTP errors fall back to the default

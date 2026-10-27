@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
+use Illuminate\Cache\ArrayStore;
+use Illuminate\Cache\Repository;
+use Illuminate\Container\Container;
 use InteractionDesignFoundation\GeoIP\Services\IPApi;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -17,12 +20,16 @@ final class IPApiTest extends TestCase
 {
     private string $continentFile = '';
 
+    private ?Container $previousContainer = null;
+
     #[\Override]
     protected function setUp(): void
     {
         $file = tempnam(sys_get_temp_dir(), 'geoip_continents_');
         assert(is_string($file));
         $this->continentFile = $file;
+        $this->previousContainer = Container::getInstance();
+        Container::setInstance(new Container());
         file_put_contents($file, '{}');
 
         // Laravel turns PHP warnings into exceptions; mimic it so a warning cannot hide behind a passing test.
@@ -35,6 +42,7 @@ final class IPApiTest extends TestCase
     protected function tearDown(): void
     {
         restore_error_handler();
+        Container::setInstance($this->previousContainer);
         @unlink($this->continentFile);
     }
 
@@ -146,6 +154,58 @@ final class IPApiTest extends TestCase
         $service->setLogger($logger);
 
         $this->assertSame('https://pro.ip-api.com/', $this->baseUri($service));
+    }
+
+    #[Test]
+    public function it_uses_https_pro_endpoint_when_key_is_set_even_if_secure_is_disabled(): void
+    {
+        $service = new IPApi(['secure' => false, 'key' => 'k']);
+
+        $this->assertSame('https://pro.ip-api.com/', $this->baseUri($service));
+    }
+
+    #[Test]
+    public function it_warns_at_most_once_across_instances_when_a_cache_is_available(): void
+    {
+        $this->bindCache(new Repository(new ArrayStore()));
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('warning')->with($this->stringContains('HTTP-only'));
+
+        foreach (range(1, 3) as $_) {
+            (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+        }
+    }
+
+    #[Test]
+    public function it_warns_for_every_instance_without_a_cache(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->exactly(2))->method('warning');
+
+        foreach (range(1, 2) as $_) {
+            (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+        }
+    }
+
+    #[Test]
+    public function it_still_warns_when_the_cache_throws(): void
+    {
+        $cache = $this->createStub(Repository::class);
+        $cache->method('add')->willThrowException(new \RuntimeException('cache down'));
+        $this->bindCache($cache);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('warning');
+
+        (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+    }
+
+    private function bindCache(Repository $repository): void
+    {
+        $factory = $this->createStub(\Illuminate\Contracts\Cache\Factory::class);
+        $factory->method('store')->willReturn($repository);
+        Container::getInstance()->instance('cache', $factory);
     }
 
     private function baseUri(IPApi $service): string
