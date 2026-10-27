@@ -224,8 +224,9 @@ class HttpClient
     /** Get request URL. */
     private function getUrl(#[\SensitiveParameter] string $url): string
     {
-        // parse_url() reads the "2a00" of an IPv6 path like "2a00::1" as a scheme, so match "://" explicitly.
-        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $url) !== 1) {
+        // parse_url() reads the "2a00" of an IPv6 path like "2a00::1" as a scheme. A scheme is followed by "/",
+        // an IPv6 address never has "/" right after its first colon.
+        if (preg_match('#^[a-z][a-z0-9+.-]*:/#i', $url) !== 1) {
             $url = (string) Arr::get($this->config, 'base_uri').$url;
         }
 

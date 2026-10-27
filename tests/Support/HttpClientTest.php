@@ -75,6 +75,10 @@ final class HttpClientTest extends TestCase
         yield 'IPv6 loopback' => ['::1?k=v', 'https://api.test/v1/::1?k=v'];
         yield 'empty path' => ['', 'https://api.test/v1/'];
         yield 'absolute https' => ['https://other.test/x', 'https://other.test/x'];
+        yield 'absolute, single slash' => ['http:/other.test/x', 'http:/other.test/x'];
+        yield 'IPv6 link-local' => ['fe80::1', 'https://api.test/v1/fe80::1'];
+        yield 'IPv6 with letters and query' => ['abcd:ef01::1?x=1', 'https://api.test/v1/abcd:ef01::1?x=1'];
+        yield 'IPv6 with api key' => ['2a00:1450::1?api-key=K', 'https://api.test/v1/2a00:1450::1?api-key=K'];
         yield 'absolute, uppercase scheme' => ['HTTP://other.test/x', 'HTTP://other.test/x'];
         yield 'query-only continuation' => ['&ip=2a00::1', 'https://api.test/v1/&ip=2a00::1'];
     }
