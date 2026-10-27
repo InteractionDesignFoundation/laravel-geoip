@@ -122,7 +122,7 @@ class GeoIP
     private function find(?string $ip = null): Location
     {
         // If IP not set, user remote IP
-        $ip = $this->unwrapIpv4Mapped($ip ?: $this->getClientIP());
+        $ip = $this->unwrapIpv4Mapped($ip === null || $ip === '' ? $this->getClientIP() : $ip);
 
         // Check cache for location
         if ($this->config('cache', 'none') !== 'none' && $location = $this->getCache()->get($ip)) {
@@ -138,7 +138,7 @@ class GeoIP
                 $location = $this->getService()->locate($ip);
 
                 // Set currency if not already set by the service
-                if (! $location->currency) {
+                if ($location->currency === null || $location->currency === '') {
                     $location = $location->withAttribute('currency', $this->getCurrency($location->iso_code));
                 }
 

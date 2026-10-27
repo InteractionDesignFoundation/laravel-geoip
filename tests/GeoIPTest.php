@@ -125,6 +125,24 @@ final class GeoIPTest extends TestCase
     }
 
     #[Test]
+    public function it_does_not_treat_zero_string_as_missing_ip(): void
+    {
+        $this->app['request']->server->set('REMOTE_ADDR', '8.8.8.8');
+
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->never())->method('locate');
+        $service->method('hydrate')
+            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'none']);
+        $this->setService($geoIp, $service);
+
+        $location = $geoIp->getLocation('0');
+
+        $this->assertTrue($location->default, '"0" is not a valid IP and must not be replaced by the client IP');
+    }
+
+    #[Test]
     public function it_logs_error_when_service_lookup_fails_and_log_failures_is_enabled(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
