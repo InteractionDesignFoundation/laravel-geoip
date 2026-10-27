@@ -112,7 +112,7 @@ class GeoIP
         }
 
         // Get location data
-        $this->location = $this->find($ip);
+        $this->location = $this->find($ip, $ip !== null);
 
         // Should cache location
         if ($this->shouldCache($this->location, $ip)) {
@@ -128,7 +128,7 @@ class GeoIP
      * @return \InteractionDesignFoundation\GeoIP\Location
      * @throws \Exception
      */
-    private function find(?string $ip = null): Location
+    private function find(?string $ip, bool $explicitIp): Location
     {
         // If IP not set, user remote IP
         $ip = $this->unwrapIpv4Mapped($ip === null || $ip === '' ? $this->getClientIP() : $ip);
@@ -156,7 +156,18 @@ class GeoIP
 
                 return $location;
             } catch (AddressNotFoundException) {
-                // Expected miss: the address is absent from the MaxMind data. Fall back to default without logging.
+                // Expected miss, not a failure. Unlike transient errors it is deterministic, so it is negatively cached.
+                if ($this->config('log_failures', true) === true) {
+                    $this->logger->debug('GeoIP address not found', ['ip' => $ip, 'service' => $this->getService()::class]);
+                }
+
+                $location = $this->getService()->hydrate(['ip' => $ip] + $this->default_location);
+
+                if ($this->cacheAllows($explicitIp)) {
+                    $this->getCache()->set($ip, $location, (int) ($this->config('cache_not_found_expires') ?? $this->config('cache_expires', 30)));
+                }
+
+                return $location;
             } catch (\Exception $e) {
                 if ($this->config('log_failures', true) === true) {
                     $this->logger->error('GeoIP lookup failed', [
@@ -250,7 +261,7 @@ class GeoIP
 
     /**
      * Unwrap an IPv4-mapped IPv6 address (::ffff:a.b.c.d or ::ffff:abcd:ef01) to plain IPv4.
-     * NO_RES_RANGE rejects all of ::ffff:0:0/96, so public mapped addresses must be validated as IPv4.
+     * GLOBAL_RANGE rejects all of ::ffff:0:0/96, so public mapped addresses must be validated as IPv4.
      *
      * @psalm-pure
      */
@@ -281,12 +292,10 @@ class GeoIP
      * @return bool
      * @psalm-pure
      */
-    private function isValid(string $ip): bool
+    private function isValid(string $ip, int $flags = FILTER_FLAG_GLOBAL_RANGE): bool
     {
-        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
-
-        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | $flags) !== false
-            || filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | $flags) !== false;
+        // $flags is a parameter so Psalm does not fold the constant: its hardcoded value mismatches PHP 8.5 (RedundantFlag).
+        return filter_var($ip, FILTER_VALIDATE_IP, $flags) !== false;
     }
 
     /**
@@ -303,9 +312,15 @@ class GeoIP
             return false;
         }
 
+        return $this->cacheAllows($ip !== null);
+    }
+
+    /** Whether the configured `cache` mode stores a lookup for an explicit (or implicit client) IP. */
+    private function cacheAllows(bool $explicitIp): bool
+    {
         return match ($this->config('cache', 'none')) {
             'all' => true,
-            'some' => $ip !== null,
+            'some' => $explicitIp,
             default => false,
         };
     }

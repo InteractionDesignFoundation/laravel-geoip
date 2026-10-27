@@ -75,6 +75,8 @@ GeoIP caches lookups using Laravel's cache system to reduce API calls. Set the `
 
 You can also configure `cache_tags`, `cache_expires` (TTL in seconds), and `cache_prefix`.
 
+Addresses the service reports as not found (MaxMind `AddressNotFoundException`) are cached too, as the default location with `default` and `cached` set to `true`, for `cache_not_found_expires` seconds (defaults to `cache_expires`). Other failures, such as timeouts, are never cached. Set `cache` to `none` to disable this.
+
 ### Currency Detection
 
 When `include_currency` is enabled (default), the package resolves the visitor's currency from their country ISO code using the [league/iso3166](https://github.com/thephpleague/iso3166) package.
