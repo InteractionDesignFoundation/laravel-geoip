@@ -76,6 +76,8 @@ final class TimeoutConfigTest extends TestCase
         yield 'zero' => [0];
         yield 'non-numeric' => ['invalid'];
         yield 'negative' => [-1];
+        yield 'numeric string overflowing to INF' => ['1e309'];
+        yield 'finite value overflowing integer milliseconds' => [1e300];
     }
 
     #[Test]

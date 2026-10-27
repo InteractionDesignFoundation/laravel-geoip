@@ -85,7 +85,7 @@ The free ip-api.com tier is HTTP-only, so requests and responses are unencrypted
 
 #### Timeouts and provider errors
 
-- The five HTTP services and `maxmind_api` default to a 2 s connect and a 5 s total timeout. Previously the five HTTP services used 20 s / 90 s, and `maxmind_api` had no total limit. Override them globally (`connect_timeout`, `timeout`) or per service with the same keys; a per-service value wins over the global one. Values are seconds; fractions are allowed. A `null`, zero, negative or non-numeric value falls back to the built-in 2 s / 5 s, not to the global value.
+- The five HTTP services and `maxmind_api` default to a 2 s connect and a 5 s total timeout. Previously the five HTTP services used 20 s / 90 s, and `maxmind_api` had no total limit. Override them globally (`connect_timeout`, `timeout`) or per service with the same keys; a per-service value wins over the global one. Values are seconds; fractions are allowed. A `null`, zero, negative, non-numeric, non-finite (`INF`, `'1e309'`) or too large value falls back to the built-in 2 s / 5 s, not to the global value.
 - A non-2xx response from an HTTP service throws `\RuntimeException`. IPData, IPFinder and IPGeoLocation throw `\Exception` for bodies that are not valid JSON or decode to a scalar, but they don't validate the fields of a decoded object or array. The five HTTP services reject responses larger than 1 MiB. With libcurl older than 8.4, this only works when the server announces the size.
 - `getLocation()` catches these failures and returns the default location (logged as an error when `log_failures` is enabled). Direct `locate()` calls see the exception.
 
