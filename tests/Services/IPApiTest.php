@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
 use Illuminate\Cache\ArrayStore;
+use Illuminate\Cache\NullStore;
 use Illuminate\Cache\Repository;
 use Illuminate\Container\Container;
 use InteractionDesignFoundation\GeoIP\Services\IPApi;
@@ -189,10 +190,40 @@ final class IPApiTest extends TestCase
     }
 
     #[Test]
+    public function it_warns_for_every_instance_with_the_null_cache_store(): void
+    {
+        $this->bindCache(new Repository(new NullStore()));
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->exactly(3))->method('warning');
+
+        foreach (range(1, 3) as $_) {
+            (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+        }
+    }
+
+    #[Test]
+    public function it_still_warns_when_the_cache_cannot_store_the_marker(): void
+    {
+        $cache = $this->createStub(Repository::class);
+        $cache->method('has')->willReturn(false);
+        $cache->method('add')->willReturn(false);
+        $cache->method('put')->willReturn(false);
+        $this->bindCache($cache);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->exactly(2))->method('warning');
+
+        foreach (range(1, 2) as $_) {
+            (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+        }
+    }
+
+    #[Test]
     public function it_still_warns_when_the_cache_throws(): void
     {
         $cache = $this->createStub(Repository::class);
-        $cache->method('add')->willThrowException(new \RuntimeException('cache down'));
+        $cache->method('has')->willThrowException(new \RuntimeException('cache down'));
         $this->bindCache($cache);
 
         $logger = $this->createMock(LoggerInterface::class);

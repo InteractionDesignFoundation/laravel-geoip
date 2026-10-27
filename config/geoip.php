@@ -93,7 +93,8 @@ return [
         'ipapi' => [
             'class' => \InteractionDesignFoundation\GeoIP\Services\IPApi::class,
             // The free tier is HTTP-only. Without a key and with 'secure' => true a warning is logged
-            // (at most once a day); set a key to use the HTTPS Pro endpoint, or set 'secure' => false
+            // (at most once a day with a shared, persistent default cache store such as redis, file or
+            // database; with the array or null store, on every request); set a key to use the HTTPS Pro endpoint, or set 'secure' => false
             // to acknowledge plain HTTP. With a key, requests always use HTTPS and 'secure' is ignored.
             'secure' => true,
             'key' => env('IPAPI_KEY'),

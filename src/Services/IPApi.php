@@ -88,7 +88,7 @@ class IPApi extends AbstractService implements LoggerAwareInterface
         }
     }
 
-    /** True when the warning is due: at most once per day with a cache, always without one. */
+    /** True unless a cache store already holds today's marker; a store that can't persist it never suppresses. */
     private function claimWarningSlot(): bool
     {
         try {
@@ -101,7 +101,15 @@ class IPApi extends AbstractService implements LoggerAwareInterface
             /** @var \Illuminate\Contracts\Cache\Factory $cache */
             $cache = $container->make('cache');
 
-            return $cache->store()->add(self::PLAIN_HTTP_WARNING_CACHE_KEY, true, 86400);
+            $store = $cache->store();
+
+            if ($store->has(self::PLAIN_HTTP_WARNING_CACHE_KEY)) {
+                return false;
+            }
+
+            $store->put(self::PLAIN_HTTP_WARNING_CACHE_KEY, true, 86400);
+
+            return true;
         } catch (\Throwable) {
             return true;
         }
