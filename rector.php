@@ -35,5 +35,9 @@ return RectorConfig::configure()
         \Rector\CodeQuality\Rector\ClassMethod\LocallyCalledStaticMethodToNonStaticRector::class => [
             __DIR__.'/src/GeoIP.php',
         ],
+        // update() is duck-typed (method_exists): a direct call has an unknown return type, which lowers Psalm's type coverage.
+        \Rector\CodingStyle\Rector\FuncCall\CallUserFuncToMethodCallRector::class => [
+            __DIR__.'/src/Console/Update.php',
+        ],
     ])
     ->withParallel();

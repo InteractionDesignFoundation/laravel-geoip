@@ -6,9 +6,7 @@ namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 class Clear extends Command
 {
     /**
@@ -57,10 +55,10 @@ class Clear extends Command
      */
     protected function performFlush()
     {
-        $this->output->write("Clearing cache...");
+        $this->output->write('Clearing cache...');
 
         app('geoip')->getCache()->flush();
 
-        $this->output->writeln("<info>complete</info>");
+        $this->output->writeln('<info>complete</info>');
     }
 }

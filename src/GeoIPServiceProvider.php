@@ -7,9 +7,7 @@ namespace InteractionDesignFoundation\GeoIP;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 class GeoIPServiceProvider extends ServiceProvider
 {
     /**

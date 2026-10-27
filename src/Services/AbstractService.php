@@ -76,7 +76,7 @@ abstract class AbstractService implements ServiceInterface
      */
     protected function assertValidIp(string $ip): string
     {
-        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+        if (filter_var($ip, \FILTER_VALIDATE_IP) === false) {
             throw new \InvalidArgumentException('Invalid IP address passed to the GeoIP service.');
         }
 

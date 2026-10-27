@@ -34,7 +34,7 @@ final class IP2LocationTest extends TestCase
     #[Test]
     public function it_returns_a_location_instance(): void
     {
-        $service = $this->createServiceWithMockedClient(json_encode($this->sampleApiResponse(), JSON_THROW_ON_ERROR));
+        $service = $this->createServiceWithMockedClient(json_encode($this->sampleApiResponse(), \JSON_THROW_ON_ERROR));
 
         $location = $service->locate('8.8.8.8');
 
@@ -45,7 +45,7 @@ final class IP2LocationTest extends TestCase
         $this->assertSame('Mountain View', $location->city);
         $this->assertSame('California', $location->state_name);
         $this->assertSame('94043', $location->postal_code);
-        $this->assertEqualsWithDelta(37.38605, $location->lat, PHP_FLOAT_EPSILON);
+        $this->assertEqualsWithDelta(37.38605, $location->lat, \PHP_FLOAT_EPSILON);
         $this->assertSame(-122.08385, $location->lon);
         $this->assertSame('-07:00', $location->timezone);
         $this->assertFalse($location->default);
@@ -86,7 +86,7 @@ final class IP2LocationTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('IP2Location.io API error: Invalid API key.');
 
-        $service = $this->createServiceWithMockedClient(json_encode($errorResponse, JSON_THROW_ON_ERROR));
+        $service = $this->createServiceWithMockedClient(json_encode($errorResponse, \JSON_THROW_ON_ERROR));
 
         $service->locate('8.8.8.8');
     }
@@ -99,7 +99,7 @@ final class IP2LocationTest extends TestCase
             'country_name' => 'Germany',
         ];
 
-        $service = $this->createServiceWithMockedClient(json_encode($partialResponse, JSON_THROW_ON_ERROR));
+        $service = $this->createServiceWithMockedClient(json_encode($partialResponse, \JSON_THROW_ON_ERROR));
 
         $location = $service->locate('1.2.3.4');
 

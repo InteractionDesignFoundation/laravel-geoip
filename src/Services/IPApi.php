@@ -15,6 +15,8 @@ use Psr\Log\LoggerInterface;
  */
 class IPApi extends AbstractService implements LoggerAwareInterface
 {
+    private const string PLAIN_HTTP_WARNING_CACHE_KEY = 'geoip:ipapi:plain-http-warning';
+
     /**
      * Http client instance.
      *
@@ -28,8 +30,6 @@ class IPApi extends AbstractService implements LoggerAwareInterface
      * @var array<string, string>
      */
     protected array $continents = [];
-
-    private const string PLAIN_HTTP_WARNING_CACHE_KEY = 'geoip:ipapi:plain-http-warning';
 
     /** Pending until a logger arrives (boot runs before it), then emitted once. */
     private bool $warnAboutPlainHttp = false;
@@ -172,7 +172,7 @@ class IPApi extends AbstractService implements LoggerAwareInterface
         $path = $this->config('continent_path');
         assert(is_string($path), 'Invalid "continent_path" config value');
 
-        file_put_contents($path, json_encode($output, JSON_THROW_ON_ERROR));
+        file_put_contents($path, json_encode($output, \JSON_THROW_ON_ERROR));
 
         return sprintf('Continent file (%s) updated.', $path);
     }

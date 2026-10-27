@@ -7,9 +7,7 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 use GeoIp2\Database\Reader;
 use GeoIp2\Model\City;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 class MaxMindDatabase extends AbstractService
 {
     private const string DOWNLOAD_BASE_URL = 'https://download.maxmind.com';
@@ -86,27 +84,20 @@ class MaxMindDatabase extends AbstractService
     /** @return array{archive: string, checksum: string, user_pwd: string|null, edition: string|null} */
     private function resolveDownload(): array
     {
-        /** @var mixed $updateUrl */
-        $updateUrl = $this->config('update_url');
-        /** @var mixed $rawAccountId */
-        $rawAccountId = $this->config('account_id');
-        $accountId = is_int($rawAccountId) ? (string) $rawAccountId : $rawAccountId;
+        $updateUrl = $this->stringConfig('update_url');
+        $accountId = $this->stringConfig('account_id');
 
-        if (is_string($updateUrl) && $updateUrl !== '') {
+        if ($updateUrl !== null) {
             // Explicit URL: the caller owns authentication, so no credentials are sent to a host we did not pick.
             $query = [];
             parse_str((string) parse_url($updateUrl, \PHP_URL_QUERY), $query);
-            /** @var mixed $configuredEdition */
-            $configuredEdition = $this->config('edition_id');
-
             return [
                 'archive' => $updateUrl,
                 'checksum' => $this->checksumUrl($updateUrl),
                 'user_pwd' => null,
                 'edition' => match (true) {
                     isset($query['edition_id']) && is_string($query['edition_id']) => $query['edition_id'],
-                    is_string($configuredEdition) && $configuredEdition !== '' => $configuredEdition,
-                    default => null,
+                    default => $this->stringConfig('edition_id'),
                 },
             ];
         }
@@ -115,7 +106,7 @@ class MaxMindDatabase extends AbstractService
         $licenseKey = (string) $this->config('license_key');
         $edition = (string) $this->config('edition_id', 'GeoLite2-City');
 
-        if (! is_string($accountId) || $accountId === '') {
+        if ($accountId === null) {
             $url = sprintf(
                 '%s/app/geoip_download?edition_id=%s&license_key=%s&suffix=tar.gz',
                 self::DOWNLOAD_BASE_URL,
@@ -158,7 +149,7 @@ class MaxMindDatabase extends AbstractService
     {
         $databasePath = $this->resolveSymlink($databasePath);
         $directory = dirname($databasePath);
-        if (! is_dir($directory) && ! mkdir($directory, 0755, true) && ! is_dir($directory)) {
+        if (! is_dir($directory) && ! mkdir($directory, 0o755, true) && ! is_dir($directory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $directory));
         }
 
@@ -179,7 +170,7 @@ class MaxMindDatabase extends AbstractService
             // The temp file is 0600 and owned by the current user; keep the live database's mode and (when
             // permitted, e.g. root updating a www-data database) owner/group so web workers can still read it.
             $existing = @stat($databasePath);
-            chmod($temporary, $existing === false ? 0666 & ~umask() : $existing['mode'] & 0777);
+            chmod($temporary, $existing === false ? 0o666 & ~umask() : $existing['mode'] & 0o777);
             if ($existing !== false) {
                 @chown($temporary, $existing['uid']);
                 @chgrp($temporary, $existing['gid']);
@@ -342,7 +333,7 @@ class MaxMindDatabase extends AbstractService
                 continue;
             }
 
-            if (! $this->deleteDirectory($directory.DIRECTORY_SEPARATOR.$item)) {
+            if (! $this->deleteDirectory($directory.\DIRECTORY_SEPARATOR.$item)) {
                 return false;
             }
         }
@@ -449,13 +440,29 @@ class MaxMindDatabase extends AbstractService
         return ['error' => curl_error($ch), 'status' => (int) curl_getinfo($ch, \CURLINFO_RESPONSE_CODE)];
     }
 
+    /** @return non-empty-string|null The config value when it is a non-empty string or an int, null otherwise. */
+    private function stringConfig(string $key): ?string
+    {
+        return $this->toNonEmptyString($this->config($key));
+    }
+
+    /**
+     * @return non-empty-string|null
+     * @psalm-pure
+     */
+    private function toNonEmptyString(mixed $value): ?string
+    {
+        if (is_int($value)) {
+            return (string) $value;
+        }
+
+        return is_string($value) && $value !== '' ? $value : null;
+    }
+
     /** Masks the configured key, the Basic-auth pair and any `license_key` embedded in the request URL. */
     private function redact(string $message, #[\SensitiveParameter] string $url, #[\SensitiveParameter] ?string $userPwd): string
     {
-        /** @var mixed $licenseKey */
-        $licenseKey = $this->config('license_key');
-
-        $secrets = [is_string($licenseKey) ? $licenseKey : '', (string) $userPwd, ...array_slice(explode(':', (string) $userPwd, 2), 1)];
+        $secrets = [$this->stringConfig('license_key') ?? '', (string) $userPwd, ...array_slice(explode(':', (string) $userPwd, 2), 1)];
         foreach (explode('&', (string) parse_url($url, \PHP_URL_QUERY)) as $pair) {
             [$name, $raw] = [...explode('=', $pair, 2), ''];
             if (urldecode($name) === 'license_key') {

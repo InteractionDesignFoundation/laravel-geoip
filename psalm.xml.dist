@@ -18,6 +18,8 @@
     </projectFiles>
 
     <issueHandlers>
+        <DeprecatedMethod errorLevel="suppress" />
+
         <!-- ServiceInterface is implemented by third parties: purity annotations on it would constrain them. -->
         <MissingInterfaceImmutableAnnotation errorLevel="suppress" />
         <MissingAbstractPureAnnotation errorLevel="suppress" />

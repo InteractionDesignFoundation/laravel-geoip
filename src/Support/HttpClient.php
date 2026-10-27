@@ -6,9 +6,7 @@ namespace InteractionDesignFoundation\GeoIP\Support;
 
 use Illuminate\Support\Arr;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 class HttpClient
 {
     /** Seconds. A slow provider must not hold a web request for longer than this. */
@@ -99,12 +97,12 @@ class HttpClient
                 \CURLOPT_POST => true,
                 \CURLOPT_POSTFIELDS => $query,
             ]),
-            'DELETE' => curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'DELETE'),
-            default => curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET'),
+            'DELETE' => curl_setopt($curl, \CURLOPT_CUSTOMREQUEST, 'DELETE'),
+            default => curl_setopt($curl, \CURLOPT_CUSTOMREQUEST, 'GET'),
         };
 
         // Make request
-        curl_setopt($curl, CURLOPT_HEADER, true);
+        curl_setopt($curl, \CURLOPT_HEADER, true);
         $response = curl_exec($curl);
         if (! is_string($response)) {
             $curlError = curl_error($curl);
@@ -112,7 +110,7 @@ class HttpClient
         }
 
         // Set HTTP response code
-        $this->http_code = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $this->http_code = (int) curl_getinfo($curl, \CURLINFO_HTTP_CODE);
 
         // Set errors if there are any
         if (curl_errno($curl) !== 0) {
@@ -120,7 +118,7 @@ class HttpClient
         }
 
         // Parse body
-        $header_size = (int) curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+        $header_size = (int) curl_getinfo($curl, \CURLINFO_HEADER_SIZE);
         $header = substr($response, 0, $header_size);
         $body = substr($response, $header_size);
 
@@ -140,16 +138,16 @@ class HttpClient
         array $headers,
     ): array {
         return [
-            CURLOPT_URL => $url,
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_CONNECTTIMEOUT_MS => $this->timeoutMs('connect_timeout', self::DEFAULT_CONNECT_TIMEOUT),
-            CURLOPT_TIMEOUT_MS => $this->timeoutMs('timeout', self::DEFAULT_TIMEOUT),
-            CURLOPT_MAXFILESIZE => self::MAX_RESPONSE_BYTES,
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_HEADER => 1,
-            CURLINFO_HEADER_OUT => 1,
+            \CURLOPT_URL => $url,
+            \CURLOPT_HTTPHEADER => $headers,
+            \CURLOPT_CONNECTTIMEOUT_MS => $this->timeoutMs('connect_timeout', self::DEFAULT_CONNECT_TIMEOUT),
+            \CURLOPT_TIMEOUT_MS => $this->timeoutMs('timeout', self::DEFAULT_TIMEOUT),
+            \CURLOPT_MAXFILESIZE => self::MAX_RESPONSE_BYTES,
+            \CURLOPT_RETURNTRANSFER => 1,
+            \CURLOPT_SSL_VERIFYPEER => true,
+            \CURLOPT_SSL_VERIFYHOST => 2,
+            \CURLOPT_HEADER => 1,
+            \CURLINFO_HEADER_OUT => 1,
         ];
     }
 
@@ -203,7 +201,7 @@ class HttpClient
     {
         $result = [];
 
-        $rows = preg_split("/\\r\\n|\\r|\\n/", $headers);
+        $rows = preg_split('/\\r\\n|\\r|\\n/', $headers);
         if ($rows === false) {
             return $result;
         }

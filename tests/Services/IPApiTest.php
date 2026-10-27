@@ -68,7 +68,7 @@ final class IPApiTest extends TestCase
     #[Test]
     public function it_maps_continent_from_file(): void
     {
-        file_put_contents($this->continentFile, json_encode(['US' => 'NA'], JSON_THROW_ON_ERROR));
+        file_put_contents($this->continentFile, json_encode(['US' => 'NA'], \JSON_THROW_ON_ERROR));
 
         $service = new IPApi(['continent_path' => $this->continentFile]);
 
@@ -275,6 +275,6 @@ final class IPApiTest extends TestCase
             'lat' => 37.4,
             'lon' => -122.1,
             'timezone' => 'America/Los_Angeles',
-        ], JSON_THROW_ON_ERROR);
+        ], \JSON_THROW_ON_ERROR);
     }
 }

@@ -16,9 +16,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Log\LoggerInterface;
 
-/**
- * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
- */
+/** @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location */
 #[CoversClass(GeoIP::class)]
 final class GeoIPTest extends TestCase
 {

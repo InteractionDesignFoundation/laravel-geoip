@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Exception;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 class IPData extends AbstractService
 {
     /**
@@ -36,7 +33,7 @@ class IPData extends AbstractService
 
     /**
      * {@inheritDoc}
-     * @throws Exception
+     * @throws \Exception
      */
     #[\Override]
     public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
@@ -49,18 +46,18 @@ class IPData extends AbstractService
         // Verify server response
         $errors = $this->client->getErrors();
         if ($errors !== null) {
-            throw new Exception('Request failed ('.$errors.')');
+            throw new \Exception('Request failed ('.$errors.')');
         }
 
         $this->ensureSuccessfulResponse($this->client, 'ipdata.co');
 
         if ($data[0] === '') {
-            throw new Exception('Empty ipdata.co response');
+            throw new \Exception('Empty ipdata.co response');
         }
 
         $json = json_decode($data[0], true);
         if (! is_array($json)) {
-            throw new Exception('Unexpected ipdata.co response');
+            throw new \Exception('Unexpected ipdata.co response');
         }
 
         /** @var array{country_code: string|null, country_name: string|null, city: string|null, region_code: string|null, region: string|null, postal: string|null, latitude: float|null, longitude: float|null, time_zone?: array{name?: string|null}|null, continent_code?: string|null, currency?: array{code?: string|null}|null} $json */

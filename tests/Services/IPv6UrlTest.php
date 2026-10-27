@@ -15,9 +15,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Builds the real request URL of each HTTP service and stops before cURL runs.
- */
+/** Builds the real request URL of each HTTP service and stops before cURL runs. */
 #[CoversClass(IPApi::class)]
 #[CoversClass(IPData::class)]
 #[CoversClass(IPFinder::class)]
