@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP;
 
+use GeoIp2\Exception\AddressNotFoundException;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Support\Arr;
 use League\ISO3166\Exception\OutOfBoundsException;
@@ -97,6 +98,10 @@ class GeoIP
      */
     public function getLocation($ip = null)
     {
+        if ($ip !== null) {
+            $ip = $this->unwrapIpv4Mapped($ip);
+        }
+
         // Get location data
         $this->location = $this->find($ip);
 
@@ -117,7 +122,7 @@ class GeoIP
     private function find(?string $ip = null): Location
     {
         // If IP not set, user remote IP
-        $ip = $ip ?: $this->getClientIP();
+        $ip = $this->unwrapIpv4Mapped($ip ?: $this->getClientIP());
 
         // Check cache for location
         if ($this->config('cache', 'none') !== 'none' && $location = $this->getCache()->get($ip)) {
@@ -141,6 +146,8 @@ class GeoIP
                 $location = $location->withAttribute('default', false);
 
                 return $location;
+            } catch (AddressNotFoundException) {
+                // Expected miss: the address is absent from the MaxMind data. Fall back to default without logging.
             } catch (\Exception $e) {
                 if ($this->config('log_failures', true) === true) {
                     $this->logger->error('GeoIP lookup failed', [
@@ -233,6 +240,29 @@ class GeoIP
     }
 
     /**
+     * Unwrap an IPv4-mapped IPv6 address (::ffff:a.b.c.d or ::ffff:abcd:ef01) to plain IPv4.
+     * NO_RES_RANGE rejects all of ::ffff:0:0/96, so public mapped addresses must be validated as IPv4.
+     */
+    private function unwrapIpv4Mapped(string $ip): string
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
+            return $ip;
+        }
+
+        $packed = inet_pton($ip);
+
+        if ($packed === false) {
+            return $ip;
+        }
+
+        if (! str_starts_with($packed, str_repeat("\0", 10)."\xff\xff")) {
+            return $ip;
+        }
+
+        return (string) inet_ntop(substr($packed, 12));
+    }
+
+    /**
      * Checks if the ip is valid.
      *
      * @param string $ip
@@ -241,8 +271,10 @@ class GeoIP
      */
     private function isValid(string $ip): bool
     {
-        return !(! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
-            && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE));
+        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+
+        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | $flags) !== false
+            || filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | $flags) !== false;
     }
 
     /**

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests;
 
+use GeoIp2\Exception\AddressNotFoundException;
 use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\GeoIP;
 use InteractionDesignFoundation\GeoIP\Location;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Log\LoggerInterface;
 
@@ -158,6 +160,91 @@ final class GeoIPTest extends TestCase
         $this->setService($geoIp, $service);
 
         $geoIp->getLocation('8.8.8.8');
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function reservedIpProvider(): iterable
+    {
+        yield 'IPv6 loopback' => ['::1'];
+        yield 'IPv6 link-local' => ['fe80::1'];
+        yield 'IPv4-mapped IPv6 loopback' => ['::ffff:127.0.0.1'];
+    }
+
+    #[Test]
+    #[DataProvider('reservedIpProvider')]
+    public function it_returns_default_location_without_lookup_for_reserved_ips(string $ip): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('error');
+
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->never())->method('locate');
+        $service->method('hydrate')
+            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+
+        $geoIp = $this->makeGeoIPWithLogger(['cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $this->assertTrue($geoIp->getLocation($ip)->default);
+    }
+
+    #[Test]
+    public function it_returns_default_location_without_logging_when_address_is_not_in_database(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('error');
+
+        $service = $this->createStub(ServiceInterface::class);
+        $service->method('locate')
+            ->willThrowException(new AddressNotFoundException('The address 8.8.8.8 is not in the database.'));
+        $service->method('hydrate')
+            ->willReturnCallback(static fn(array $attributes): Location => new Location($attributes));
+
+        $geoIp = $this->makeGeoIPWithLogger(['log_failures' => true, 'cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $this->assertTrue($geoIp->getLocation('8.8.8.8')->default);
+    }
+
+    #[Test]
+    public function it_looks_up_public_ipv6_addresses(): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->once())
+            ->method('locate')
+            ->with('2a00:1450:4001::1')
+            ->willReturn(new Location(['ip' => '2a00:1450:4001::1', 'iso_code' => 'IE']));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'none']);
+        $this->setService($geoIp, $service);
+
+        $this->assertFalse($geoIp->getLocation('2a00:1450:4001::1')->default);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function publicMappedIpProvider(): iterable
+    {
+        yield 'dotted' => ['::ffff:8.8.8.8'];
+        yield 'hex' => ['::ffff:0808:0808'];
+    }
+
+    #[Test]
+    #[DataProvider('publicMappedIpProvider')]
+    public function it_looks_up_public_ipv4_mapped_addresses_as_ipv4(string $ip): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->once())
+            ->method('locate')
+            ->with('8.8.8.8')
+            ->willReturn(new Location(['ip' => '8.8.8.8', 'iso_code' => 'US']));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'all']);
+        $this->setService($geoIp, $service);
+
+        $this->assertFalse($geoIp->getLocation($ip)->default);
+        $this->assertTrue($geoIp->getLocation('8.8.8.8')->cached);
+
+        $geoIp->getCache()->flush();
     }
 
     private function makeGeoIPWithLogger(array $config, LoggerInterface $logger): GeoIP
