@@ -43,10 +43,11 @@ use Illuminate\Support\Str;
  *     currency?: string|null,
  *     default?: bool,
  *     cached?: bool,
- *     localizations?: array<string, string|null>,
+ *     localizations?: array<string, array<string, string|null>>,
  * }
  * How to use it: @@psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
  *
+ * @psalm-api
  * @template-implements \ArrayAccess<string, mixed>
  */
 class Location implements ArrayAccess
@@ -55,7 +56,7 @@ class Location implements ArrayAccess
      * Create a new location instance.
      *
      * @param array<string, mixed> $attributes
-     * @psalm-param LocationArray $attributes
+     * @psalm-param LocationArray|array{} $attributes
      */
     public function __construct(protected array $attributes = [])
     {
@@ -95,6 +96,7 @@ class Location implements ArrayAccess
      */
     public function getAttribute(string $key)
     {
+        /** @var mixed $value */
         $value = Arr::get($this->attributes, $key);
 
         // First we will check for the presence of a mutator for the set operation
@@ -110,7 +112,7 @@ class Location implements ArrayAccess
     /** Return the display name of the location. */
     public function getDisplayNameAttribute(): ?string
     {
-        return preg_replace('/^,\s/', '', sprintf('%s, %s', $this->city, $this->state));
+        return preg_replace('/^,\s/', '', sprintf('%s, %s', (string) $this->city, (string) $this->state));
     }
 
     /**
@@ -125,7 +127,7 @@ class Location implements ArrayAccess
 
     /**
      * Get the instance as an array.
-     * @psalm-return LocationArray
+     * @psalm-return LocationArray|array{}
      */
     public function toArray(): array
     {

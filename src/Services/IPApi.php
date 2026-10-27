@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 /**
@@ -23,7 +22,7 @@ class IPApi extends AbstractService
     /**
      * An array of continents.
      *
-     * @var array
+     * @var array<string, string>
      */
     protected array $continents = [];
 
@@ -43,16 +42,20 @@ class IPApi extends AbstractService
         ];
 
         // Using the Pro service
-        if ($this->config('key')) {
+        /** @var string|null $key */
+        $key = $this->config('key');
+        if ($key !== null && $key !== '') {
             $base['base_uri'] = ($this->config('secure') ? 'https' : 'http').'://pro.ip-api.com/';
-            $base['query']['key'] = $this->config('key');
+            $base['query']['key'] = $key;
         }
 
         $this->client = new HttpClient($base);
 
         // Set continents
+        /** @var string|null $continentPath */
         $continentPath = $this->config('continent_path');
         if (is_string($continentPath) && file_exists($continentPath)) {
+            /** @var array<string, string>|null $continents */
             $continents = json_decode((string) file_get_contents($continentPath), true);
             if (is_array($continents)) {
                 $this->continents = $continents;
@@ -71,15 +74,18 @@ class IPApi extends AbstractService
         $data = $this->client->get('json/'.$ip);
 
         // Verify server response
-        if ($this->client->getErrors() !== null) {
-            throw new \RuntimeException('Unexpected ip-api.com response: '.$this->client->getErrors());
+        $errors = $this->client->getErrors();
+        if ($errors !== null) {
+            throw new \RuntimeException('Unexpected ip-api.com response: '.$errors);
         }
 
         // Parse body content
-        $json = json_decode((string) $data[0]);
+        $json = json_decode($data[0]);
         if (! is_object($json) || ! property_exists($json, 'status')) {
-            throw new \RuntimeException('Unexpected ip-api.com response: '.($json->message ?? ''));
+            throw new \RuntimeException('Unexpected ip-api.com response: '.(is_object($json) ? (string) ($json->message ?? '') : ''));
         }
+
+        /** @var object{status: string, message?: string, countryCode: string, country: string, city: string, region: string, regionName: string, zip: string, lat: float, lon: float, timezone: string} $json */
 
         // Verify response status
         if ($json->status !== 'success') {
@@ -108,8 +114,9 @@ class IPApi extends AbstractService
 
         // Get path
         $path = $this->config('continent_path');
+        assert(is_string($path), 'Invalid "continent_path" config value');
 
-        file_put_contents($path, json_encode($output));
+        file_put_contents($path, json_encode($output, JSON_THROW_ON_ERROR));
 
         return sprintf('Continent file (%s) updated.', $path);
     }
@@ -118,6 +125,7 @@ class IPApi extends AbstractService
      * ISO 3166 country code to continent code mapping.
      *
      * @return array<string, string>
+     * @psalm-pure
      */
     private function countryContinentMap(): array
     {
@@ -176,9 +184,13 @@ class IPApi extends AbstractService
         ];
     }
 
-    /** Get a continent based on country code. */
+    /**
+     * Get a continent based on country code.
+     *
+     * @psalm-mutation-free
+     */
     private function getContinent(string $code): string
     {
-        return Arr::get($this->continents, $code, 'Unknown');
+        return $this->continents[$code] ?? 'Unknown';
     }
 }

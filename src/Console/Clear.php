@@ -6,6 +6,9 @@ namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
 
+/**
+ * @psalm-api
+ */
 class Clear extends Command
 {
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP\Services;
 
 use Exception;
-use Illuminate\Support\Arr;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 /**
@@ -45,14 +44,17 @@ class IPData extends AbstractService
         $data = $this->client->get($ip);
 
         // Verify server response
-        if ($this->client->getErrors() !== null || empty($data[0])) {
-            throw new Exception('Request failed ('.$this->client->getErrors().')');
+        $errors = $this->client->getErrors();
+        if ($errors !== null || $data[0] === '') {
+            throw new Exception('Request failed ('.($errors ?? '').')');
         }
 
-        $json = json_decode((string) $data[0], true);
+        $json = json_decode($data[0], true);
         if (! is_array($json)) {
             throw new Exception('Unexpected ipdata.co response');
         }
+
+        /** @var array{country_code: string|null, country_name: string|null, city: string|null, region_code: string|null, region: string|null, postal: string|null, latitude: float|null, longitude: float|null, time_zone?: array{name?: string|null}|null, continent_code?: string|null, currency?: array{code?: string|null}|null} $json */
 
         return $this->hydrate([
             'ip' => $ip,
@@ -64,9 +66,9 @@ class IPData extends AbstractService
             'postal_code' => $json['postal'],
             'lat' => $json['latitude'],
             'lon' => $json['longitude'],
-            'timezone' => Arr::get($json, 'time_zone.name'),
-            'continent' => Arr::get($json, 'continent_code'),
-            'currency' => Arr::get($json, 'currency.code'),
+            'timezone' => $json['time_zone']['name'] ?? null,
+            'continent' => $json['continent_code'] ?? null,
+            'currency' => $json['currency']['code'] ?? null,
         ]);
     }
 }

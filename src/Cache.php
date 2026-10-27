@@ -34,6 +34,7 @@ final class Cache
     /**
      * @internal A hack to support prefixes. Added as a setter to avoid BC breaks.
      * @deprecated Will be removed in v2.0
+     * @psalm-external-mutation-free
      */
     public function setPrefix(?string $prefix = null): void
     {

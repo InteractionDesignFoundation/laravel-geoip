@@ -7,6 +7,7 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 /**
+ * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
  * @psalm-api
  */
 class IPFinder extends AbstractService
@@ -46,14 +47,17 @@ class IPFinder extends AbstractService
         $data = $this->client->get($ip);
 
         // Verify server response
-        if ($this->client->getErrors() !== null || empty($data[0])) {
-            throw new \Exception('Request failed ('.$this->client->getErrors().')');
+        $errors = $this->client->getErrors();
+        if ($errors !== null || $data[0] === '') {
+            throw new \Exception('Request failed ('.($errors ?? '').')');
         }
 
-        $json = json_decode((string) $data[0], true);
+        $json = json_decode($data[0], true);
         if (! is_array($json)) {
             throw new \Exception('Unexpected ipfinder.io response');
         }
+
+        /** @psalm-var LocationArray $json */
 
         return $this->hydrate($json);
     }

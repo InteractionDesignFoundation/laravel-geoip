@@ -137,6 +137,7 @@ class HttpClient
      * Parse string headers into array
      *
      * @return array<array-key, string>
+     * @psalm-pure
      */
     private function parseHeaders(string $headers): array
     {
