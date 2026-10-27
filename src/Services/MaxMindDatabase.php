@@ -156,6 +156,7 @@ class MaxMindDatabase extends AbstractService
     /** Extract the .mmdb next to the live database, validate it, then swap it in with an atomic rename. */
     private function installDatabase(string $archive, string $databasePath, ?string $expectedEdition): void
     {
+        $databasePath = $this->resolveSymlink($databasePath);
         $directory = dirname($databasePath);
         if (! is_dir($directory) && ! mkdir($directory, 0755, true) && ! is_dir($directory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $directory));
@@ -192,6 +193,36 @@ class MaxMindDatabase extends AbstractService
                 unlink($temporary);
             }
         }
+    }
+
+    /** Follows symlinks so that the link stays in place and its target is the file that gets replaced. */
+    private function resolveSymlink(string $path): string
+    {
+        if (! is_link($path)) {
+            return $path;
+        }
+
+        $originalPath = $path;
+
+        // Bounded like the kernel's own limit: a link loop would otherwise never terminate.
+        for ($depth = 0; $depth < 40 && is_link($path); $depth++) {
+            $target = readlink($path);
+            if ($target === false) {
+                throw new \RuntimeException(sprintf('Cannot read the symlink "%s".', $path));
+            }
+
+            $path = str_starts_with($target, '/') ? $target : dirname($path).'/'.$target;
+        }
+
+        $directory = realpath(dirname($path));
+        $resolved = $directory === false ? $path : $directory.'/'.basename($path);
+
+        // Renaming over a link that is still a link would replace that link instead of the database.
+        if (is_link($resolved)) {
+            throw new \RuntimeException(sprintf('The symlink "%s" is cyclic or too deeply nested; the existing database was kept.', $originalPath));
+        }
+
+        return $resolved;
     }
 
     /** Streams the first .mmdb entry out of the archive; entry names are never used as filesystem paths. */
@@ -235,7 +266,8 @@ class MaxMindDatabase extends AbstractService
         }
     }
 
-    private function reader(): Reader
+    /** Opens the database on first use; subclasses overriding `locate()` must use this instead of `$this->reader`. */
+    protected function reader(): Reader
     {
         if (! $this->reader instanceof Reader) {
             $path = $this->config('database_path');

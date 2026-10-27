@@ -363,6 +363,81 @@ final class MaxMindDatabaseTest extends TestCase
     }
 
     #[Test]
+    public function update_through_symlink_keeps_the_link_and_replaces_its_target(): void
+    {
+        $config = $this->isolatedConfig();
+        mkdir($this->workDir.'/real');
+        file_put_contents($this->workDir.'/real/geoip.mmdb', 'original-database-bytes');
+        mkdir(dirname($config['database_path']));
+        symlink('../real/geoip.mmdb', $config['database_path']);
+        $archive = $this->makeArchive($this->fixture());
+
+        (new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive)))->update();
+
+        $this->assertTrue(is_link($config['database_path']));
+        $this->assertSame('../real/geoip.mmdb', readlink($config['database_path']));
+        $this->assertSame($this->fixture(), file_get_contents($this->workDir.'/real/geoip.mmdb'));
+        $this->assertSame(['geoip.mmdb'], array_values(array_diff((array) scandir($this->workDir.'/real'), ['.', '..'])));
+        $this->assertSame(['geoip.mmdb'], $this->databaseDirFiles($config));
+    }
+
+    #[Test]
+    public function update_through_dangling_symlink_creates_the_target(): void
+    {
+        $config = $this->isolatedConfig();
+        mkdir($this->workDir.'/real');
+        mkdir(dirname($config['database_path']));
+        symlink($this->workDir.'/real/geoip.mmdb', $config['database_path']);
+        $archive = $this->makeArchive($this->fixture());
+
+        (new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive)))->update();
+
+        $this->assertTrue(is_link($config['database_path']));
+        $this->assertSame($this->fixture(), file_get_contents($this->workDir.'/real/geoip.mmdb'));
+    }
+
+    #[Test]
+    public function update_through_cyclic_symlinks_fails_and_touches_nothing(): void
+    {
+        $config = $this->isolatedConfig();
+        $directory = dirname($config['database_path']);
+        mkdir($directory);
+        symlink($directory.'/b.mmdb', $config['database_path']);
+        symlink($directory.'/c.mmdb', $directory.'/b.mmdb');
+        symlink($config['database_path'], $directory.'/c.mmdb');
+
+        $this->assertUpdateLeavesSymlinksUntouched($config);
+    }
+
+    #[Test]
+    public function update_through_overlong_symlink_chain_fails_and_touches_nothing(): void
+    {
+        $config = $this->isolatedConfig();
+        $directory = dirname($config['database_path']);
+        mkdir($directory);
+        file_put_contents($directory.'/link50', 'original-database-bytes');
+        for ($i = 49; $i >= 1; $i--) {
+            symlink($directory.'/link'.($i + 1), $directory.'/link'.$i);
+        }
+
+        symlink($directory.'/link1', $config['database_path']);
+
+        $this->assertUpdateLeavesSymlinksUntouched($config);
+        $this->assertSame('original-database-bytes', file_get_contents($directory.'/link50'));
+    }
+
+    #[Test]
+    public function subclass_overriding_locate_can_use_the_reader(): void
+    {
+        $config = $this->isolatedConfig();
+        mkdir(dirname($config['database_path']));
+        copy(__DIR__.'/../../resources/geoip.mmdb', $config['database_path']);
+        $service = new ReaderUsingMaxMindDatabase($config);
+
+        $this->assertSame('GB', $service->locate('81.2.69.142')->iso_code);
+    }
+
+    #[Test]
     public function missing_database_is_not_replaced_by_the_bundled_fixture(): void
     {
         $config = $this->isolatedConfig();
@@ -411,6 +486,28 @@ final class MaxMindDatabaseTest extends TestCase
             chmod($directory, 0755);
             rmdir($directory);
         }
+    }
+
+    /** @param array{class: class-string, database_path: string, account_id: int|string, license_key: string, edition_id: string, locales: list<string>, update_url?: string} $config */
+    private function assertUpdateLeavesSymlinksUntouched(array $config): void
+    {
+        $directory = dirname($config['database_path']);
+        $snapshot = static function () use ($directory): array {
+            $links = [];
+            foreach (array_diff((array) scandir($directory), ['.', '..']) as $name) {
+                $path = $directory.'/'.(string) $name;
+                $links[$path] = is_link($path) ? (string) readlink($path) : 'file';
+            }
+
+            return $links;
+        };
+        $before = $snapshot();
+        $archive = $this->makeArchive($this->fixture());
+
+        $exception = $this->thrownBy((new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive)))->update(...));
+
+        $this->assertStringContainsString('symlink', $exception->getMessage());
+        $this->assertSame($before, $snapshot());
     }
 
     /** @return array{class: class-string, database_path: string, account_id: int|string, license_key: string, edition_id: string, locales: list<string>, update_url?: string} */
@@ -550,6 +647,21 @@ final class FakeDownloadMaxMindDatabase extends MaxMindDatabase
         }
 
         copy($this->archive, $filename);
+    }
+}
+
+/**
+ * A 4.x-style subclass: overrides locate() and talks to the reader directly.
+ */
+final class ReaderUsingMaxMindDatabase extends MaxMindDatabase
+{
+    #[\Override]
+    public function locate($ip): \InteractionDesignFoundation\GeoIP\Location
+    {
+        return $this->hydrate([
+            'ip' => $ip,
+            'iso_code' => $this->reader()->city($ip)->country->isoCode,
+        ]);
     }
 }
 
