@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP\Services;
 
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
 /**
  * @psalm-api
  * @internal
  */
-class IPApi extends AbstractService
+class IPApi extends AbstractService implements LoggerAwareInterface
 {
     /**
      * Http client instance.
@@ -73,8 +74,6 @@ class IPApi extends AbstractService
     #[\Override]
     public function setLogger(LoggerInterface $logger): void
     {
-        $this->logger = $logger;
-
         if ($this->warnAboutPlainHttp) {
             $this->warnAboutPlainHttp = false;
             $logger->warning('GeoIP: the free ip-api.com tier is HTTP-only, so lookups are unencrypted and can be spoofed on the network path. Set "key" to use the HTTPS Pro endpoint, or set \'secure\' => false to acknowledge this and silence the warning.');

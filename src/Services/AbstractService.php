@@ -8,13 +8,9 @@ use InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface;
 use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
 use InteractionDesignFoundation\GeoIP\Location;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
 
-abstract class AbstractService implements ServiceInterface, LoggerAwareInterface
+abstract class AbstractService implements ServiceInterface
 {
-    use LoggerAwareTrait;
-
     /**
      * Create a new service instance.
      *
@@ -95,8 +91,8 @@ abstract class AbstractService implements ServiceInterface, LoggerAwareInterface
     protected function timeoutConfig(): array
     {
         return [
-            'timeout' => $this->config('timeout', HttpClient::DEFAULT_TIMEOUT),
-            'connect_timeout' => $this->config('connect_timeout', HttpClient::DEFAULT_CONNECT_TIMEOUT),
+            'timeout' => $this->config('timeout'),
+            'connect_timeout' => $this->config('connect_timeout'),
         ];
     }
 
