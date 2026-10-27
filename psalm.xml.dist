@@ -17,6 +17,18 @@
         </ignoreFiles>
     </projectFiles>
 
+    <issueHandlers>
+        <!-- ServiceInterface is implemented by third parties: purity annotations on it would constrain them. -->
+        <MissingInterfaceImmutableAnnotation errorLevel="suppress" />
+        <MissingAbstractPureAnnotation errorLevel="suppress" />
+        <!--
+            Suggestions are unreliable (annotating AbstractService::hydrate yields ImpureMethodCall), would constrain
+            subclasses of non-final public classes (ImmutableDependency), and the issue is not deterministic when
+            Psalm analyses with several threads.
+        -->
+        <MissingPureAnnotation errorLevel="suppress" />
+    </issueHandlers>
+
     <plugins>
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
         <pluginClass class="Psalm\LaravelPlugin\Plugin"/>
