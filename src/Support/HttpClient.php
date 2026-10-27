@@ -132,7 +132,6 @@ class HttpClient
             CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_HEADER => 1,
             CURLINFO_HEADER_OUT => 1,
-            CURLOPT_VERBOSE => 1,
         ];
     }
 

@@ -60,6 +60,15 @@ final class HttpClientTest extends TestCase
         $this->assertSame(1024 * 1024, $options[CURLOPT_MAXFILESIZE]);
     }
 
+    /** Verbose cURL writes the request line, including API keys in query strings, to STDERR. */
+    #[Test]
+    public function it_does_not_enable_verbose_output(): void
+    {
+        $options = $this->curlOptions([]);
+
+        $this->assertArrayNotHasKey(CURLOPT_VERBOSE, $options);
+    }
+
     /**
      * @param array<string, mixed> $config
      * @return array<int, mixed>
