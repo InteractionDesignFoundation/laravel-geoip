@@ -137,9 +137,9 @@ final class GeoIPTest extends TestCase
         $geoIp = $this->makeGeoIP(['cache' => 'none']);
         $this->setService($geoIp, $service);
 
-        $location = $geoIp->getLocation('0');
+        $this->expectException(\InvalidArgumentException::class);
 
-        $this->assertTrue($location->default, '"0" is not a valid IP and must not be replaced by the client IP');
+        $geoIp->getLocation('0');
     }
 
     #[Test]
@@ -225,6 +225,65 @@ final class GeoIPTest extends TestCase
         $this->setService($geoIp, $service);
 
         $this->assertTrue($geoIp->getLocation('8.8.8.8')->default);
+    }
+
+    #[Test]
+    #[DataProvider('invalidExplicitIpProvider')]
+    public function it_throws_for_explicit_ip_that_is_not_an_ip_address(string $ip): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('error');
+
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->never())->method('locate');
+
+        $geoIp = $this->makeGeoIPWithLogger(['cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $geoIp->getLocation($ip);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     * @psalm-pure
+     */
+    public static function invalidExplicitIpProvider(): iterable
+    {
+        yield 'absolute url' => ['http://evil.example/'];
+        yield 'path injection' => ['1.1.1.1/../x?'];
+        yield 'hostname' => ['example.com'];
+    }
+
+    #[Test]
+    public function it_returns_default_location_for_private_explicit_ip(): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->never())->method('locate');
+        $service->method('hydrate')
+            ->willReturnCallback($this->hydrate(...));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'none']);
+        $this->setService($geoIp, $service);
+
+        $this->assertTrue($geoIp->getLocation('192.168.1.1')->default);
+    }
+
+    #[Test]
+    public function it_returns_default_location_without_throwing_for_invalid_client_ip(): void
+    {
+        request()->server->set('REMOTE_ADDR', 'garbage');
+
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->never())->method('locate');
+        $service->method('hydrate')
+            ->willReturnCallback($this->hydrate(...));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'none']);
+        $this->setService($geoIp, $service);
+
+        $this->assertTrue($geoIp->getLocation(null)->default);
     }
 
     #[Test]
