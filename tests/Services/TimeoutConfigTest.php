@@ -10,6 +10,7 @@ use InteractionDesignFoundation\GeoIP\Services\MaxMindWebService;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 use InteractionDesignFoundation\GeoIP\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 #[CoversClass(IPData::class)]
@@ -66,6 +67,27 @@ final class TimeoutConfigTest extends TestCase
         ])->getService();
 
         $this->assertSame([1.5, 7.0], $this->maxMindTimeouts($service));
+    }
+
+    /** @return iterable<string, array{mixed}> */
+    public static function invalidTimeouts(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'zero' => [0];
+        yield 'non-numeric' => ['invalid'];
+        yield 'negative' => [-1];
+    }
+
+    #[Test]
+    #[DataProvider('invalidTimeouts')]
+    public function maxmind_web_service_falls_back_to_defaults_for_invalid_timeouts(mixed $invalid): void
+    {
+        $service = $this->makeGeoIP([
+            'service' => 'maxmind_api',
+            'services' => ['maxmind_api' => ['class' => MaxMindWebService::class, 'user_id' => 1, 'license_key' => 'k', 'timeout' => $invalid, 'connect_timeout' => $invalid]],
+        ])->getService();
+
+        $this->assertSame([2.0, 5.0], $this->maxMindTimeouts($service));
     }
 
     /** @return array{timeout: mixed, connect_timeout: mixed} */

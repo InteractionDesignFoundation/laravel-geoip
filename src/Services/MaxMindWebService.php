@@ -36,8 +36,8 @@ class MaxMindWebService extends AbstractService
         $locales = $this->config('locales', ['en']);
 
         $this->client = new Client((int) $this->config('user_id'), $licenseKey, $locales, [
-            'connectTimeout' => (float) $this->config('connect_timeout', HttpClient::DEFAULT_CONNECT_TIMEOUT),
-            'timeout' => (float) $this->config('timeout', HttpClient::DEFAULT_TIMEOUT),
+            'connectTimeout' => HttpClient::resolveTimeout($this->config('connect_timeout'), HttpClient::DEFAULT_CONNECT_TIMEOUT),
+            'timeout' => HttpClient::resolveTimeout($this->config('timeout'), HttpClient::DEFAULT_TIMEOUT),
         ]);
     }
 

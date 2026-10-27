@@ -136,12 +136,19 @@ class HttpClient
         ];
     }
 
+    /**
+     * Zero means "no deadline" to cURL and MaxMind, so anything but a positive number falls back to the default.
+     *
+     * @psalm-pure
+     */
+    public static function resolveTimeout(mixed $seconds, float $default): float
+    {
+        return is_numeric($seconds) && (float) $seconds > 0.0 ? (float) $seconds : $default;
+    }
+
     private function timeoutMs(string $key, float $default): int
     {
-        /** @var numeric-string|int|float|null $seconds */
-        $seconds = Arr::get($this->config, $key);
-
-        return (int) ceil((float) ($seconds ?? $default) * 1000.0);
+        return (int) ceil(self::resolveTimeout(Arr::get($this->config, $key), $default) * 1000.0);
     }
 
     /** Check if the curl request ended up with errors */
