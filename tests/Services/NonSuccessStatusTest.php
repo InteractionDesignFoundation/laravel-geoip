@@ -56,15 +56,15 @@ final class NonSuccessStatusTest extends TestCase
         $client->method('getHttpCode')->willReturn($status);
         (new \ReflectionProperty($service, 'client'))->setValue($service, $client);
 
-        $exception = null;
+        $message = '';
         try {
             $service->locate('8.8.8.8');
-        } catch (\Exception $exception) {
+        } catch (\RuntimeException $runtimeException) {
+            $message = $runtimeException->getMessage();
         }
 
-        $this->assertInstanceOf(\Exception::class, $exception, 'Expected an exception for HTTP '.$status);
-        $this->assertStringContainsString($provider, $exception->getMessage());
-        $this->assertStringContainsString((string) $status, $exception->getMessage());
-        $this->assertStringNotContainsString('secret-key', $exception->getMessage());
+        $this->assertStringContainsString($provider, $message, 'Expected a RuntimeException for HTTP '.$status);
+        $this->assertStringContainsString((string) $status, $message);
+        $this->assertStringNotContainsString('secret-key', $message);
     }
 }
