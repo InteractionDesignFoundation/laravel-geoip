@@ -434,6 +434,10 @@ final class GeoIPTest extends TestCase
         yield 'NAT64 well-known prefix, dotted' => ['64:ff9b::8.8.8.8', '64:ff9b::808:808'];
         yield 'Google DNS IPv6, hex' => ['2001:4860:4860::808:808', '2001:4860:4860::808:808'];
         yield 'Google DNS IPv6, dotted' => ['2001:4860:4860::8.8.8.8', '2001:4860:4860::808:808'];
+        yield 'IPv6 with hex-only tail that inet_ntop prints dotted' => ['::5102:458e', '::5102:458e'];
+        yield 'IPv6 with dotted tail that inet_ntop prints dotted' => ['::81.2.69.142', '::5102:458e'];
+        yield 'IPv6 zero run compressed, first of equal runs' => ['2a00:0:0:1:0:0:0:1', '2a00:0:0:1::1'];
+        yield 'IPv6 single zero hextet not compressed' => ['2a00:1:0:1:1:1:1:1', '2a00:1:0:1:1:1:1:1'];
         yield 'IPv6 uppercase' => ['2A00:1450:4001:0:0:0:0:1', '2a00:1450:4001::1'];
     }
 
@@ -454,6 +458,18 @@ final class GeoIPTest extends TestCase
 
         $this->assertFalse($location->default);
         $this->assertSame($canonical, $location->ip);
+    }
+
+    #[Test]
+    public function it_keeps_location_same_as_the_ip_it_was_requested_with(): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->method('locate')->willReturnCallback(fn(string $ip): Location => new Location(['ip' => $ip]));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'none']);
+        $this->setService($geoIp, $service);
+
+        $this->assertTrue($geoIp->getLocation('2A02:D280:0:0:0:0:0:1')->same('2A02:D280:0:0:0:0:0:1'));
     }
 
     #[Test]

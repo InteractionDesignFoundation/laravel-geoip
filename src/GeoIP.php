@@ -290,7 +290,46 @@ class GeoIP
             return (string) inet_ntop(substr($packed, 12));
         }
 
-        return (string) inet_ntop($packed);
+        return self::toRfc5952($packed);
+    }
+
+    /**
+     * Pure-hex RFC 5952 form: inet_ntop() emits dotted notation for some addresses (::5102:458e → ::81.2.69.142),
+     * which GLOBAL_RANGE rejects.
+     *
+     * @param string $packed 16 bytes
+     * @psalm-pure
+     */
+    private static function toRfc5952(string $packed): string
+    {
+        /** @var list<int> $hextets */
+        $hextets = array_values((array) unpack('n8', $packed));
+
+        $bestStart = -1;
+        $bestLength = 0;
+        for ($i = 0; $i < 8; $i++) {
+            if ($hextets[$i] !== 0) {
+                continue;
+            }
+
+            $start = $i;
+            while ($i < 8 && $hextets[$i] === 0) {
+                $i++;
+            }
+
+            if ($i - $start > $bestLength) {
+                $bestStart = $start;
+                $bestLength = $i - $start;
+            }
+        }
+
+        $hex = static fn(array $parts): string => implode(':', array_map(static fn(int $h): string => dechex($h), $parts));
+
+        if ($bestLength < 2) {
+            return $hex($hextets);
+        }
+
+        return $hex(array_slice($hextets, 0, $bestStart)).'::'.$hex(array_slice($hextets, $bestStart + $bestLength));
     }
 
     /**

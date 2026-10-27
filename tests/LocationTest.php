@@ -151,4 +151,15 @@ final class LocationTest extends TestCase
         $this->assertTrue($location->same('81.2.69.142'));
         $this->assertFalse($location->same('10.0.0.1'));
     }
+
+    #[Test]
+    public function same_compares_ipv6_addresses_regardless_of_spelling(): void
+    {
+        $location = new Location(['ip' => '2a02:d280::1']);
+
+        $this->assertTrue($location->same('2A02:D280:0:0:0:0:0:1'));
+        $this->assertTrue($location->same('2a02:d280::1'));
+        $this->assertFalse($location->same('2a02:d280::2'));
+        $this->assertFalse($location->same('not an ip'));
+    }
 }
