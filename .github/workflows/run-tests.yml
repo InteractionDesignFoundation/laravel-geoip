@@ -11,15 +11,21 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # PHP 8.6 is a nightly build: report its failures without blocking the PR.
+    continue-on-error: ${{ matrix.php == '8.6' }}
 
     strategy:
       fail-fast: true
       matrix:
-        php: [8.5, 8.4]
+        php: [8.6, 8.5, 8.4]
         laravel: [^12.0, ^13.0]
         dependencies: [lowest, highest]
 
     name: P${{ matrix.php }} | L${{ matrix.laravel }} | ${{ matrix.dependencies == 'highest' && '↑' || '↓' }}
+
+    env:
+      # Dependencies may cap PHP below the unreleased 8.6.
+      COMPOSER_PLATFORM_FLAGS: ${{ matrix.php == '8.6' && '--ignore-platform-req=php+' || '' }}
 
     steps:
       - name: Checkout code
@@ -43,11 +49,11 @@ jobs:
 
       - name: Install lowest dependencies from composer.json
         if: matrix.dependencies == 'lowest'
-        run: composer update --prefer-dist --no-interaction --prefer-dist --prefer-stable --prefer-lowest
+        run: composer update --prefer-dist --no-interaction --prefer-dist --prefer-stable --prefer-lowest ${COMPOSER_PLATFORM_FLAGS:+"$COMPOSER_PLATFORM_FLAGS"}
 
       - name: Install highest dependencies from composer.json
         if: matrix.dependencies == 'highest'
-        run: composer update --prefer-dist --no-interaction --prefer-dist --prefer-stable
+        run: composer update --prefer-dist --no-interaction --prefer-dist --prefer-stable ${COMPOSER_PLATFORM_FLAGS:+"$COMPOSER_PLATFORM_FLAGS"}
 
       - name: Execute tests
         run: composer test
