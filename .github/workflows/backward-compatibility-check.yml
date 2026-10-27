@@ -1,12 +1,20 @@
-on: [push]
 name: Backward compatibility check
+
+on:
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: read
 
 jobs:
   bc_check:
     name: Backward compatibility check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: fetch tags
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
@@ -19,4 +27,5 @@ jobs:
         run: mkdir -p /home/runner/work/_temp/_github_home && printf "[safe]\n\tdirectory = /github/workspace" > /home/runner/work/_temp/_github_home/.gitconfig
 
       - name: BC Check
-        uses: docker://nyholm/roave-bc-check-ga
+        # nyholm/roave-bc-check-ga:latest
+        uses: docker://nyholm/roave-bc-check-ga@sha256:a9d3d932a4d3ba6a5a0563ef3788918a538198ee9c061a153f9b55caa8d3625f

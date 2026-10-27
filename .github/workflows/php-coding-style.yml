@@ -11,6 +11,9 @@ on:
       - '**.php'
       - 'composer.json'
 
+permissions:
+  contents: read
+
 jobs:
   fix:
     name: Auto-fix code style
@@ -18,15 +21,17 @@ jobs:
     # Fork contributors: run `composer rector && composer cs` locally.
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ github.head_ref }}
           token: ${{ github.token }}
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: 8.3
           coverage: none
@@ -41,7 +46,7 @@ jobs:
         run: composer cs
 
       - name: Commit fixes
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@d0b01107b5db882071f96de5dd4b54961ea93f4c # v7.2.1
         with:
           commit_message: 'style: auto-fix (rector + php-cs-fixer)'
           commit_author: 'GitHub Actions <actions@github.com>'
@@ -53,10 +58,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: 8.3
           coverage: none
