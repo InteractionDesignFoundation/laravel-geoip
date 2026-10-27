@@ -29,7 +29,7 @@ final class MaxMindDatabaseTest extends TestCase
     #[After]
     public function deleteWorkDir(): void
     {
-        (new Filesystem())->deleteDirectory($this->workDir);
+        new Filesystem()->deleteDirectory($this->workDir);
     }
 
     #[Test]
@@ -129,7 +129,7 @@ final class MaxMindDatabaseTest extends TestCase
 
             $config = $this->isolatedConfig();
             $config['update_url'] = 'https://download.example/app/geoip_download?edition_id=GeoIP2-City&license_key=SECRETKEY&suffix=tar.gz';
-            $legacy = $this->thrownBy((new FailingTransportMaxMindDatabase($config, 'denied'))->update(...));
+            $legacy = $this->thrownBy(new FailingTransportMaxMindDatabase($config, 'denied')->update(...));
         } finally {
             ini_set('zend.exception_ignore_args', (string) $previous);
         }
@@ -217,7 +217,7 @@ final class MaxMindDatabaseTest extends TestCase
         chmod($config['database_path'], 0o640);
         $archive = $this->makeArchive($this->fixture());
 
-        (new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive)))->update();
+        new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive))->update();
 
         clearstatcache();
         $this->assertSame(0o640, (int) fileperms($config['database_path']) & 0o777);
@@ -254,7 +254,7 @@ final class MaxMindDatabaseTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Failed to download');
 
-        (new TestableMaxMindDatabase($service))->exposedDownloadFileByUrl(
+        new TestableMaxMindDatabase($service)->exposedDownloadFileByUrl(
             $this->workDir.'/download.tar.gz',
             'file://'.__DIR__.'/../../resources/geoip.mmdb',
         );
@@ -268,7 +268,7 @@ final class MaxMindDatabaseTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Cannot open');
 
-        (new TestableMaxMindDatabase($service))->exposedDownloadFileByUrl(
+        new TestableMaxMindDatabase($service)->exposedDownloadFileByUrl(
             '/nonexistent/directory/file.tar.gz',
             'https://example.com/nonexistent.tar.gz',
         );
@@ -372,7 +372,7 @@ final class MaxMindDatabaseTest extends TestCase
         symlink('../real/geoip.mmdb', $config['database_path']);
         $archive = $this->makeArchive($this->fixture());
 
-        (new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive)))->update();
+        new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive))->update();
 
         $this->assertTrue(is_link($config['database_path']));
         $this->assertSame('../real/geoip.mmdb', readlink($config['database_path']));
@@ -390,7 +390,7 @@ final class MaxMindDatabaseTest extends TestCase
         symlink($this->workDir.'/real/geoip.mmdb', $config['database_path']);
         $archive = $this->makeArchive($this->fixture());
 
-        (new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive)))->update();
+        new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive))->update();
 
         $this->assertTrue(is_link($config['database_path']));
         $this->assertSame($this->fixture(), file_get_contents($this->workDir.'/real/geoip.mmdb'));
@@ -481,7 +481,7 @@ final class MaxMindDatabaseTest extends TestCase
                 $this->markTestSkipped('Cannot make a directory unreadable (running as root?)');
             }
 
-            $this->assertFalse((new TestableMaxMindDatabase($service))->exposedDeleteDirectory($directory));
+            $this->assertFalse(new TestableMaxMindDatabase($service)->exposedDeleteDirectory($directory));
         } finally {
             chmod($directory, 0o755);
             rmdir($directory);
@@ -504,7 +504,7 @@ final class MaxMindDatabaseTest extends TestCase
         $before = $snapshot();
         $archive = $this->makeArchive($this->fixture());
 
-        $exception = $this->thrownBy((new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive)))->update(...));
+        $exception = $this->thrownBy(new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive))->update(...));
 
         $this->assertStringContainsString('symlink', $exception->getMessage());
         $this->assertSame($before, $snapshot());

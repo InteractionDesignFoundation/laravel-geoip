@@ -53,7 +53,7 @@ final class NonSuccessStatusTest extends TestCase
         $client->method('get')->willReturn([$body, []]);
         $client->method('getErrors')->willReturn(null);
         $client->method('getHttpCode')->willReturn($status);
-        (new \ReflectionProperty($service, 'client'))->setValue($service, $client);
+        new \ReflectionProperty($service, 'client')->setValue($service, $client);
 
         $message = '';
         try {

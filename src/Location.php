@@ -10,7 +10,6 @@ use Illuminate\Support\Str;
 /**
  * Class Location
  *
- *
  * @property-read string|null $ip
  * @property-read string|null $iso_code
  * @property-read string|null $country

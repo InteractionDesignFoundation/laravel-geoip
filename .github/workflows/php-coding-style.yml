@@ -33,7 +33,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
-          php-version: 8.3
+          php-version: 8.4
           coverage: none
           # Default is github.token, which setup-php writes to ~/.composer/auth.json for later steps to read.
           github-token: ''
@@ -67,7 +67,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
-          php-version: 8.3
+          php-version: 8.4
           coverage: none
           # Default is github.token, which setup-php writes to ~/.composer/auth.json for later steps to read.
           github-token: ''

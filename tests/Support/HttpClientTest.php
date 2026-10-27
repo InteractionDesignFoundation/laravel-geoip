@@ -109,7 +109,7 @@ final class HttpClientTest extends TestCase
 
         try {
             // cURL rejects the unknown protocol without touching the network.
-            (new HttpClient(['query' => ['api-key' => 'SECRET-QUERY']]))->get(
+            new HttpClient(['query' => ['api-key' => 'SECRET-QUERY']])->get(
                 'unsupported://api.test/?token=SECRET-URL',
                 ['extra' => 'SECRET-EXTRA'],
                 ['Authorization: Bearer SECRET-HEADER'],
@@ -181,13 +181,13 @@ final class HttpClientTest extends TestCase
      */
     private function curlOptions(array $config): array
     {
-        return (new class ($config) extends HttpClient {
+        return new class ($config) extends HttpClient {
             /** @return array<int, mixed> */
             public function options(): array
             {
                 return $this->curlOptions('https://example.test/', []);
             }
-        })->options();
+        }->options();
     }
 }
 
