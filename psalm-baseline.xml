@@ -1,335 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="6.15.1@28dc127af1b5aecd52314f6f645bafc10d0e11f9">
-  <file src="src/Cache.php">
-    <UndefinedMagicMethod>
-      <code><![CDATA[flush]]></code>
-    </UndefinedMagicMethod>
-  </file>
-  <file src="src/Console/Clear.php">
-    <ClassMustBeFinal>
-      <code><![CDATA[Clear]]></code>
-    </ClassMustBeFinal>
-    <MixedMethodCall>
-      <code><![CDATA[config]]></code>
-      <code><![CDATA[flush]]></code>
-      <code><![CDATA[getCache]]></code>
-    </MixedMethodCall>
-    <PropertyNotSetInConstructor>
-      <code><![CDATA[Clear]]></code>
-      <code><![CDATA[Clear]]></code>
-      <code><![CDATA[Clear]]></code>
-      <code><![CDATA[Clear]]></code>
-    </PropertyNotSetInConstructor>
-  </file>
-  <file src="src/Console/Update.php">
-    <ClassMustBeFinal>
-      <code><![CDATA[Update]]></code>
-    </ClassMustBeFinal>
-    <MixedArgument>
-      <code><![CDATA[$result]]></code>
-    </MixedArgument>
-    <MixedAssignment>
-      <code><![CDATA[$result]]></code>
-    </MixedAssignment>
-    <MixedMethodCall>
-      <code><![CDATA[getService]]></code>
-    </MixedMethodCall>
-    <MixedReturnStatement>
-      <code><![CDATA[static::FAILURE]]></code>
-      <code><![CDATA[static::FAILURE]]></code>
-      <code><![CDATA[static::SUCCESS]]></code>
-      <code><![CDATA[static::SUCCESS]]></code>
-    </MixedReturnStatement>
-    <PropertyNotSetInConstructor>
-      <code><![CDATA[Update]]></code>
-      <code><![CDATA[Update]]></code>
-      <code><![CDATA[Update]]></code>
-      <code><![CDATA[Update]]></code>
-    </PropertyNotSetInConstructor>
-  </file>
-  <file src="src/Contracts/ServiceInterface.php">
-    <InvalidParamDefault>
-      <code><![CDATA[LocationArray]]></code>
-      <code><![CDATA[LocationArray]]></code>
-    </InvalidParamDefault>
-  </file>
-  <file src="src/Exceptions/MissingConfigurationException.php">
-    <ClassMustBeFinal>
-      <code><![CDATA[MissingConfigurationException]]></code>
-    </ClassMustBeFinal>
-  </file>
+<files psalm-version="7.0.0-rc10@f39760fd9e3f207446c9a41e066f109baab98714">
   <file src="src/GeoIP.php">
-    <ClassMustBeFinal>
-      <code><![CDATA[GeoIP]]></code>
-    </ClassMustBeFinal>
     <DeprecatedMethod>
       <code><![CDATA[setPrefix]]></code>
     </DeprecatedMethod>
-    <DocblockTypeContradiction>
-      <code><![CDATA[$this->service === null]]></code>
-    </DocblockTypeContradiction>
-    <MixedArgument>
-      <code><![CDATA[$config]]></code>
-      <code><![CDATA[$this->config('cache_expires', 30)]]></code>
-      <code><![CDATA[$this->config('default_location', [])]]></code>
-    </MixedArgument>
-    <MixedArgumentTypeCoercion>
-      <code><![CDATA[$this->default_location]]></code>
-    </MixedArgumentTypeCoercion>
-    <MixedAssignment>
-      <code><![CDATA[$config]]></code>
-    </MixedAssignment>
-    <MixedOperand>
-      <code><![CDATA[$this->config('service')]]></code>
-    </MixedOperand>
-    <PropertyNotSetInConstructor>
-      <code><![CDATA[$service]]></code>
-    </PropertyNotSetInConstructor>
-    <RiskyTruthyFalsyComparison>
-      <code><![CDATA[! $location->currency]]></code>
-      <code><![CDATA[$ip]]></code>
-    </RiskyTruthyFalsyComparison>
-  </file>
-  <file src="src/GeoIPServiceProvider.php">
-    <ClassMustBeFinal>
-      <code><![CDATA[GeoIPServiceProvider]]></code>
-    </ClassMustBeFinal>
-    <MixedArgument>
-      <code><![CDATA[$config->get('geoip', [])]]></code>
-    </MixedArgument>
-    <UndefinedInterfaceMethod>
-      <code><![CDATA[$app]]></code>
-      <code><![CDATA[$app]]></code>
-      <code><![CDATA[$app]]></code>
-    </UndefinedInterfaceMethod>
   </file>
   <file src="src/Location.php">
-    <ClassMustBeFinal>
-      <code><![CDATA[Location]]></code>
-    </ClassMustBeFinal>
-    <InvalidParamDefault>
-      <code><![CDATA[LocationArray]]></code>
-    </InvalidParamDefault>
-    <MixedAssignment>
-      <code><![CDATA[$value]]></code>
-    </MixedAssignment>
-    <PossiblyNullArgument>
-      <code><![CDATA[$this->city]]></code>
-      <code><![CDATA[$this->state]]></code>
-    </PossiblyNullArgument>
     <PropertyTypeCoercion>
       <code><![CDATA[$clone->attributes]]></code>
     </PropertyTypeCoercion>
   </file>
-  <file src="src/Services/IP2Location.php">
-    <RedundantCastGivenDocblockType>
-      <code><![CDATA[(string) $data[0]]]></code>
-    </RedundantCastGivenDocblockType>
-  </file>
-  <file src="src/Services/IPApi.php">
-    <MixedArgument>
-      <code><![CDATA[$json->countryCode]]></code>
-      <code><![CDATA[$path]]></code>
-      <code><![CDATA[$path]]></code>
-      <code><![CDATA[$this->config('continent_path')]]></code>
-      <code><![CDATA[$this->config('continent_path')]]></code>
-    </MixedArgument>
-    <MixedArgumentTypeCoercion>
-      <code><![CDATA[[
-            'ip' => $ip,
-            'iso_code' => $json->countryCode,
-            'country' => $json->country,
-            'city' => $json->city,
-            'state' => $json->region,
-            'state_name' => $json->regionName,
-            'postal_code' => $json->zip,
-            'lat' => $json->lat,
-            'lon' => $json->lon,
-            'timezone' => $json->timezone,
-            'continent' => $this->getContinent($json->countryCode),
-        ]]]></code>
-    </MixedArgumentTypeCoercion>
-    <MixedAssignment>
-      <code><![CDATA[$base['query']['key']]]></code>
-      <code><![CDATA[$path]]></code>
-      <code><![CDATA[$this->continents]]></code>
-    </MixedAssignment>
-    <MixedOperand>
-      <code><![CDATA[$json->message]]></code>
-      <code><![CDATA[$json->message]]></code>
-    </MixedOperand>
-    <MixedPropertyFetch>
-      <code><![CDATA[$json->message]]></code>
-    </MixedPropertyFetch>
-    <MixedReturnStatement>
-      <code><![CDATA[Arr::get($this->continents, $code, 'Unknown')]]></code>
-    </MixedReturnStatement>
-    <PossiblyFalseArgument>
-      <code><![CDATA[file_get_contents($this->config('continent_path'))]]></code>
-      <code><![CDATA[json_encode($output)]]></code>
-    </PossiblyFalseArgument>
-    <PossiblyNullOperand>
-      <code><![CDATA[$this->client->getErrors()]]></code>
-    </PossiblyNullOperand>
-    <RedundantCastGivenDocblockType>
-      <code><![CDATA[(string) $data[0]]]></code>
-    </RedundantCastGivenDocblockType>
-  </file>
-  <file src="src/Services/IPData.php">
-    <MixedArgument>
-      <code><![CDATA[$json]]></code>
-      <code><![CDATA[$json]]></code>
-      <code><![CDATA[$json]]></code>
-    </MixedArgument>
-    <MixedArgumentTypeCoercion>
-      <code><![CDATA[[
-            'ip' => $ip,
-            'iso_code' => $json['country_code'],
-            'country' => $json['country_name'],
-            'city' => $json['city'],
-            'state' => $json['region_code'],
-            'state_name' => $json['region'],
-            'postal_code' => $json['postal'],
-            'lat' => $json['latitude'],
-            'lon' => $json['longitude'],
-            'timezone' => Arr::get($json, 'time_zone.name'),
-            'continent' => Arr::get($json, 'continent_code'),
-            'currency' => Arr::get($json, 'currency.code'),
-        ]]]></code>
-    </MixedArgumentTypeCoercion>
-    <MixedArrayAccess>
-      <code><![CDATA[$json['city']]]></code>
-      <code><![CDATA[$json['country_code']]]></code>
-      <code><![CDATA[$json['country_name']]]></code>
-      <code><![CDATA[$json['latitude']]]></code>
-      <code><![CDATA[$json['longitude']]]></code>
-      <code><![CDATA[$json['postal']]]></code>
-      <code><![CDATA[$json['region']]]></code>
-      <code><![CDATA[$json['region_code']]]></code>
-    </MixedArrayAccess>
-    <MixedAssignment>
-      <code><![CDATA[$json]]></code>
-    </MixedAssignment>
-    <PossiblyNullOperand>
-      <code><![CDATA[$this->client->getErrors()]]></code>
-    </PossiblyNullOperand>
-    <RedundantCast>
-      <code><![CDATA[(string) $data[0]]]></code>
-    </RedundantCast>
-    <RiskyTruthyFalsyComparison>
-      <code><![CDATA[empty($data[0])]]></code>
-    </RiskyTruthyFalsyComparison>
-  </file>
-  <file src="src/Services/IPFinder.php">
-    <MixedArgument>
-      <code><![CDATA[$json]]></code>
-    </MixedArgument>
-    <MixedAssignment>
-      <code><![CDATA[$json]]></code>
-    </MixedAssignment>
-    <PossiblyNullOperand>
-      <code><![CDATA[$this->client->getErrors()]]></code>
-    </PossiblyNullOperand>
-    <RedundantCast>
-      <code><![CDATA[(string) $data[0]]]></code>
-    </RedundantCast>
-    <RiskyTruthyFalsyComparison>
-      <code><![CDATA[empty($data[0])]]></code>
-    </RiskyTruthyFalsyComparison>
-  </file>
-  <file src="src/Services/IPGeoLocation.php">
-    <MixedArgument>
-      <code><![CDATA[$json]]></code>
-    </MixedArgument>
-    <MixedAssignment>
-      <code><![CDATA[$json]]></code>
-    </MixedAssignment>
-    <MixedOperand>
-      <code><![CDATA[$this->config('key')]]></code>
-    </MixedOperand>
-    <PossiblyNullOperand>
-      <code><![CDATA[$this->client->getErrors()]]></code>
-    </PossiblyNullOperand>
-    <RedundantCastGivenDocblockType>
-      <code><![CDATA[(string) $data[0]]]></code>
-    </RedundantCastGivenDocblockType>
-  </file>
-  <file src="src/Services/MaxMindDatabase.php">
-    <InvalidReturnStatement>
-      <code><![CDATA[$localizations]]></code>
-    </InvalidReturnStatement>
-    <InvalidReturnType>
-      <code><![CDATA[array<string, string|null>]]></code>
-    </InvalidReturnType>
-    <MixedArgument>
-      <code><![CDATA[$lang]]></code>
-      <code><![CDATA[$lang]]></code>
-      <code><![CDATA[$lang]]></code>
-      <code><![CDATA[$this->config('database_path')]]></code>
-      <code><![CDATA[$this->config('locales', ['en'])]]></code>
-      <code><![CDATA[$this->config('update_url')]]></code>
-    </MixedArgument>
-    <MixedArrayOffset>
-      <code><![CDATA[$localizations[$lang]]]></code>
-      <code><![CDATA[$localizations[$lang]]]></code>
-      <code><![CDATA[$localizations[$lang]]]></code>
-    </MixedArrayOffset>
-    <MixedAssignment>
-      <code><![CDATA[$item]]></code>
-      <code><![CDATA[$lang]]></code>
-      <code><![CDATA[$localizations[$lang]['city']]]></code>
-      <code><![CDATA[$localizations[$lang]['country']]]></code>
-      <code><![CDATA[$localizations[$lang]['state_name']]]></code>
-    </MixedAssignment>
-    <MixedOperand>
-      <code><![CDATA[$item]]></code>
-    </MixedOperand>
-    <PossiblyFalseArgument>
-      <code><![CDATA[$directory]]></code>
-      <code><![CDATA[$directory]]></code>
-      <code><![CDATA[$directory]]></code>
-      <code><![CDATA[$directory]]></code>
-      <code><![CDATA[$directory]]></code>
-      <code><![CDATA[$directory]]></code>
-      <code><![CDATA[$directory]]></code>
-    </PossiblyFalseArgument>
-    <PossiblyFalseIterator>
-      <code><![CDATA[scandir($directory)]]></code>
-    </PossiblyFalseIterator>
-  </file>
-  <file src="src/Services/MaxMindWebService.php">
-    <InvalidReturnStatement>
-      <code><![CDATA[$localizations]]></code>
-    </InvalidReturnStatement>
-    <InvalidReturnType>
-      <code><![CDATA[array<string, string|null>]]></code>
-    </InvalidReturnType>
-    <MixedArgument>
-      <code><![CDATA[$lang]]></code>
-      <code><![CDATA[$lang]]></code>
-      <code><![CDATA[$lang]]></code>
-      <code><![CDATA[$this->config('license_key')]]></code>
-      <code><![CDATA[$this->config('locales', ['en'])]]></code>
-    </MixedArgument>
-    <MixedArrayOffset>
-      <code><![CDATA[$localizations[$lang]]]></code>
-      <code><![CDATA[$localizations[$lang]]]></code>
-      <code><![CDATA[$localizations[$lang]]]></code>
-    </MixedArrayOffset>
-    <MixedAssignment>
-      <code><![CDATA[$lang]]></code>
-      <code><![CDATA[$localizations[$lang]['city']]]></code>
-      <code><![CDATA[$localizations[$lang]['country']]]></code>
-      <code><![CDATA[$localizations[$lang]['state_name']]]></code>
-    </MixedAssignment>
-  </file>
-  <file src="src/helpers.php">
-    <MixedMethodCall>
-      <code><![CDATA[getLocation]]></code>
-    </MixedMethodCall>
-    <MixedReturnStatement>
-      <code><![CDATA[app('geoip')]]></code>
-      <code><![CDATA[app('geoip')->getLocation($ip)]]></code>
-    </MixedReturnStatement>
+  <file src="src/Support/HttpClient.php">
+    <TaintedFile>
+      <code><![CDATA[curl_setopt_array($curl, [
+            CURLOPT_URL => $this->getUrl($url),
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_CONNECTTIMEOUT => 20,
+            CURLOPT_TIMEOUT => 90,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_HEADER => 1,
+            CURLINFO_HEADER_OUT => 1,
+            CURLOPT_VERBOSE => 1,
+        ])]]></code>
+    </TaintedFile>
+    <TaintedSSRF>
+      <code><![CDATA[curl_setopt_array($curl, [
+            CURLOPT_URL => $this->getUrl($url),
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_CONNECTTIMEOUT => 20,
+            CURLOPT_TIMEOUT => 90,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_HEADER => 1,
+            CURLINFO_HEADER_OUT => 1,
+            CURLOPT_VERBOSE => 1,
+        ])]]></code>
+    </TaintedSSRF>
   </file>
 </files>

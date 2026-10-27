@@ -99,12 +99,33 @@ final class MaxMindDatabaseTest extends TestCase
         $service->update();
     }
 
-    /** @return list{\InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface, array<string, mixed>} */
+    #[Test]
+    public function delete_directory_returns_false_when_directory_is_unreadable(): void
+    {
+        [$service] = $this->getService();
+
+        $directory = sys_get_temp_dir().'/geoip_unreadable_'.uniqid('', true);
+        mkdir($directory);
+        chmod($directory, 0000);
+
+        try {
+            if (is_readable($directory)) {
+                $this->markTestSkipped('Cannot make a directory unreadable (running as root?)');
+            }
+
+            $this->assertFalse((new TestableMaxMindDatabase($service))->exposedDeleteDirectory($directory));
+        } finally {
+            chmod($directory, 0755);
+            rmdir($directory);
+        }
+    }
+
+    /** @return list{MaxMindDatabase, array{database_path: string, ...}} */
     protected function getService(): array
     {
         $config = $this->getConfig()['services']['maxmind_database'];
 
-        $service = new $config['class']($config);
+        $service = new MaxMindDatabase($config);
 
         return [$service, $config];
     }
@@ -113,14 +134,21 @@ final class MaxMindDatabaseTest extends TestCase
 /**
  * Test subclass that exposes protected methods of MaxMindDatabase for testing.
  */
-class TestableMaxMindDatabase
+final readonly class TestableMaxMindDatabase
 {
-    public function __construct(private readonly MaxMindDatabase $service) {}
+    public function __construct(private MaxMindDatabase $service) {}
 
     public function exposedDownloadFileByUrl(string $filename, string $url): void
     {
         $reflection = new \ReflectionMethod($this->service, 'downloadFileByUrl');
         $reflection->invoke($this->service, $filename, $url);
+    }
+
+    public function exposedDeleteDirectory(string $directory): mixed
+    {
+        $reflection = new \ReflectionMethod($this->service, 'deleteDirectory');
+
+        return $reflection->invoke($this->service, $directory);
     }
 
     /**
@@ -140,6 +168,11 @@ class TestableMaxMindDatabase
         }
 
         $ch = curl_init();
+        if ($ch === false) {
+            fclose($fp);
+            throw new \RuntimeException('Failed to initialize cURL');
+        }
+
         curl_setopt($ch, \CURLOPT_URL, $url);
         curl_setopt($ch, \CURLOPT_FILE, $fp);
         curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);

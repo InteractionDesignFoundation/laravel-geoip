@@ -6,7 +6,6 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 
 use GeoIp2\Model\City;
 use GeoIp2\WebService\Client;
-use Illuminate\Support\Arr;
 
 /**
  * @psalm-api
@@ -30,11 +29,12 @@ class MaxMindWebService extends AbstractService
     {
         $this->ensureConfigurationParameterDefined(['user_id', 'license_key']);
 
-        $this->client = new Client(
-            (int) $this->config('user_id'),
-            $this->config('license_key'),
-            $this->config('locales', ['en'])
-        );
+        $licenseKey = $this->config('license_key');
+        assert(is_string($licenseKey), 'Invalid "license_key" config value');
+        /** @var list<string> $locales */
+        $locales = $this->config('locales', ['en']);
+
+        $this->client = new Client((int) $this->config('user_id'), $licenseKey, $locales);
     }
 
     /** {@inheritDoc} */
@@ -61,16 +61,20 @@ class MaxMindWebService extends AbstractService
 
     /**
      * Get localized country name, state name and city name based on config languages
-     * @return array<string, string|null>
+     * @return array<string, array{country: string|null, state_name: string|null, city: string|null}>
      */
     private function getLocalizations(City $record): array
     {
         $localizations = [];
 
-        foreach ($this->config('locales', ['en']) as $lang) {
-            $localizations[$lang]['country'] = Arr::get($record->country->names, $lang);
-            $localizations[$lang]['state_name'] = Arr::get($record->mostSpecificSubdivision->names, $lang);
-            $localizations[$lang]['city'] = Arr::get($record->city->names, $lang);
+        /** @var list<string> $locales */
+        $locales = $this->config('locales', ['en']);
+        foreach ($locales as $lang) {
+            $localizations[$lang] = [
+                'country' => $record->country->names[$lang] ?? null,
+                'state_name' => $record->mostSpecificSubdivision->names[$lang] ?? null,
+                'city' => $record->city->names[$lang] ?? null,
+            ];
         }
 
         return $localizations;

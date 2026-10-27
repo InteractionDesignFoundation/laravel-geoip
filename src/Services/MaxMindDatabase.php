@@ -6,7 +6,6 @@ namespace InteractionDesignFoundation\GeoIP\Services;
 
 use GeoIp2\Database\Reader;
 use GeoIp2\Model\City;
-use Illuminate\Support\Arr;
 
 /**
  * @psalm-api
@@ -44,10 +43,9 @@ class MaxMindDatabase extends AbstractService
             copy(__DIR__.'/../../resources/geoip.mmdb', $path);
         }
 
-        $this->reader = new Reader(
-            $path,
-            $this->config('locales', ['en'])
-        );
+        /** @var list<string> $locales */
+        $locales = $this->config('locales', ['en']);
+        $this->reader = new Reader($path, $locales);
     }
 
     /** {@inheritDoc} */
@@ -87,7 +85,9 @@ class MaxMindDatabase extends AbstractService
         $this->withTemporaryDirectory(function ($directory): void {
             $tarFile = sprintf('%s/maxmind.tar.gz', $directory);
 
-            $this->downloadFileByUrl($tarFile, $this->config('update_url'));
+            $updateUrl = $this->config('update_url');
+            assert(is_string($updateUrl), 'Invalid "update_url" config value');
+            $this->downloadFileByUrl($tarFile, $updateUrl);
 
             $archive = new \PharData($tarFile);
 
@@ -113,7 +113,7 @@ class MaxMindDatabase extends AbstractService
             }
         });
 
-        return sprintf('Database file (%s) updated.', $this->config('database_path'));
+        return sprintf('Database file (%s) updated.', (string) $this->config('database_path'));
     }
 
     /**
@@ -127,6 +127,9 @@ class MaxMindDatabase extends AbstractService
     protected function withTemporaryDirectory(callable $callback)
     {
         $directory = tempnam(sys_get_temp_dir(), 'maxmind');
+        if ($directory === false) {
+            throw new \RuntimeException('Failed to create a temporary file');
+        }
 
         if (file_exists($directory)) {
             unlink($directory);
@@ -184,7 +187,12 @@ class MaxMindDatabase extends AbstractService
             return unlink($directory);
         }
 
-        foreach (scandir($directory) as $item) {
+        $items = @scandir($directory);
+        if ($items === false) {
+            return false;
+        }
+
+        foreach ($items as $item) {
             if ($item === '.' || $item === '..') {
                 continue;
             }
@@ -244,16 +252,20 @@ class MaxMindDatabase extends AbstractService
 
     /**
      * Get localized country name, state name and city name based on config languages
-     * @return array<string, string|null>
+     * @return array<string, array{country: string|null, state_name: string|null, city: string|null}>
      */
     private function getLocalizations(City $record): array
     {
         $localizations = [];
 
-        foreach ($this->config('locales', ['en']) as $lang) {
-            $localizations[$lang]['country'] = Arr::get($record->country->names, $lang);
-            $localizations[$lang]['state_name'] = Arr::get($record->mostSpecificSubdivision->names, $lang);
-            $localizations[$lang]['city'] = Arr::get($record->city->names, $lang);
+        /** @var list<string> $locales */
+        $locales = $this->config('locales', ['en']);
+        foreach ($locales as $lang) {
+            $localizations[$lang] = [
+                'country' => $record->country->names[$lang] ?? null,
+                'state_name' => $record->mostSpecificSubdivision->names[$lang] ?? null,
+                'city' => $record->city->names[$lang] ?? null,
+            ];
         }
 
         return $localizations;

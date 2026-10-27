@@ -6,4 +6,7 @@ namespace InteractionDesignFoundation\GeoIP\Exceptions;
 
 use RuntimeException;
 
+/**
+ * @psalm-api
+ */
 class MissingConfigurationException extends RuntimeException {}

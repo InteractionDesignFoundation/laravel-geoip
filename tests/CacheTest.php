@@ -24,8 +24,8 @@ final class CacheTest extends TestCase
             'lon' => -72.92,
         ]);
 
-        $cache->set($originalLocation['ip'], $originalLocation);
-        $uncachedLocation = $cache->get($originalLocation['ip']);
+        $cache->set('81.2.69.142', $originalLocation);
+        $uncachedLocation = $cache->get('81.2.69.142');
 
         $this->assertInstanceOf(Location::class, $uncachedLocation);
         $this->assertSame($uncachedLocation->ip, $originalLocation->ip);
@@ -51,8 +51,8 @@ final class CacheTest extends TestCase
             'lon' => -72.92,
         ]);
 
-        $cache->set($location['ip'], $location);
-        $cachedLocation = $cache->get($location['ip']);
+        $cache->set('81.2.69.142', $location);
+        $cachedLocation = $cache->get('81.2.69.142');
 
         $this->assertInstanceOf(Location::class, $cachedLocation);
         $this->assertSame('81.2.69.142', $cachedLocation->ip);

@@ -33,7 +33,7 @@ interface ServiceInterface
      * Create a location instance from the provided attributes.
      *
      * @param array $attributes
-     * @psalm-param LocationArray $attributes
+     * @psalm-param LocationArray|array{} $attributes
      */
     public function hydrate(array $attributes = []): Location;
 

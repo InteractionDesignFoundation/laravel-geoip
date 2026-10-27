@@ -13,6 +13,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * @psalm-import-type LocationArray from \InteractionDesignFoundation\GeoIP\Location
+ * @psalm-api
  */
 class GeoIP
 {
@@ -28,14 +29,18 @@ class GeoIP
     /**
      * GeoIP service instance.
      *
-     * @var Contracts\ServiceInterface
+     * @var Contracts\ServiceInterface|null
      */
     protected $service;
 
     /** Cache manager instance. */
     protected \InteractionDesignFoundation\GeoIP\Cache $cache;
 
-    /** Default Location data. */
+    /**
+     * Default Location data.
+     *
+     * @var LocationArray
+     */
     protected array $default_location = [
         'ip' => '127.0.0.0',
         'iso_code' => 'US',
@@ -74,15 +79,14 @@ class GeoIP
         $this->cache = new Cache(
             $cache,
             $cacheTags,
-            $this->config('cache_expires', 30)
+            (int) $this->config('cache_expires', 30)
         );
         $this->cache->setPrefix((string) $this->config('cache_prefix'));
 
         // Set custom default location
-        $this->default_location = array_merge(
-            $this->default_location,
-            $this->config('default_location', [])
-        );
+        /** @var LocationArray $defaultLocation */
+        $defaultLocation = array_merge($this->default_location, (array) $this->config('default_location', []));
+        $this->default_location = $defaultLocation;
 
         // Set IP
         $this->default_location['ip'] = $this->getClientIP();
@@ -122,7 +126,7 @@ class GeoIP
     private function find(?string $ip = null): Location
     {
         // If IP not set, user remote IP
-        $ip = $this->unwrapIpv4Mapped($ip ?: $this->getClientIP());
+        $ip = $this->unwrapIpv4Mapped($ip === null || $ip === '' ? $this->getClientIP() : $ip);
 
         // Check cache for location
         if ($this->config('cache', 'none') !== 'none' && $location = $this->getCache()->get($ip)) {
@@ -138,7 +142,7 @@ class GeoIP
                 $location = $this->getService()->locate($ip);
 
                 // Set currency if not already set by the service
-                if (! $location->currency) {
+                if ($location->currency === null || $location->currency === '') {
                     $location = $location->withAttribute('currency', $this->getCurrency($location->iso_code));
                 }
 
@@ -192,7 +196,7 @@ class GeoIP
     {
         if ($this->service === null) {
             // Get service configuration
-            $config = $this->config('services.'.$this->config('service'), []);
+            $config = (array) $this->config('services.'.(string) $this->config('service'), []);
 
             // Get service class
             $class = Arr::pull($config, 'class');
@@ -242,6 +246,8 @@ class GeoIP
     /**
      * Unwrap an IPv4-mapped IPv6 address (::ffff:a.b.c.d or ::ffff:abcd:ef01) to plain IPv4.
      * NO_RES_RANGE rejects all of ::ffff:0:0/96, so public mapped addresses must be validated as IPv4.
+     *
+     * @psalm-pure
      */
     private function unwrapIpv4Mapped(string $ip): string
     {
@@ -268,6 +274,7 @@ class GeoIP
      * @param string $ip
      *
      * @return bool
+     * @psalm-pure
      */
     private function isValid(string $ip): bool
     {

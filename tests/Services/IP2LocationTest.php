@@ -34,7 +34,7 @@ final class IP2LocationTest extends TestCase
     #[Test]
     public function it_returns_a_location_instance(): void
     {
-        $service = $this->createServiceWithMockedClient(json_encode($this->sampleApiResponse()));
+        $service = $this->createServiceWithMockedClient(json_encode($this->sampleApiResponse(), JSON_THROW_ON_ERROR));
 
         $location = $service->locate('8.8.8.8');
 
@@ -86,7 +86,7 @@ final class IP2LocationTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('IP2Location.io API error: Invalid API key.');
 
-        $service = $this->createServiceWithMockedClient(json_encode($errorResponse));
+        $service = $this->createServiceWithMockedClient(json_encode($errorResponse, JSON_THROW_ON_ERROR));
 
         $service->locate('8.8.8.8');
     }
@@ -99,7 +99,7 @@ final class IP2LocationTest extends TestCase
             'country_name' => 'Germany',
         ];
 
-        $service = $this->createServiceWithMockedClient(json_encode($partialResponse));
+        $service = $this->createServiceWithMockedClient(json_encode($partialResponse, JSON_THROW_ON_ERROR));
 
         $location = $service->locate('1.2.3.4');
 
@@ -125,9 +125,13 @@ final class IP2LocationTest extends TestCase
         return $service;
     }
 
-    private function sampleApiResponse(): \stdClass
+    /**
+     * @return array<string, string|float|bool>
+     * @psalm-pure
+     */
+    private function sampleApiResponse(): array
     {
-        return (object) [
+        return [
             'ip' => '8.8.8.8',
             'country_code' => 'US',
             'country_name' => 'United States of America',

@@ -34,7 +34,8 @@ final class LocationTest extends TestCase
 
         $this->expectException(\BadMethodCallException::class);
 
-        $location->ip = '10.0.0.1';
+        $property = 'ip';
+        $location->{$property} = '10.0.0.1';
     }
 
     #[Test]
@@ -123,7 +124,7 @@ final class LocationTest extends TestCase
 
         $this->assertTrue(isset($location->ip));
         $this->assertTrue(isset($location->iso_code));
-        $this->assertTrue(isset($location->default));
+        $this->assertTrue(isset($location['default']));
         $this->assertFalse(isset($location->nonexistent));
     }
 
@@ -139,11 +140,7 @@ final class LocationTest extends TestCase
         $location = new Location($attributes);
         $result = $location->toArray();
 
-        $this->assertSame('81.2.69.142', $result['ip']);
-        $this->assertSame('US', $result['iso_code']);
-        $this->assertSame('United States', $result['country']);
-        $this->assertFalse($result['default']);
-        $this->assertFalse($result['cached']);
+        $this->assertSame(['default' => false, 'cached' => false] + $attributes, $result);
     }
 
     #[Test]

@@ -7,6 +7,9 @@ namespace InteractionDesignFoundation\GeoIP\Console;
 use Illuminate\Console\Command;
 use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
 
+/**
+ * @psalm-api
+ */
 class Update extends Command
 {
     /**
@@ -32,26 +35,28 @@ class Update extends Command
         } catch (MissingConfigurationException $missingConfigurationException) {
             $this->components->error($missingConfigurationException->getMessage());
 
-            return static::FAILURE;
+            return self::FAILURE;
         }
 
         // Ensure the selected service supports updating
         if (method_exists($service, 'update') === false) {
             $this->info('The current service "'.$service::class.'" does not support updating.');
 
-            return static::SUCCESS;
+            return self::SUCCESS;
         }
 
         $this->comment('Updating...');
 
         // Perform update
-        if ($result = $service->update()) {
+        /** @var mixed $result */
+        $result = $service->update();
+        if (is_string($result) && $result !== '') {
             $this->info($result);
         } else {
             $this->error('Update failed!');
-            return static::FAILURE;
+            return self::FAILURE;
         }
 
-        return static::SUCCESS;
+        return self::SUCCESS;
     }
 }
