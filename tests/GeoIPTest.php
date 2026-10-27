@@ -132,7 +132,7 @@ final class GeoIPTest extends TestCase
         $service = $this->createMock(ServiceInterface::class);
         $service->expects($this->never())->method('locate');
         $service->method('hydrate')
-            ->willReturnCallback(self::hydrate(...));
+            ->willReturnCallback($this->hydrate(...));
 
         $geoIp = $this->makeGeoIP(['cache' => 'none']);
         $this->setService($geoIp, $service);
@@ -201,7 +201,7 @@ final class GeoIPTest extends TestCase
         $service = $this->createMock(ServiceInterface::class);
         $service->expects($this->never())->method('locate');
         $service->method('hydrate')
-            ->willReturnCallback(self::hydrate(...));
+            ->willReturnCallback($this->hydrate(...));
 
         $geoIp = $this->makeGeoIPWithLogger(['cache' => 'none'], $logger);
         $this->setService($geoIp, $service);
@@ -219,7 +219,7 @@ final class GeoIPTest extends TestCase
         $service->method('locate')
             ->willThrowException(new AddressNotFoundException('The address 8.8.8.8 is not in the database.'));
         $service->method('hydrate')
-            ->willReturnCallback(self::hydrate(...));
+            ->willReturnCallback($this->hydrate(...));
 
         $geoIp = $this->makeGeoIPWithLogger(['log_failures' => true, 'cache' => 'none'], $logger);
         $this->setService($geoIp, $service);
@@ -298,7 +298,7 @@ final class GeoIPTest extends TestCase
         $service = $this->createStub(ServiceInterface::class);
         $service->method('locate')->willReturn($locationWithNullIsoCode);
         $service->method('hydrate')
-            ->willReturnCallback(self::hydrate(...));
+            ->willReturnCallback($this->hydrate(...));
 
         $geoIp = $this->makeGeoIP(['include_currency' => true, 'cache' => 'none']);
         $this->setService($geoIp, $service);
@@ -313,7 +313,7 @@ final class GeoIPTest extends TestCase
      * @param LocationArray|array{} $attributes
      * @psalm-impure
      */
-    private static function hydrate(array $attributes): Location
+    private function hydrate(array $attributes): Location
     {
         return new Location($attributes);
     }
@@ -324,7 +324,7 @@ final class GeoIPTest extends TestCase
         $service->method('locate')
             ->willThrowException(new \Exception('Service lookup failed'));
         $service->method('hydrate')
-            ->willReturnCallback(self::hydrate(...));
+            ->willReturnCallback($this->hydrate(...));
 
         return $service;
     }

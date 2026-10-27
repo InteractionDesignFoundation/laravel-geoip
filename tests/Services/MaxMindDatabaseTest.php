@@ -134,9 +134,9 @@ final class MaxMindDatabaseTest extends TestCase
 /**
  * Test subclass that exposes protected methods of MaxMindDatabase for testing.
  */
-final class TestableMaxMindDatabase
+final readonly class TestableMaxMindDatabase
 {
-    public function __construct(private readonly MaxMindDatabase $service) {}
+    public function __construct(private MaxMindDatabase $service) {}
 
     public function exposedDownloadFileByUrl(string $filename, string $url): void
     {
