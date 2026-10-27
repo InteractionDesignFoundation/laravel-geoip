@@ -423,30 +423,56 @@ final class GeoIPTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<string, array{string, string}> input, canonical form passed to the provider
      * @psalm-pure
      */
     public static function globalIpProvider(): iterable
     {
-        yield 'IPv4' => ['8.8.8.8'];
-        yield 'IPv6' => ['2a00:1450:4001::1'];
-        yield 'NAT64 well-known prefix' => ['64:ff9b::808:808'];
+        yield 'IPv4' => ['8.8.8.8', '8.8.8.8'];
+        yield 'IPv6' => ['2a00:1450:4001::1', '2a00:1450:4001::1'];
+        yield 'NAT64 well-known prefix, hex' => ['64:ff9b::808:808', '64:ff9b::808:808'];
+        yield 'NAT64 well-known prefix, dotted' => ['64:ff9b::8.8.8.8', '64:ff9b::808:808'];
+        yield 'Google DNS IPv6, hex' => ['2001:4860:4860::808:808', '2001:4860:4860::808:808'];
+        yield 'Google DNS IPv6, dotted' => ['2001:4860:4860::8.8.8.8', '2001:4860:4860::808:808'];
+        yield 'IPv6 uppercase' => ['2A00:1450:4001:0:0:0:0:1', '2a00:1450:4001::1'];
     }
 
     #[Test]
     #[DataProvider('globalIpProvider')]
-    public function it_looks_up_globally_routable_addresses(string $ip): void
+    public function it_looks_up_globally_routable_addresses(string $ip, string $canonical): void
     {
         $service = $this->createMock(ServiceInterface::class);
         $service->expects($this->once())
             ->method('locate')
-            ->with($ip)
-            ->willReturn(new Location(['ip' => $ip, 'iso_code' => 'IE']));
+            ->with($canonical)
+            ->willReturn(new Location(['ip' => $canonical, 'iso_code' => 'IE']));
 
         $geoIp = $this->makeGeoIP(['cache' => 'none']);
         $this->setService($geoIp, $service);
 
-        $this->assertFalse($geoIp->getLocation($ip)->default);
+        $location = $geoIp->getLocation($ip);
+
+        $this->assertFalse($location->default);
+        $this->assertSame($canonical, $location->ip);
+    }
+
+    #[Test]
+    public function it_shares_one_cache_entry_between_spellings_of_the_same_ipv6_address(): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->once())
+            ->method('locate')
+            ->with('64:ff9b::808:808')
+            ->willReturn(new Location(['ip' => '64:ff9b::808:808', 'iso_code' => 'US']));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'all']);
+        $this->setService($geoIp, $service);
+
+        $this->assertFalse($geoIp->getLocation('64:ff9b::8.8.8.8')->cached);
+        $this->assertTrue($geoIp->getLocation('64:ff9b::808:808')->cached);
+        $this->assertTrue($geoIp->getLocation('64:ff9b:0:0:0:0:808:808')->cached);
+
+        $geoIp->getCache()->flush();
     }
 
     /**
