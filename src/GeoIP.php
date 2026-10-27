@@ -105,9 +105,9 @@ class GeoIP
     public function getLocation($ip = null)
     {
         if ($ip !== null) {
-            $ip = $this->normalizeIp($ip);
+            $ip = self::normalizeIp($ip);
 
-            if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            if ($ip !== '' && filter_var($ip, \FILTER_VALIDATE_IP) === false) {
                 throw new \InvalidArgumentException('The provided value is not a valid IP address.');
             }
         }
@@ -132,7 +132,7 @@ class GeoIP
     private function find(?string $ip, bool $explicitIp): Location
     {
         // If IP not set, user remote IP
-        $ip = $this->normalizeIp($ip === null || $ip === '' ? $this->getClientIP() : $ip);
+        $ip = self::normalizeIp($ip === null || $ip === '' ? $this->getClientIP() : $ip);
 
         // Check cache for location
         if ($this->config('cache', 'none') !== 'none' && $location = $this->getCache()->get($ip)) {
@@ -274,9 +274,9 @@ class GeoIP
      *
      * @psalm-pure
      */
-    private function normalizeIp(string $ip): string
+    private static function normalizeIp(string $ip): string
     {
-        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
+        if (filter_var($ip, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV6) === false) {
             return $ip;
         }
 
@@ -290,7 +290,7 @@ class GeoIP
             return (string) inet_ntop(substr($packed, 12));
         }
 
-        return $this->toRfc5952($packed);
+        return self::toRfc5952($packed);
     }
 
     /**
@@ -300,7 +300,7 @@ class GeoIP
      * @param string $packed 16 bytes
      * @psalm-pure
      */
-    private function toRfc5952(string $packed): string
+    private static function toRfc5952(string $packed): string
     {
         /** @var list<int> $hextets */
         $hextets = array_values((array) unpack('n8', $packed));
@@ -340,10 +340,10 @@ class GeoIP
      * @return bool
      * @psalm-pure
      */
-    private function isValid(string $ip, int $flags = FILTER_FLAG_GLOBAL_RANGE): bool
+    private function isValid(string $ip, int $flags = \FILTER_FLAG_GLOBAL_RANGE): bool
     {
         // $flags is a parameter so Psalm does not fold the constant: its hardcoded value mismatches PHP 8.5 (RedundantFlag).
-        return filter_var($ip, FILTER_VALIDATE_IP, $flags) !== false;
+        return filter_var($ip, \FILTER_VALIDATE_IP, $flags) !== false;
     }
 
     /**
@@ -377,7 +377,7 @@ class GeoIP
      * Get configuration value.
      *
      * @param string $key
-     * @param array|bool|int|null|string $default
+     * @param array|bool|int|string|null $default
      *
      * @return mixed
      */

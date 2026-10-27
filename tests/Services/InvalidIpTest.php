@@ -50,7 +50,7 @@ final class InvalidIpTest extends TestCase
         $client = $this->createMock(HttpClient::class);
         $client->expects($this->never())->method('get');
         $client->expects($this->never())->method('execute');
-        (new \ReflectionProperty($service, 'client'))->setValue($service, $client);
+        new \ReflectionProperty($service, 'client')->setValue($service, $client);
 
         $this->expectException(\InvalidArgumentException::class);
 

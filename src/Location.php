@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP;
 
-use ArrayAccess;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 /**
  * Class Location
- *
  *
  * @property-read string|null $ip
  * @property-read string|null $iso_code
@@ -50,7 +48,7 @@ use Illuminate\Support\Str;
  * @psalm-api
  * @template-implements \ArrayAccess<string, mixed>
  */
-class Location implements ArrayAccess
+class Location implements \ArrayAccess
 {
     /**
      * Create a new location instance.
@@ -75,20 +73,31 @@ class Location implements ArrayAccess
      */
     public function same($ip): bool
     {
-        /** @var mixed $own */
-        $own = $this->getAttribute('ip');
+        return $this->sameIp($this->getAttribute('ip'), $ip);
+    }
 
-        if (is_string($own) && filter_var($own, FILTER_VALIDATE_IP) !== false && filter_var($ip, FILTER_VALIDATE_IP) !== false) {
+    /**
+     * @param string $ip
+     * @psalm-pure
+     */
+    private function sameIp(mixed $own, $ip): bool
+    {
+        if (is_string($own) && filter_var($own, \FILTER_VALIDATE_IP) !== false && filter_var($ip, \FILTER_VALIDATE_IP) !== false) {
             return inet_pton($own) === inet_pton($ip);
         }
 
         return $own === $ip;
     }
 
-    /** Return a new instance with the given attribute changed. */
+    /**
+     * Return a new instance with the given attribute changed.
+     *
+     * @param value-of<LocationArray> $value
+     */
     public function withAttribute(string $key, mixed $value): static
     {
         $clone = clone $this;
+        /** @psalm-suppress PropertyTypeCoercion Psalm can't correlate $key with its LocationArray value type on write */
         $clone->attributes[$key] = $value;
 
         return $clone;
@@ -103,17 +112,14 @@ class Location implements ArrayAccess
      */
     public function getAttribute(string $key)
     {
-        /** @var mixed $value */
-        $value = Arr::get($this->attributes, $key);
-
         // First we will check for the presence of a mutator for the set operation
         // which simply lets the developers tweak the attribute as it is set.
         $method = 'get'.Str::studly($key).'Attribute';
         if (method_exists($this, $method)) {
-            return $this->{$method}($value);
+            return $this->{$method}(Arr::get($this->attributes, $key));
         }
 
-        return $value;
+        return Arr::get($this->attributes, $key);
     }
 
     /** Return the display name of the location. */

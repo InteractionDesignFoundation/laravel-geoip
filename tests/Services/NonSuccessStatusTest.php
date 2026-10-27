@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
-use Closure;
 use InteractionDesignFoundation\GeoIP\Services\AbstractService;
 use InteractionDesignFoundation\GeoIP\Services\IP2Location;
 use InteractionDesignFoundation\GeoIP\Services\IPApi;
@@ -20,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AbstractService::class)]
 final class NonSuccessStatusTest extends TestCase
 {
-    /** @return iterable<string, array{Closure(): AbstractService, string, int, string}> */
+    /** @return iterable<string, array{\Closure(): AbstractService, string, int, string}> */
     public static function nonSuccessResponses(): iterable
     {
         $services = [
@@ -42,11 +41,11 @@ final class NonSuccessStatusTest extends TestCase
     /**
      * An error page must not be parsed as a lookup result, and the exception must not leak the API key.
      *
-     * @param Closure(): AbstractService $serviceFactory
+     * @param \Closure(): AbstractService $serviceFactory
      */
     #[Test]
     #[DataProvider('nonSuccessResponses')]
-    public function it_throws_exception_naming_provider_and_status_on_non_2xx_response(Closure $serviceFactory, string $provider, int $status, string $body): void
+    public function it_throws_exception_naming_provider_and_status_on_non_2xx_response(\Closure $serviceFactory, string $provider, int $status, string $body): void
     {
         $service = $serviceFactory();
 
@@ -54,7 +53,7 @@ final class NonSuccessStatusTest extends TestCase
         $client->method('get')->willReturn([$body, []]);
         $client->method('getErrors')->willReturn(null);
         $client->method('getHttpCode')->willReturn($status);
-        (new \ReflectionProperty($service, 'client'))->setValue($service, $client);
+        new \ReflectionProperty($service, 'client')->setValue($service, $client);
 
         $message = '';
         try {

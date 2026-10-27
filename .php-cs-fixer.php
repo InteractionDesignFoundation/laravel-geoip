@@ -7,4 +7,6 @@ return Config::create(__DIR__, ruleOverrides: [
     'final_class' => false,
     'final_public_method_for_abstract_class' => false,
     'mb_str_functions' => false,
+    // Adding `: void` to protected methods of non-final classes would break subclasses that override them.
+    'void_return' => false,
 ]);

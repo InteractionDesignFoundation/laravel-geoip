@@ -5,9 +5,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
-    findUnusedBaselineEntry="true"
     findUnusedCode="false"
-    errorBaseline="psalm-baseline.xml"
+    findUnusedPsalmSuppress="true"
 >
     <projectFiles>
         <directory name="src" />
@@ -18,6 +17,8 @@
     </projectFiles>
 
     <issueHandlers>
+        <DeprecatedMethod errorLevel="suppress" />
+
         <!-- ServiceInterface is implemented by third parties: purity annotations on it would constrain them. -->
         <MissingInterfaceImmutableAnnotation errorLevel="suppress" />
         <MissingAbstractPureAnnotation errorLevel="suppress" />

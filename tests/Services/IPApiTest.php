@@ -34,7 +34,12 @@ final class IPApiTest extends TestCase
         file_put_contents($file, '{}');
 
         // Laravel turns PHP warnings into exceptions; mimic it so a warning cannot hide behind a passing test.
-        set_error_handler(static function (int $severity, string $message): never {
+        // Laravel only logs deprecations, so let them through (e.g. PHP 8.6 deprecations raised inside Laravel itself).
+        set_error_handler(static function (int $severity, string $message): bool {
+            if ($severity === \E_DEPRECATED || $severity === \E_USER_DEPRECATED) {
+                return false;
+            }
+
             throw new \ErrorException($message, 0, $severity);
         });
     }
@@ -68,7 +73,7 @@ final class IPApiTest extends TestCase
     #[Test]
     public function it_maps_continent_from_file(): void
     {
-        file_put_contents($this->continentFile, json_encode(['US' => 'NA'], JSON_THROW_ON_ERROR));
+        file_put_contents($this->continentFile, json_encode(['US' => 'NA'], \JSON_THROW_ON_ERROR));
 
         $service = new IPApi(['continent_path' => $this->continentFile]);
 
@@ -174,7 +179,7 @@ final class IPApiTest extends TestCase
         $logger->expects($this->once())->method('warning')->with($this->stringContains('HTTP-only'));
 
         foreach (range(1, 3) as $_) {
-            (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+            new IPApi(['secure' => true, 'key' => null])->setLogger($logger);
         }
     }
 
@@ -185,7 +190,7 @@ final class IPApiTest extends TestCase
         $logger->expects($this->exactly(2))->method('warning');
 
         foreach (range(1, 2) as $_) {
-            (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+            new IPApi(['secure' => true, 'key' => null])->setLogger($logger);
         }
     }
 
@@ -198,7 +203,7 @@ final class IPApiTest extends TestCase
         $logger->expects($this->exactly(3))->method('warning');
 
         foreach (range(1, 3) as $_) {
-            (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+            new IPApi(['secure' => true, 'key' => null])->setLogger($logger);
         }
     }
 
@@ -215,7 +220,7 @@ final class IPApiTest extends TestCase
         $logger->expects($this->exactly(2))->method('warning');
 
         foreach (range(1, 2) as $_) {
-            (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+            new IPApi(['secure' => true, 'key' => null])->setLogger($logger);
         }
     }
 
@@ -229,7 +234,7 @@ final class IPApiTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->once())->method('warning');
 
-        (new IPApi(['secure' => true, 'key' => null]))->setLogger($logger);
+        new IPApi(['secure' => true, 'key' => null])->setLogger($logger);
     }
 
     private function bindCache(Repository $repository): void
@@ -241,10 +246,10 @@ final class IPApiTest extends TestCase
 
     private function baseUri(IPApi $service): string
     {
-        $client = (new \ReflectionProperty($service, 'client'))->getValue($service);
+        $client = new \ReflectionProperty($service, 'client')->getValue($service);
         $this->assertInstanceOf(HttpClient::class, $client);
         /** @var array{base_uri: string} $config */
-        $config = (new \ReflectionProperty($client, 'config'))->getValue($client);
+        $config = new \ReflectionProperty($client, 'config')->getValue($client);
 
         return $config['base_uri'];
     }
@@ -256,7 +261,7 @@ final class IPApiTest extends TestCase
         $client->method('getErrors')->willReturn(null);
         $client->method('getHttpCode')->willReturn(200);
 
-        (new \ReflectionProperty($service, 'client'))->setValue($service, $client);
+        new \ReflectionProperty($service, 'client')->setValue($service, $client);
 
         return $service->locate('8.8.8.8');
     }
@@ -275,6 +280,6 @@ final class IPApiTest extends TestCase
             'lat' => 37.4,
             'lon' => -122.1,
             'timezone' => 'America/Los_Angeles',
-        ], JSON_THROW_ON_ERROR);
+        ], \JSON_THROW_ON_ERROR);
     }
 }

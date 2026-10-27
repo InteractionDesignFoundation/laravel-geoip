@@ -8,9 +8,7 @@ use GeoIp2\Model\City;
 use GeoIp2\WebService\Client;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 class MaxMindWebService extends AbstractService
 {
     /**

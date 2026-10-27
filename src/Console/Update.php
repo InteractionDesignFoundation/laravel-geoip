@@ -6,9 +6,7 @@ namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
 
-/**
- * @psalm-api
- */
+/** @psalm-api */
 class Update extends Command
 {
     /**
@@ -48,15 +46,14 @@ class Update extends Command
 
         // Perform update
         try {
-            /** @var mixed $result */
-            $result = $service->update();
+            $result = $this->nonEmptyString(\call_user_func([$service, 'update']));
         } catch (\Exception $exception) {
             $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }
 
-        if (is_string($result) && $result !== '') {
+        if ($result !== null) {
             $this->info($result);
         } else {
             $this->error('Update failed!');
@@ -64,5 +61,16 @@ class Update extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Services report the update result as a message; anything else is treated as a failure.
+     *
+     * @return non-empty-string|null
+     * @psalm-pure
+     */
+    private function nonEmptyString(mixed $value): ?string
+    {
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }

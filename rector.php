@@ -5,14 +5,14 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 
 return RectorConfig::configure()
-    ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_83)
+    ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_84)
     ->withPaths([
         __DIR__.'/config',
         __DIR__.'/src',
         __DIR__.'/tests',
     ])
     ->withSets([
-        \Rector\Set\ValueObject\LevelSetList::UP_TO_PHP_83,
+        \Rector\Set\ValueObject\LevelSetList::UP_TO_PHP_84,
         \Rector\Set\ValueObject\SetList::CODE_QUALITY,
         \Rector\Set\ValueObject\SetList::CODING_STYLE,
         \Rector\Set\ValueObject\SetList::TYPE_DECLARATION,
@@ -30,6 +30,14 @@ return RectorConfig::configure()
     ->withSkip([
         \Rector\TypeDeclaration\Rector\ClassMethod\BoolReturnTypeFromBooleanConstAndStrictReturnsRector::class => [
             __DIR__.'/src/Services/MaxMindDatabase.php',
+        ],
+        // normalizeIp() and toRfc5952() are static so they can stay @psalm-pure; as instance methods Psalm reports ImpureVariable.
+        \Rector\CodeQuality\Rector\ClassMethod\LocallyCalledStaticMethodToNonStaticRector::class => [
+            __DIR__.'/src/GeoIP.php',
+        ],
+        // update() is duck-typed (method_exists): a direct call has an unknown return type, which lowers Psalm's type coverage.
+        \Rector\CodingStyle\Rector\FuncCall\CallUserFuncToMethodCallRector::class => [
+            __DIR__.'/src/Console/Update.php',
         ],
     ])
     ->withParallel();

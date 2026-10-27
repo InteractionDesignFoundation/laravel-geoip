@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Services;
 
-use Exception;
 use InteractionDesignFoundation\GeoIP\Support\HttpClient;
 
 /**
@@ -52,7 +51,7 @@ class IPGeoLocation extends AbstractService
         // Verify server response
         $errors = $this->client->getErrors();
         if ($errors !== null) {
-            throw new Exception('Request failed ('.$errors.')');
+            throw new \Exception('Request failed ('.$errors.')');
         }
 
         $this->ensureSuccessfulResponse($this->client, 'ipgeolocation.io');
@@ -60,7 +59,7 @@ class IPGeoLocation extends AbstractService
         // Parse body content
         $json = json_decode($data[0], true);
         if (! is_array($json)) {
-            throw new Exception('Unexpected ipgeolocation.io response');
+            throw new \Exception('Unexpected ipgeolocation.io response');
         }
 
         /** @psalm-var LocationArray $json */

@@ -95,10 +95,10 @@ final class TimeoutConfigTest extends TestCase
     /** @return array{timeout: mixed, connect_timeout: mixed} */
     private function httpClientTimeouts(object $service): array
     {
-        $client = (new \ReflectionProperty($service, 'client'))->getValue($service);
+        $client = new \ReflectionProperty($service, 'client')->getValue($service);
         $this->assertInstanceOf(HttpClient::class, $client);
         /** @var array<string, mixed> $config */
-        $config = (new \ReflectionProperty($client, 'config'))->getValue($client);
+        $config = new \ReflectionProperty($client, 'config')->getValue($client);
 
         return ['timeout' => $config['timeout'], 'connect_timeout' => $config['connect_timeout']];
     }
@@ -106,15 +106,15 @@ final class TimeoutConfigTest extends TestCase
     /** @return array{float|null, float|null} [connectTimeout, timeout] */
     private function maxMindTimeouts(object $service): array
     {
-        $geoIp2Client = (new \ReflectionProperty($service, 'client'))->getValue($service);
+        $geoIp2Client = new \ReflectionProperty($service, 'client')->getValue($service);
         $this->assertInstanceOf(Client::class, $geoIp2Client);
-        $webServiceClient = (new \ReflectionProperty($geoIp2Client, 'client'))->getValue($geoIp2Client);
+        $webServiceClient = new \ReflectionProperty($geoIp2Client, 'client')->getValue($geoIp2Client);
         $this->assertIsObject($webServiceClient);
 
         /** @var float|null $connectTimeout */
-        $connectTimeout = (new \ReflectionProperty($webServiceClient, 'connectTimeout'))->getValue($webServiceClient);
+        $connectTimeout = new \ReflectionProperty($webServiceClient, 'connectTimeout')->getValue($webServiceClient);
         /** @var float|null $timeout */
-        $timeout = (new \ReflectionProperty($webServiceClient, 'timeout'))->getValue($webServiceClient);
+        $timeout = new \ReflectionProperty($webServiceClient, 'timeout')->getValue($webServiceClient);
 
         return [$connectTimeout, $timeout];
     }

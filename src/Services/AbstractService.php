@@ -58,7 +58,7 @@ abstract class AbstractService implements ServiceInterface
         foreach ($keys as $key) {
             // If the config is not defined / is empty.
             if (empty($this->config($key))) {
-                $service = (new \ReflectionClass($this))->getShortName();
+                $service = new \ReflectionClass($this)->getShortName();
 
                 throw new MissingConfigurationException(sprintf("Missing '%s' parameter (service: %s)", $key, $service));
             }
@@ -76,7 +76,7 @@ abstract class AbstractService implements ServiceInterface
      */
     protected function assertValidIp(string $ip): string
     {
-        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+        if (filter_var($ip, \FILTER_VALIDATE_IP) === false) {
             throw new \InvalidArgumentException('Invalid IP address passed to the GeoIP service.');
         }
 

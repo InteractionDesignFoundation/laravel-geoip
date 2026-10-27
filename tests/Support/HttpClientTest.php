@@ -18,8 +18,8 @@ final class HttpClientTest extends TestCase
     {
         $options = $this->curlOptions([]);
 
-        $this->assertSame(2000, $options[CURLOPT_CONNECTTIMEOUT_MS]);
-        $this->assertSame(5000, $options[CURLOPT_TIMEOUT_MS]);
+        $this->assertSame(2000, $options[\CURLOPT_CONNECTTIMEOUT_MS]);
+        $this->assertSame(5000, $options[\CURLOPT_TIMEOUT_MS]);
     }
 
     #[Test]
@@ -27,8 +27,8 @@ final class HttpClientTest extends TestCase
     {
         $options = $this->curlOptions(['connect_timeout' => 0.5, 'timeout' => '3']);
 
-        $this->assertSame(500, $options[CURLOPT_CONNECTTIMEOUT_MS]);
-        $this->assertSame(3000, $options[CURLOPT_TIMEOUT_MS]);
+        $this->assertSame(500, $options[\CURLOPT_CONNECTTIMEOUT_MS]);
+        $this->assertSame(3000, $options[\CURLOPT_TIMEOUT_MS]);
     }
 
     /** @return iterable<string, array{mixed}> */
@@ -39,11 +39,11 @@ final class HttpClientTest extends TestCase
         yield 'non-numeric' => ['invalid'];
         yield 'negative' => [-1];
         yield 'null' => [null];
-        yield 'INF' => [INF];
-        yield 'NAN' => [NAN];
+        yield 'INF' => [\INF];
+        yield 'NAN' => [\NAN];
         yield 'numeric string overflowing to INF' => ['1e309'];
         yield 'finite value overflowing integer milliseconds' => [1e300];
-        yield 'largest integer' => [PHP_INT_MAX];
+        yield 'largest integer' => [\PHP_INT_MAX];
     }
 
     /** A 0 would mean "no deadline" to cURL, so an unusable value must not reach it. */
@@ -53,17 +53,17 @@ final class HttpClientTest extends TestCase
     {
         $options = $this->curlOptions(['connect_timeout' => $invalid, 'timeout' => $invalid]);
 
-        $this->assertSame(2000, $options[CURLOPT_CONNECTTIMEOUT_MS]);
-        $this->assertSame(5000, $options[CURLOPT_TIMEOUT_MS]);
+        $this->assertSame(2000, $options[\CURLOPT_CONNECTTIMEOUT_MS]);
+        $this->assertSame(5000, $options[\CURLOPT_TIMEOUT_MS]);
     }
 
     #[Test]
     public function it_resolves_timeouts_to_finite_positive_seconds(): void
     {
-        $this->assertEqualsWithDelta(0.25, HttpClient::resolveTimeout('0.25', 5.0), PHP_FLOAT_EPSILON);
-        $this->assertEqualsWithDelta(5.0, HttpClient::resolveTimeout(INF, 5.0), PHP_FLOAT_EPSILON);
-        $this->assertEqualsWithDelta(5.0, HttpClient::resolveTimeout('1e309', 5.0), PHP_FLOAT_EPSILON);
-        $this->assertEqualsWithDelta(5.0, HttpClient::resolveTimeout(1e300, 5.0), PHP_FLOAT_EPSILON);
+        $this->assertEqualsWithDelta(0.25, HttpClient::resolveTimeout('0.25', 5.0), \PHP_FLOAT_EPSILON);
+        $this->assertEqualsWithDelta(5.0, HttpClient::resolveTimeout(\INF, 5.0), \PHP_FLOAT_EPSILON);
+        $this->assertEqualsWithDelta(5.0, HttpClient::resolveTimeout('1e309', 5.0), \PHP_FLOAT_EPSILON);
+        $this->assertEqualsWithDelta(5.0, HttpClient::resolveTimeout(1e300, 5.0), \PHP_FLOAT_EPSILON);
     }
 
     /** @return iterable<string, array{string, string}> */
@@ -109,7 +109,7 @@ final class HttpClientTest extends TestCase
 
         try {
             // cURL rejects the unknown protocol without touching the network.
-            (new HttpClient(['query' => ['api-key' => 'SECRET-QUERY']]))->get(
+            new HttpClient(['query' => ['api-key' => 'SECRET-QUERY']])->get(
                 'unsupported://api.test/?token=SECRET-URL',
                 ['extra' => 'SECRET-EXTRA'],
                 ['Authorization: Bearer SECRET-HEADER'],
@@ -139,7 +139,7 @@ final class HttpClientTest extends TestCase
     {
         $options = $this->curlOptions([]);
 
-        $this->assertSame(1024 * 1024, $options[CURLOPT_MAXFILESIZE]);
+        $this->assertSame(1024 * 1024, $options[\CURLOPT_MAXFILESIZE]);
     }
 
     /** Verbose cURL writes the request line, including API keys in query strings, to STDERR. */
@@ -148,7 +148,7 @@ final class HttpClientTest extends TestCase
     {
         $options = $this->curlOptions([]);
 
-        $this->assertArrayNotHasKey(CURLOPT_VERBOSE, $options);
+        $this->assertArrayNotHasKey(\CURLOPT_VERBOSE, $options);
     }
 
     /** @param array<string, mixed> $config */
@@ -181,19 +181,17 @@ final class HttpClientTest extends TestCase
      */
     private function curlOptions(array $config): array
     {
-        return (new class ($config) extends HttpClient {
+        return new class ($config) extends HttpClient {
             /** @return array<int, mixed> */
             public function options(): array
             {
                 return $this->curlOptions('https://example.test/', []);
             }
-        })->options();
+        }->options();
     }
 }
 
-/**
- * @internal
- */
+/** @internal */
 final class UrlCaptured extends \RuntimeException
 {
     public function __construct(public readonly string $url)

@@ -15,9 +15,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Builds the real request URL of each HTTP service and stops before cURL runs.
- */
+/** Builds the real request URL of each HTTP service and stops before cURL runs. */
 #[CoversClass(IPApi::class)]
 #[CoversClass(IPData::class)]
 #[CoversClass(IPFinder::class)]
@@ -46,13 +44,13 @@ final class IPv6UrlTest extends TestCase
     #[DataProvider('requests')]
     public function it_requests_the_expected_url(string $class, array $config, string $ip, string $expectedUrl): void
     {
-        $service = (new \ReflectionClass($class))->newInstance($config);
+        $service = new \ReflectionClass($class)->newInstance($config);
 
         $clientProperty = new \ReflectionProperty($service, 'client');
         $client = $clientProperty->getValue($service);
         $this->assertInstanceOf(HttpClient::class, $client);
         /** @var array<string, mixed> $clientConfig */
-        $clientConfig = (new \ReflectionProperty($client, 'config'))->getValue($client);
+        $clientConfig = new \ReflectionProperty($client, 'config')->getValue($client);
 
         $clientProperty->setValue($service, new class ($clientConfig) extends HttpClient {
             /** @return array<int, mixed> */

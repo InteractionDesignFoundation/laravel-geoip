@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace InteractionDesignFoundation\GeoIP\Tests\Services;
 
-use Closure;
 use InteractionDesignFoundation\GeoIP\Services\AbstractService;
 use InteractionDesignFoundation\GeoIP\Services\IPData;
 use InteractionDesignFoundation\GeoIP\Services\IPFinder;
@@ -20,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(IPGeoLocation::class)]
 final class MalformedResponseTest extends TestCase
 {
-    /** @return iterable<string, array{Closure(): AbstractService, string}> */
+    /** @return iterable<string, array{\Closure(): AbstractService, string}> */
     public static function malformedBodies(): iterable
     {
         $services = [
@@ -39,11 +38,11 @@ final class MalformedResponseTest extends TestCase
      * GeoIP::getLocation() only falls back to the default location for \Exception, so a malformed
      * body must not surface as a \TypeError or as a Location filled with nulls.
      *
-     * @param Closure(): AbstractService $serviceFactory
+     * @param \Closure(): AbstractService $serviceFactory
      */
     #[Test]
     #[DataProvider('malformedBodies')]
-    public function it_throws_exception_for_malformed_json_body(Closure $serviceFactory, string $body): void
+    public function it_throws_exception_for_malformed_json_body(\Closure $serviceFactory, string $body): void
     {
         $service = $serviceFactory();
 
@@ -51,7 +50,7 @@ final class MalformedResponseTest extends TestCase
         $client->method('get')->willReturn([$body, []]);
         $client->method('getErrors')->willReturn(null);
         $client->method('getHttpCode')->willReturn(200);
-        (new \ReflectionProperty($service, 'client'))->setValue($service, $client);
+        new \ReflectionProperty($service, 'client')->setValue($service, $client);
 
         $this->expectException(\Exception::class);
 
