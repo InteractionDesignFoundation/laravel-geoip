@@ -202,19 +202,27 @@ class MaxMindDatabase extends AbstractService
             return $path;
         }
 
-        // Bounded: a link loop would otherwise never terminate.
+        $originalPath = $path;
+
+        // Bounded like the kernel's own limit: a link loop would otherwise never terminate.
         for ($depth = 0; $depth < 40 && is_link($path); $depth++) {
             $target = readlink($path);
             if ($target === false) {
-                break;
+                throw new \RuntimeException(sprintf('Cannot read the symlink "%s".', $path));
             }
 
             $path = str_starts_with($target, '/') ? $target : dirname($path).'/'.$target;
         }
 
         $directory = realpath(dirname($path));
+        $resolved = $directory === false ? $path : $directory.'/'.basename($path);
 
-        return $directory === false ? $path : $directory.'/'.basename($path);
+        // Renaming over a link that is still a link would replace that link instead of the database.
+        if (is_link($resolved)) {
+            throw new \RuntimeException(sprintf('The symlink "%s" is cyclic or too deeply nested; the existing database was kept.', $originalPath));
+        }
+
+        return $resolved;
     }
 
     /** Streams the first .mmdb entry out of the archive; entry names are never used as filesystem paths. */

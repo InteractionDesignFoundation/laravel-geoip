@@ -397,6 +397,36 @@ final class MaxMindDatabaseTest extends TestCase
     }
 
     #[Test]
+    public function update_through_cyclic_symlinks_fails_and_touches_nothing(): void
+    {
+        $config = $this->isolatedConfig();
+        $directory = dirname($config['database_path']);
+        mkdir($directory);
+        symlink($directory.'/b.mmdb', $config['database_path']);
+        symlink($directory.'/c.mmdb', $directory.'/b.mmdb');
+        symlink($config['database_path'], $directory.'/c.mmdb');
+
+        $this->assertUpdateLeavesSymlinksUntouched($config);
+    }
+
+    #[Test]
+    public function update_through_overlong_symlink_chain_fails_and_touches_nothing(): void
+    {
+        $config = $this->isolatedConfig();
+        $directory = dirname($config['database_path']);
+        mkdir($directory);
+        file_put_contents($directory.'/link50', 'original-database-bytes');
+        for ($i = 49; $i >= 1; $i--) {
+            symlink($directory.'/link'.($i + 1), $directory.'/link'.$i);
+        }
+
+        symlink($directory.'/link1', $config['database_path']);
+
+        $this->assertUpdateLeavesSymlinksUntouched($config);
+        $this->assertSame('original-database-bytes', file_get_contents($directory.'/link50'));
+    }
+
+    #[Test]
     public function subclass_overriding_locate_can_use_the_reader(): void
     {
         $config = $this->isolatedConfig();
@@ -456,6 +486,28 @@ final class MaxMindDatabaseTest extends TestCase
             chmod($directory, 0755);
             rmdir($directory);
         }
+    }
+
+    /** @param array{class: class-string, database_path: string, account_id: int|string, license_key: string, edition_id: string, locales: list<string>, update_url?: string} $config */
+    private function assertUpdateLeavesSymlinksUntouched(array $config): void
+    {
+        $directory = dirname($config['database_path']);
+        $snapshot = static function () use ($directory): array {
+            $links = [];
+            foreach (array_diff((array) scandir($directory), ['.', '..']) as $name) {
+                $path = $directory.'/'.(string) $name;
+                $links[$path] = is_link($path) ? (string) readlink($path) : 'file';
+            }
+
+            return $links;
+        };
+        $before = $snapshot();
+        $archive = $this->makeArchive($this->fixture());
+
+        $exception = $this->thrownBy((new FakeDownloadMaxMindDatabase($config, $archive, $this->checksumFor($archive)))->update(...));
+
+        $this->assertStringContainsString('symlink', $exception->getMessage());
+        $this->assertSame($before, $snapshot());
     }
 
     /** @return array{class: class-string, database_path: string, account_id: int|string, license_key: string, edition_id: string, locales: list<string>, update_url?: string} */
