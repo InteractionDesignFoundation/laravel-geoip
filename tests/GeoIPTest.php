@@ -191,6 +191,11 @@ final class GeoIPTest extends TestCase
         yield 'IPv6 loopback' => ['::1'];
         yield 'IPv6 link-local' => ['fe80::1'];
         yield 'IPv4-mapped IPv6 loopback' => ['::ffff:127.0.0.1'];
+        yield 'IPv4 loopback' => ['127.0.0.1'];
+        yield 'IPv4 private' => ['10.0.0.1'];
+        yield 'IPv4 shared address space (CGNAT)' => ['100.64.0.1'];
+        yield 'IPv6 documentation' => ['2001:db8::1'];
+        yield '6to4 is not unwrapped' => ['2002:808:808::1'];
     }
 
     #[Test]
@@ -289,18 +294,159 @@ final class GeoIPTest extends TestCase
     }
 
     #[Test]
-    public function it_looks_up_public_ipv6_addresses(): void
+    public function it_logs_not_found_addresses_at_debug_level_when_log_failures_is_enabled(): void
+    {
+        $service = $this->createStub(ServiceInterface::class);
+        $service->method('locate')->willThrowException(new AddressNotFoundException('not found'));
+        $service->method('hydrate')->willReturnCallback($this->hydrate(...));
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('error');
+        $logger->expects($this->once())
+            ->method('debug')
+            ->with('GeoIP address not found', ['ip' => '8.8.8.8', 'service' => $service::class]);
+
+        $geoIp = $this->makeGeoIPWithLogger(['log_failures' => true, 'cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $geoIp->getLocation('8.8.8.8');
+    }
+
+    #[Test]
+    public function it_does_not_log_not_found_addresses_when_log_failures_is_disabled(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('debug');
+        $logger->expects($this->never())->method('error');
+
+        $service = $this->createStub(ServiceInterface::class);
+        $service->method('locate')->willThrowException(new AddressNotFoundException('not found'));
+        $service->method('hydrate')->willReturnCallback($this->hydrate(...));
+
+        $geoIp = $this->makeGeoIPWithLogger(['log_failures' => false, 'cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $geoIp->getLocation('8.8.8.8');
+    }
+
+    #[Test]
+    public function it_caches_not_found_addresses_as_cached_default_locations(): void
     {
         $service = $this->createMock(ServiceInterface::class);
         $service->expects($this->once())
             ->method('locate')
-            ->with('2a00:1450:4001::1')
-            ->willReturn(new Location(['ip' => '2a00:1450:4001::1', 'iso_code' => 'IE']));
+            ->willThrowException(new AddressNotFoundException('not found'));
+        $service->method('hydrate')->willReturnCallback($this->hydrate(...));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'all']);
+        $this->setService($geoIp, $service);
+
+        $first = $geoIp->getLocation('8.8.8.8');
+        $second = $geoIp->getLocation('8.8.8.8');
+
+        $this->assertTrue($first->default);
+        $this->assertFalse($first->cached);
+        $this->assertTrue($second->default);
+        $this->assertTrue($second->cached);
+        $this->assertSame('8.8.8.8', $second->ip, "The cached default must not carry the first caller's client IP");
+    }
+
+    #[Test]
+    public function it_expires_cached_not_found_addresses_after_cache_not_found_expires(): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->exactly(2))
+            ->method('locate')
+            ->willThrowException(new AddressNotFoundException('not found'));
+        $service->method('hydrate')->willReturnCallback($this->hydrate(...));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'all', 'cache_expires' => 3600, 'cache_not_found_expires' => 10]);
+        $this->setService($geoIp, $service);
+
+        $geoIp->getLocation('8.8.8.8');
+
+        $hit = $geoIp->getLocation('8.8.8.8');
+        $this->assertTrue($hit->cached);
+        $this->assertTrue($hit->default);
+
+        $this->travel(11)->seconds();
+        $this->assertFalse($geoIp->getLocation('8.8.8.8')->cached);
+    }
+
+    #[Test]
+    public function it_retries_transient_failures_on_next_call(): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->exactly(2))
+            ->method('locate')
+            ->willThrowException(new \Exception('timeout'));
+        $service->method('hydrate')->willReturnCallback($this->hydrate(...));
+
+        $geoIp = $this->makeGeoIPWithLogger(['cache' => 'all'], $this->createStub(LoggerInterface::class));
+        $this->setService($geoIp, $service);
+
+        $geoIp->getLocation('8.8.8.8');
+        $this->assertFalse($geoIp->getLocation('8.8.8.8')->cached);
+    }
+
+    #[Test]
+    public function it_looks_up_not_found_addresses_every_time_when_cache_is_none(): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->exactly(2))
+            ->method('locate')
+            ->willThrowException(new AddressNotFoundException('not found'));
+        $service->method('hydrate')->willReturnCallback($this->hydrate(...));
 
         $geoIp = $this->makeGeoIP(['cache' => 'none']);
         $this->setService($geoIp, $service);
 
-        $this->assertFalse($geoIp->getLocation('2a00:1450:4001::1')->default);
+        $geoIp->getLocation('8.8.8.8');
+        $geoIp->getLocation('8.8.8.8');
+    }
+
+    #[Test]
+    public function it_does_not_cache_not_found_for_implicit_ip_when_cache_is_some(): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->exactly(2))
+            ->method('locate')
+            ->willThrowException(new AddressNotFoundException('not found'));
+        $service->method('hydrate')->willReturnCallback($this->hydrate(...));
+
+        request()->server->set('REMOTE_ADDR', '8.8.8.8');
+        $geoIp = $this->makeGeoIP(['cache' => 'some']);
+        $this->setService($geoIp, $service);
+
+        $geoIp->getLocation();
+        $geoIp->getLocation();
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     * @psalm-pure
+     */
+    public static function globalIpProvider(): iterable
+    {
+        yield 'IPv4' => ['8.8.8.8'];
+        yield 'IPv6' => ['2a00:1450:4001::1'];
+        yield 'NAT64 well-known prefix' => ['64:ff9b::808:808'];
+    }
+
+    #[Test]
+    #[DataProvider('globalIpProvider')]
+    public function it_looks_up_globally_routable_addresses(string $ip): void
+    {
+        $service = $this->createMock(ServiceInterface::class);
+        $service->expects($this->once())
+            ->method('locate')
+            ->with($ip)
+            ->willReturn(new Location(['ip' => $ip, 'iso_code' => 'IE']));
+
+        $geoIp = $this->makeGeoIP(['cache' => 'none']);
+        $this->setService($geoIp, $service);
+
+        $this->assertFalse($geoIp->getLocation($ip)->default);
     }
 
     /**
@@ -310,7 +456,8 @@ final class GeoIPTest extends TestCase
     public static function publicMappedIpProvider(): iterable
     {
         yield 'dotted' => ['::ffff:8.8.8.8'];
-        yield 'hex' => ['::ffff:0808:0808'];
+        yield 'hex' => ['::ffff:808:808'];
+        yield 'hex zero-padded' => ['::ffff:0808:0808'];
     }
 
     #[Test]

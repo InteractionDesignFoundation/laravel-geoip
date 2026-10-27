@@ -75,6 +75,8 @@ GeoIP caches lookups using Laravel's cache system to reduce API calls. Set the `
 
 You can also configure `cache_tags`, `cache_expires` (TTL in seconds), and `cache_prefix`.
 
+Addresses the service reports as not found (MaxMind `AddressNotFoundException`) are cached too, as the default location with `default` and `cached` set to `true`, for `cache_not_found_expires` seconds (defaults to `cache_expires`). Other failures, such as timeouts, are never cached. Set `cache` to `none` to disable this.
+
 ### Timeouts
 
 HTTP-based services and the MaxMind Web API fail fast so a slow provider cannot hold up your request: `connect_timeout` (default 2 s) and `timeout` (default 5 s) in `config/geoip.php`. Either can be overridden per service. Responses larger than 1 MiB are rejected when the server announces their size. A non-2xx HTTP status makes the lookup fail (the default location is returned).

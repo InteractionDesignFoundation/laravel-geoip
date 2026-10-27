@@ -33,6 +33,18 @@ final class CacheTest extends TestCase
     }
 
     #[Test]
+    public function set_accepts_a_ttl_overriding_the_constructor_default(): void
+    {
+        $cache = new Cache(app(CacheManager::class), [], 3600);
+
+        $cache->set('81.2.69.142', new Location(['ip' => '81.2.69.142']), 10);
+        $this->assertInstanceOf(Location::class, $cache->get('81.2.69.142'));
+
+        $this->travel(11)->seconds();
+        $this->assertNotInstanceOf(Location::class, $cache->get('81.2.69.142'));
+    }
+
+    #[Test]
     public function should_fall_back_to_untagged_cache_when_driver_does_not_support_tags(): void
     {
         // Switch to file driver which does not support tagging

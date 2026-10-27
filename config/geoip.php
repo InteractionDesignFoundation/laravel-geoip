@@ -173,6 +173,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Not-Found Cache Expiration
+    |--------------------------------------------------------------------------
+    |
+    | Cache's time to live in seconds for addresses the service reports as
+    | not found (the default location is cached for them). Transient errors
+    | are never cached. Null uses `cache_expires`.
+    |
+    */
+
+    'cache_not_found_expires' => null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Prefix
     |--------------------------------------------------------------------------
     |

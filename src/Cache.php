@@ -63,12 +63,13 @@ final class Cache
      *
      * @param string $name
      * @param Location $location
+     * @param int|null $expires TTL in seconds; defaults to the constructor value
      *
      * @return bool
      */
-    public function set(string $name, Location $location)
+    public function set(string $name, Location $location, ?int $expires = null)
     {
-        return $this->cache->put($this->prefix.$name, $location->toArray(), $this->expires);
+        return $this->cache->put($this->prefix.$name, $location->toArray(), $expires ?? $this->expires);
     }
 
     /**
