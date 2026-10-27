@@ -52,6 +52,9 @@ class IPGeoLocation extends AbstractService
 
         // Parse body content
         $json = json_decode((string) $data[0], true);
+        if (! is_array($json)) {
+            throw new Exception('Unexpected ipgeolocation.io response');
+        }
 
         return $this->hydrate($json);
     }

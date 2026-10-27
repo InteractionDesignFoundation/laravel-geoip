@@ -50,6 +50,9 @@ class IPData extends AbstractService
         }
 
         $json = json_decode((string) $data[0], true);
+        if (! is_array($json)) {
+            throw new Exception('Unexpected ipdata.co response');
+        }
 
         return $this->hydrate([
             'ip' => $ip,

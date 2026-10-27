@@ -51,6 +51,9 @@ class IPFinder extends AbstractService
         }
 
         $json = json_decode((string) $data[0], true);
+        if (! is_array($json)) {
+            throw new \Exception('Unexpected ipfinder.io response');
+        }
 
         return $this->hydrate($json);
     }
