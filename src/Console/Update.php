@@ -48,8 +48,15 @@ class Update extends Command
         $this->comment('Updating...');
 
         // Perform update
-        /** @var mixed $result */
-        $result = $service->update();
+        try {
+            /** @var mixed $result */
+            $result = $service->update();
+        } catch (\Exception $exception) {
+            $this->components->error($exception->getMessage());
+
+            return self::FAILURE;
+        }
+
         if (is_string($result) && $result !== '') {
             $this->info($result);
         } else {

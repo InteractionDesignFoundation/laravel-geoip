@@ -51,7 +51,7 @@ Set the service via the `GEOIP_SERVICE` env variable or in `config/geoip.php`:
 
 | Service | Key | Requires |
 |---------|-----|----------|
-| [MaxMind Database](https://www.maxmind.com/en/geoip2-databases) | `maxmind_database` | `geoip2/geoip2` package + license key |
+| [MaxMind Database](https://www.maxmind.com/en/geoip2-databases) | `maxmind_database` | `geoip2/geoip2` package + account ID & license key (then run `geoip:update`) |
 | [MaxMind Web API](https://www.maxmind.com/en/geoip2-precision-services) | `maxmind_api` | `geoip2/geoip2` package + user ID & license key |
 | [IP-API](https://ip-api.com/) | `ipapi` | API key (for HTTPS) |
 | [IPGeolocation](https://ipgeolocation.io/) | `ipgeolocation` | API key |

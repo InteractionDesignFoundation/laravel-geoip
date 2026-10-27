@@ -24,10 +24,10 @@ class TestCase extends \Orchestra\Testbench\TestCase
         return new GeoIP($config, app(CacheManager::class), app(LoggerInterface::class));
     }
 
-    /** @return array{services: array{maxmind_database: array{class: class-string, database_path: string, update_url: string, ...}, ...}, ...} */
+    /** @return array{services: array{maxmind_database: array{class: class-string, database_path: string, ...}, ...}, ...} */
     protected function getConfig(): array
     {
-        /** @var array{services: array{maxmind_database: array{class: class-string, database_path: string, update_url: string, ...}, ...}, ...} $config */
+        /** @var array{services: array{maxmind_database: array{class: class-string, database_path: string, ...}, ...}, ...} $config */
         $config = include(__DIR__.'/../config/geoip.php');
 
         $this->databaseCheck($config['services']['maxmind_database']['database_path']);
