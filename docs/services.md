@@ -13,7 +13,7 @@ MAXMIND_ACCOUNT_ID=123456
 MAXMIND_LICENSE_KEY=your-license-key
 ```
 
-Use `edition_id` (default `GeoLite2-City`) to pick the edition; the downloaded database must be of that type. If `account_id` is empty, or you set a custom `update_url` (it must contain `suffix=tar.gz`), the legacy URL with the license key in the query string is used instead. The update always verifies the archive's SHA-256 checksum and the database edition, and swaps the file atomically; on any failure the existing database is kept and the license key is never included in error output.
+Use `edition_id` (default `GeoLite2-City`) to pick the edition; the downloaded database must be of that type. If `account_id` is empty, the legacy URL with the license key in the query string is used instead. A non-empty `update_url` is used as is and no credentials are added to it; it must contain the literal `suffix=tar.gz`, and the same URL with `suffix=tar.gz.sha256` must serve the checksum. `database_path` may be a symlink: the link is kept and its target is replaced. The update always verifies the archive's SHA-256 checksum and the database edition, and swaps the file atomically; on any failure the existing database is kept and the license key is never included in error output.
 
 Note: `geoip:update` must be run before lookups work. Until then the package does not fall back to any bundled database; lookups return the default location and the failure is logged.
 

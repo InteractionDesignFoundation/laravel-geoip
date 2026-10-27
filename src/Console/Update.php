@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace InteractionDesignFoundation\GeoIP\Console;
 
 use Illuminate\Console\Command;
-use InteractionDesignFoundation\GeoIP\Exceptions\MissingConfigurationException;
 
 /**
  * @psalm-api
@@ -32,8 +31,8 @@ class Update extends Command
         try {
             /** @var \InteractionDesignFoundation\GeoIP\Contracts\ServiceInterface $service */
             $service = app('geoip')->getService();
-        } catch (MissingConfigurationException $missingConfigurationException) {
-            $this->components->error($missingConfigurationException->getMessage());
+        } catch (\Exception $exception) {
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }
