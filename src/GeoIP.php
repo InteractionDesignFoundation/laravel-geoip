@@ -59,6 +59,9 @@ class GeoIP
         'cached' => false,
     ];
 
+    /** Set while a record is being logged: a host logger may enrich records via GeoIP, which would re-enter it. */
+    private bool $isLogging = false;
+
     /**
      * Create a new GeoIP instance.
      *
@@ -158,9 +161,7 @@ class GeoIP
                 return $location;
             } catch (AddressNotFoundException) {
                 // Expected miss, not a failure. Unlike transient errors it is deterministic, so it is negatively cached.
-                if ($this->config('log_failures', true) === true) {
-                    $this->logger->debug('GeoIP address not found', ['ip' => $ip, 'service' => $this->getService()::class]);
-                }
+                $this->logFailure(fn(LoggerInterface $logger) => $logger->debug('GeoIP address not found', ['ip' => $ip, 'service' => $this->getService()::class]));
 
                 $location = $this->getService()->hydrate(['ip' => $ip] + $this->default_location);
 
@@ -170,15 +171,29 @@ class GeoIP
 
                 return $location;
             } catch (\Exception $e) {
-                if ($this->config('log_failures', true) === true) {
-                    $this->logger->error('GeoIP lookup failed', [
-                        'exception' => $e,
-                    ]);
-                }
+                $this->logFailure(static fn(LoggerInterface $logger) => $logger->error('GeoIP lookup failed', ['exception' => $e]));
             }
         }
 
         return $this->getService()->hydrate($this->default_location);
+    }
+
+    /**
+     * A lookup made while the logger handles a record (a log processor adding the location) is not logged: it would recurse.
+     * @param \Closure(LoggerInterface): void $log
+     */
+    private function logFailure(\Closure $log): void
+    {
+        if ($this->isLogging || $this->config('log_failures', true) !== true) {
+            return;
+        }
+
+        $this->isLogging = true;
+        try {
+            $log($this->logger);
+        } finally {
+            $this->isLogging = false;
+        }
     }
 
     /**

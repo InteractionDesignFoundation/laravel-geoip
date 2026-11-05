@@ -181,6 +181,44 @@ final class GeoIPTest extends TestCase
     }
 
     /**
+     * @return iterable<string, array{\Exception, 'error'|'debug', string}>
+     * @psalm-pure
+     */
+    public static function loggedLookupProvider(): iterable
+    {
+        yield 'lookup failure' => [new \RuntimeException('The database cannot be read.'), 'error', 'GeoIP lookup failed'];
+        yield 'address not found' => [new AddressNotFoundException('The address 8.8.8.8 is not in the database.'), 'debug', 'GeoIP address not found'];
+    }
+
+    /** @param 'error'|'debug' $level */
+    #[Test]
+    #[DataProvider('loggedLookupProvider')]
+    public function it_does_not_log_a_lookup_made_while_logging(\Exception $exception, string $level, string $expectedMessage): void
+    {
+        $service = $this->createStub(ServiceInterface::class);
+        $service->method('locate')->willThrowException($exception);
+        $service->method('hydrate')->willReturnCallback($this->hydrate(...));
+
+        $geoIp = null;
+        $messages = [];
+        // Mirrors a log processor that enriches every record with the visitor's location.
+        $logger = $this->createStub(LoggerInterface::class);
+        $logger->method($level)->willReturnCallback(static function (string | \Stringable $message) use (&$geoIp, &$messages): void {
+            $messages[] = (string) $message;
+            /** @var GeoIP $geoIp assigned below, before the first lookup */
+            $geoIp->getLocation('8.8.8.8');
+        });
+        $geoIp = $this->makeGeoIPWithLogger(['log_failures' => true, 'cache' => 'none'], $logger);
+        $this->setService($geoIp, $service);
+
+        $this->assertTrue($geoIp->getLocation('8.8.8.8')->default);
+        $this->assertSame([$expectedMessage], $messages);
+
+        $geoIp->getLocation('8.8.8.8');
+        $this->assertCount(2, $messages, 'A later lookup logs again');
+    }
+
+    /**
      * @return iterable<string, array{string}>
      * @psalm-pure
      */
